@@ -197,5 +197,6 @@
     "imdbContentRating": "Рейтинг контенту IMDB",
     "recommendation": "Рекомендація",
     "banCount": "Кількість банів",
-    "sіtrikeCount": "Кількість страйків"
+    "sіtrikeCount": "Кількість страйків",
+    "site": "Сайт"
 }

@@ -8,6 +8,8 @@ import { event } from "@/utils/event";
 import { EventType } from "@/enums/event";
 import { cn } from "@/lib/utils";
 import { DateTime } from "luxon"
+import { Copy } from "lucide-react";
+import { copy } from "@/utils/helpers";
 
 interface RootProps {
     movie: MovieSearchItem;
@@ -61,6 +63,7 @@ export default function Check({ movie, onLoading, onError }: RootProps) {
                     <span className="mt-title">{movie.title ? movie.title : movie.original_title}</span>
                     {movie.title != null && <h2 className="mt-sub-title">{movie.original_title}</h2>}
                 </div>
+                <Copy onClick={() => copy(`${config.baseUrl}/movies/${movie.tmdb_id}`)} strokeWidth={2.5} className="mt-button-ico" />
             </div>
             <div className="mt-check mt-scrollbar">
                 <div className="mt-info-grid">

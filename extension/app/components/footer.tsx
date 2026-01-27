@@ -6,8 +6,10 @@ export const Footer = () => {
         name: string;
         href: string;
     }[] = [
+            { name: i18n.t("site"), href: config.baseUrl },
             { name: i18n.t("privacyPolicyShort"), href: config.privacyPolicyUrl },
-            { name: "Telegram", href: config.telegramChannelUrl }
+            { name: "Telegram", href: config.telegramChannelUrl },
+            { name: "GitHub", href: "https://github.com/mrgarest/movietimecode" }
         ];
 
     return (

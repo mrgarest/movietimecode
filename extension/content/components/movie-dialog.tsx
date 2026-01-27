@@ -1,7 +1,7 @@
 import { TimecodeAuthor, TimecodeAuthorsResponse, TimecodeResponse, TimecodeSegment } from "@/interfaces/timecode";
 import { Button } from "./ui/button";
 import { useEffect, useState } from 'preact/hooks';
-import { Circle, CircleCheck } from "lucide-react";
+import { Check, Circle, CircleCheck } from "lucide-react";
 import { removeDialog, renderDialog } from "@/utils/dialog";
 import { secondsToTime } from "@/utils/format";
 import i18n from "@/lib/i18n";
@@ -170,6 +170,12 @@ const MovieDialog = ({ data, onSelected }: RootProps) => {
                             <div>{i18n.t('duration')}</div>
                             <div>{secondsToTime(author.timecode.duration)}</div>
                         </div>
+
+                        {timecode?.segments && timecode?.segments.length > 0 && <>
+                            <div className="mt-info-title mt-border-t">{i18n.t('timecodes')}</div>
+                            <div className="mt-segments">{timecode.segments.map((segment, index) => <SegmentItem key={index} segment={segment} />)}</div>
+                        </>}
+
                         {timecode.content_classifications && timecode.content_classifications.length > 0 && <>
                             <div className="mt-info-title mt-border-t">{i18n.t('twitchContentClassification')}</div>
                             <div className="mt-info-grid">
@@ -204,10 +210,6 @@ const MovieDialog = ({ data, onSelected }: RootProps) => {
                                     localeKey='violentGraphic'
                                 />
                             </div>
-                        </>}
-                        {timecode?.segments && timecode?.segments.length > 0 && <>
-                            <div className="mt-info-title mt-border-t">{i18n.t('timecodes')}</div>
-                            <div className="mt-segments">{timecode.segments.map((segment, index) => <SegmentItem key={index} segment={segment} />)}</div>
                         </>}
                     </>}
                 </div>
@@ -244,9 +246,7 @@ const ContentClassificationItem = ({
 
     return (
         <>
-            <div>
-                <CircleCheck size={13} strokeWidth={3} color="var(--mt-background-foreground)" />
-            </div>
+            <Check size={9} strokeWidth={8} className="mt-check" />
             <div>{i18n.t('twitchContentClassificationOptions.' + localeKey)}</div>
         </>
     );

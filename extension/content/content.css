@@ -191,6 +191,7 @@
   width: 0.8rem;
   height: 0.8rem;
 }
+
 .mt-button.mt-icon svg {
   width: 1.25rem;
   height: 1.25rem;
@@ -213,6 +214,7 @@
   background-color: oklch(1 0 0 / 0.8);
 }
 
+.mt-button-ico,
 .mt-button.mt-outline {
   box-sizing: border-box;
   border: 1px solid oklch(1 0 0 / 0.08);
@@ -223,11 +225,24 @@
 .mt-button.mt-outline:not(.mt-disabled):hover {
   border: 1px solid oklch(1 0 0 / 0.1);
 }
+
+.mt-button-ico:hover,
 .mt-dialog .mt-select .mt-select-itmes:hover,
 .mt-button.mt-outline:not(.mt-disabled):hover,
 .mt-button.mt-icon:not(.mt-disabled):hover {
   background-color: oklch(0.3 0 0);
   color: oklch(0.91 0 0);
+}
+
+/*********************** button ico ***********************/
+
+.mt-button-ico {
+  padding: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
 /*********************** dialog ***********************/
@@ -399,6 +414,7 @@
 .mt-dialog-movie .mt-segments .mt-spoiler {
   background-color: var(--mt-background-foreground);
   color: var(--mt-background-foreground);
+  max-width: max-content;
   border-radius: 4px;
   cursor: pointer;
   animation: mt-pulse-opacity 2s ease-in-out infinite;
@@ -414,6 +430,13 @@
   100% {
     opacity: 1;
   }
+}
+
+.mt-dialog-movie .mt-check {
+  background-color: var(--mt-background-foreground);
+  color: var(--mt-background);
+  border-radius: 2px;
+  padding: 2px;
 }
 
 /*********************** dialog select ***********************/
@@ -520,6 +543,7 @@
 }
 
 .mt-dialog-mc .mt-movie-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -617,6 +641,12 @@
 
 .mt-dialog-mc .mt-check .mt-info-grid a:hover {
   opacity: 0.7;
+}
+
+.mt-dialog-mc .mt-movie-item .mt-button-ico {
+  position: absolute;
+  right: 1.3rem;
+  bottom: 1rem;
 }
 
 /*********************** loading ***********************/
