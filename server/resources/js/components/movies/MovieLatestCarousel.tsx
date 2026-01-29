@@ -37,7 +37,7 @@ export default function MovieLatestCarousel({ isLoading = false, loop = false, a
                     <div className="flex touch-pan-y">
                         {isLoading && Array.from({ length: 10 }).map((_, index) => <MovieCardItem isLoading key={index} className="pl-4" />)}
                         {!isLoading && movies.map((movie, index) => <MovieCardItem key={index} movie={movie} className="pl-4" />)}
-                        {(isLoading || movies.length > 0) && seeMoreUrl && <div className="flex-[0_0_200px] min-w-0 px-4 space-y-3">
+                        {(isLoading || movies.length > 0) && seeMoreUrl && <div className="flex-[0_0_200px] min-w-0 pl-4">
                             <Link to={seeMoreUrl} className="group block space-y-3 cursor-pointer">
                                 <div className="aspect-2/3 w-full rounded-xl bg-input/30 border border-border flex items-center justify-center">
                                     <ChevronRight className="size-32 text-muted duration-300 group-hover:scale-120 group-hover:text-foreground" />

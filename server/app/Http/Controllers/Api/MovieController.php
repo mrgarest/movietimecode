@@ -13,7 +13,6 @@ use App\Http\Resources\Movie\MovieDetailResource;
 use App\Http\Resources\Movie\MoviePreviewResource;
 use App\Http\Resources\Movie\MovieSearchResource;
 use App\Http\Resources\SuccessResource;
-use App\Models\Movie;
 use App\Services\CompanyService;
 use App\Services\IMDB\ImdbService;
 use App\Services\MovieSanctionService;
@@ -219,71 +218,6 @@ class MovieController extends Controller
             'current_page' => $data['current_page'],
             'last_page' => $data['last_page'],
             'items' => MovieCardResource::collection($data['items']),
-        ]);
-    }
-
-    /**
-     * Movie check.
-     * 
-     * @deprecated use check()
-     */
-    public function checkOld(
-        Request $request,
-        MovieService $movieService,
-        CompanyService $companyService,
-        ImdbService $imdbService
-    ) {
-        $validated = $request->validate([
-            'id' => 'nullable|integer',
-            'tmdb_id' => 'nullable|integer'
-        ]);
-
-        // Get the movie model
-        $movie = isset($validated['id']) ? Movie::find($validated['id']) : $movieService->getOrImport(
-            tmdbId: $validated['tmdb_id'],
-            ip: RequestManager::getIp($request)
-        );
-
-        if (!$movie) throw ApiException::notFound();
-
-        // Get companies for the movie
-        $companies = $companyService->getForMovie($movie);
-
-        return new MovieCheckResource([
-            'tmdb_id' => $validated['tmdb_id'] ?? null,
-            'movie' => $movie,
-            'productions' => $companies->where('role', MovieCompanyRole::PRODUCTION)->values(),
-            'distributors' => $companies->where('role', MovieCompanyRole::DISTRIBUTOR)->values(),
-            'imdb' => [
-                'id' => $imdbService->getImdbId($movie),
-                'content_ratings' => $imdbService->getContentRatings($movie)
-            ]
-        ]);
-    }
-
-    /**
-     * Search for movies by title.
-     * 
-     * @deprecated use search()
-     */
-    public function searchOld(Request $request)
-    {
-        $validated = $request->validate([
-            'q' => 'required|string',
-            'page' => 'nullable|integer',
-            'year' => 'nullable|integer',
-        ]);
-
-        $with = ['movieId'];
-        MovieSearchResource::setWith($with);
-
-        return new SuccessResource([
-            'items' => MovieSearchResource::collection($this->movieService->searchTmdb(
-                title: trim(urldecode($validated['q'])),
-                page: $validated['page'] ?? 1,
-                year: $validated['year'] ?? null,
-                with: $with
-            ))
         ]);
     }
 }

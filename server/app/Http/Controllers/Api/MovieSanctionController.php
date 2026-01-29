@@ -12,7 +12,6 @@ use App\Models\MovieSanction;
 use App\Services\MovieSanctionService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Enum;
 
 class MovieSanctionController extends Controller

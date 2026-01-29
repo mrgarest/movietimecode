@@ -12,7 +12,6 @@
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.23",
         "laravel/tinker": "^2.9",
-        "mrgarest/echo-api": "^1.0",
         "predis/predis": "^3.3",
         "spatie/laravel-sitemap": "^7.3"
     },

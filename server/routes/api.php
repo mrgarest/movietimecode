@@ -9,39 +9,7 @@ use App\Http\Controllers\Api\MovieSanctionController;
 use App\Http\Controllers\Api\TimecodeController;
 use App\Http\Controllers\Api\TwitchController;
 use App\Http\Controllers\Api\UserController;
-use App\Http\Middleware\AuthApiMiddleware;
 use Illuminate\Support\Facades\Route;
-
-// old
-Route::prefix('v1')->middleware('throttle:api')->group(function () {
-    Route::get('/auth', [AuthController::class, 'extension']);
-
-    Route::prefix('twitch')->middleware(AuthApiMiddleware::class)->controller(TwitchController::class)->group(function () {
-        Route::get('/stream/status', 'streamStatus');
-        Route::middleware(AuthApiMiddleware::class)->group(function () {
-            Route::post('/token', 'token');
-        });
-    });
-    Route::prefix('movie')->controller(MovieController::class)->group(function () {
-        Route::get('/search', 'searchOld');
-        Route::get('/check', 'checkOld');
-    });
-    Route::prefix('timecode')->controller(TimecodeController::class)->group(function () {
-        Route::get('/search', 'searchOld');
-        Route::middleware(AuthApiMiddleware::class)->group(function () {
-            Route::post('/new', 'newOld');
-            Route::get('/editor/{movieId}', 'editorOld');
-
-            Route::prefix('{timecodeId}')->group(function () {
-                Route::post('/edit', 'editOld');
-                Route::delete('/', 'delete');
-            });
-        });
-        Route::post('/{timecodeId}/analytics/used', 'usedAnalytics');
-        Route::get('/{timecodeId}/segment', 'segment');
-    });
-});
-
 
 Route::prefix('dashboard')
     ->middleware(['throttle:api', 'auth:api', 'not_deactivated', 'scopes:server', 'check_role:' . RoleId::ADMIN->value])
