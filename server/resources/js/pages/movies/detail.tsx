@@ -72,6 +72,11 @@ export default function MovieDetailPage() {
                         </div>
 
                         <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+                            {movie.rating_imdb && <>
+                                <div>IMDB</div>
+                                <div>{movie.rating_imdb}</div>
+                            </>}
+
                             <div>{t("releaseDate")}</div>
                             <div className={cn(movie.release?.hazard == true && "text-destructive")}>
                                 {movie.release?.release_date
@@ -80,12 +85,15 @@ export default function MovieDetailPage() {
                                         .toFormat('d MMMM yyyy')
                                     : 'N/A'}
                             </div>
+
                             <MovieCompany text={t("production")} companies={movie.productions} />
                             <MovieCompany text={t("distributors")} companies={movie.distributors} />
+
                             {movie.ban_count != null && movie.ban_count > 0 && <>
                                 <div>{t('banCount')}</div>
                                 <div className="text-destructive font-medium">{movie.ban_count}</div>
                             </>}
+                            
                             {movie.sіtrike_count != null && movie.sіtrike_count > 0 && <>
                                 <div>{t('sіtrikeCount')}</div>
                                 <div className="text-destructive font-medium">{movie.sіtrike_count}</div>

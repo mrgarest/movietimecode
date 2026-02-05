@@ -14,7 +14,8 @@ class MovieSearchData
         public string $originalTitle,
         public ?string $posterUrl = null,
         public ?int $id = null,
-        public ?int $timecodeId = null
+        public ?int $timecodeId = null,
+        public ?float $ratingImdb = null,
     ) {}
 
     public static function fromTmdb(array $data): self
@@ -23,6 +24,7 @@ class MovieSearchData
             id: null,
             tmdbId: $data['id'],
             timecodeId: null,
+            ratingImdb: null,
             releaseYear: Carbon::parse($data['release_date'])->year,
             title: $data['title'],
             originalTitle: $data['original_title'],
@@ -35,6 +37,7 @@ class MovieSearchData
         return new self(
             id: $data['id'] ?? null,
             tmdbId: $data['tmdb_id'],
+            ratingImdb: $data['rating_imdb'] ?? null,
             timecodeId: $data['timecode_id'] ?? null,
             releaseYear: $data['release_year'],
             title: $data['title'],
@@ -48,6 +51,7 @@ class MovieSearchData
         return [
             'id' => $this->id,
             'tmdb_id' => $this->tmdbId,
+            'rating_imdb' => $this->ratingImdb,
             'timecode_id' => $this->timecodeId,
             'release_year' => $this->releaseYear,
             'title' => $this->title,

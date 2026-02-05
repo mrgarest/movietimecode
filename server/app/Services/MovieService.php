@@ -452,6 +452,7 @@ class MovieService
                     return (new MovieSearchData(
                         id: $movie->id,
                         tmdbId: $movie->externalIds->first()?->value,
+                        ratingImdb: $movie->rating_imdb,
                         releaseYear: $movie->release_date?->year,
                         title: $translation->title ?? $movie->title,
                         originalTitle: $movie->title,
@@ -498,6 +499,7 @@ class MovieService
 
                     return (new MovieSearchData(
                         tmdbId: $movie->externalIds->first()?->value,
+                        ratingImdb: $movie->rating_imdb,
                         releaseYear: $movie->release_date->year,
                         title: $translation->title ?? $movie->title,
                         originalTitle: $movie->original_title ?? $movie->title,

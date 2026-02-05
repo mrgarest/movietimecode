@@ -20,9 +20,10 @@ export default function MovieCardItem({ className = undefined, isLoading = false
                         alt={movie.title}
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110 bg-accent"
                     />
-                    {movie.release_year && <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold text-white">
-                        {movie.release_year}
-                    </div>}
+                    <div className="absolute top-2 right-2 flex items-end gap-1">
+                        {movie.rating_imdb && <Badge>{movie.rating_imdb}</Badge>}
+                        {movie.release_year && <Badge>{movie.release_year}</Badge>}
+                    </div>
                 </div>
                 <h3 className="text-sm text-foreground font-medium leading-tight truncate group-hover:text-foreground/70 transition-colors">{movie.title}</h3>
             </Link> : <>
@@ -32,3 +33,9 @@ export default function MovieCardItem({ className = undefined, isLoading = false
         </div>
     )
 };
+
+const Badge = ({ children }: { children: React.ReactNode }) => (
+    <div className="bg-black/60 backdrop-blur-xs px-2 py-1 rounded text-[10px] font-bold text-white uppercase tracking-wider">
+        {children}
+    </div>
+);

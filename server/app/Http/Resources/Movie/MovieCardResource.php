@@ -19,6 +19,7 @@ class MovieCardResource extends JsonResource
     {
         return [
             'tmdb_id' => $this->tmdbId,
+            'rating_imdb' => $this->ratingImdb,
             'release_year' => $this->releaseYear,
             'title' => $this->title ?? $this->originalTitle,
             'poster_url' => $this->posterUrl

@@ -18,6 +18,7 @@ export interface MovieSearchItem {
 export interface MovieDetailResponse extends ServerResponse {
     id: number;
     tmdb_id: number;
+    rating_imdb: string | null;
     title: string | null;
     original_title: string;
     release: {
@@ -66,6 +67,7 @@ export interface MovieLatestResponse extends ServerResponse {
 
 export interface MovieCard {
     tmdb_id: number;
+    rating_imdb: number | null;
     release_year: number | null;
     title: string;
     poster_url: string | null;

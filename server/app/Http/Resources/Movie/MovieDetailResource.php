@@ -24,6 +24,7 @@ class MovieDetailResource extends SuccessResource
         return [
             'id' => $movie->id,
             'tmdb_id' => $this->resource['tmdb_id'],
+            'rating_imdb' => $movie->rating_imdb,
             'title' => $translation->title ?? $movie->title,
             'original_title' => $movie->title,
             'release' => $movie->release_date != null ? [
