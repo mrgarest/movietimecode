@@ -77,12 +77,12 @@ Route::prefix('v2')->middleware('throttle:api')->group(function () {
 
     Route::prefix('timecodes/{timecodeId}')->controller(TimecodeController::class)->group(function () {
         Route::get('/', 'timecodes');
-        Route::middleware(['auth:api', 'not_deactivated', 'scopes:extension'])->group(function () {
-            Route::prefix('editor')->group(function () {
+        Route::middleware(['auth:api', 'not_deactivated'])->group(function () {
+            Route::prefix('editor')->middleware(['scopes:extension'])->group(function () {
                 Route::get('/', 'editor');
                 Route::post('/', 'edit');
             });
-            Route::delete('/', 'delete');
+            Route::middleware(['scope_or:extension,server'])->delete('/', 'delete');
         });
     });
 

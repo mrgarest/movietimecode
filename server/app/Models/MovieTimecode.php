@@ -41,7 +41,7 @@ class MovieTimecode extends Model
      */
     public function prunable(): Builder
     {
-        return static::where('deleted_at', '<=', Carbon::now()->subMonth());
+        return static::onlyTrashed()->where('deleted_at', '<=', Carbon::now()->subMonth());
     }
 
     public function user()
