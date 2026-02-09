@@ -164,6 +164,15 @@ export default function TimecodeEditorPage({ id = null, movieSearch = null, onMe
     }, [disabledCctIds]);
 
     /**
+     * Deletes a specific timecode segment from the form and synchronizes classifications accordingly.
+     * @param index
+     */
+    const handleRemoveSegment = async (index: number) => {
+        removeSegment(index);
+        syncClassifications();
+    };
+
+    /**
      * Deletes timecodes from the database
      */
     const handleDelete = async () => {
@@ -261,7 +270,7 @@ export default function TimecodeEditorPage({ id = null, movieSearch = null, onMe
 
                     // Time intersection condition 
                     const isTimeOverlap = startsecondss <= other.end && endsecondss >= other.start;
-                    
+
                     // A conflict arises ONLY if the time overlaps AND the tags are the same.
                     const isSameAction = currentTag === other.tag_id;
 
@@ -333,9 +342,9 @@ export default function TimecodeEditorPage({ id = null, movieSearch = null, onMe
         const b: boolean = checked === true;
         setNoTimecodes(b);
         if (b) {
-            removeSegment()
+            removeSegment();
             setDisabledCctIds([]);
-            form.setValue("content_classifications", []);
+            syncClassifications();
         } else handleAppendFields();
     };
 
@@ -452,7 +461,7 @@ export default function TimecodeEditorPage({ id = null, movieSearch = null, onMe
      * Synchronization of content classification.
      * @param segments 
      */
-    const syncClassifications = (segments: any[]) => {
+    const syncClassifications = (segments: any[] = form.getValues("segments")) => {
         // 1. Gather all categories that MUST be blocked (based on tags)
         const requiredIds = new Set<number>();
         segments.forEach(s => {
@@ -582,7 +591,7 @@ export default function TimecodeEditorPage({ id = null, movieSearch = null, onMe
                                             {segmentFields.length > 1 && <div className="order-2 sm:order-3"><Trash2
                                                 size={36}
                                                 strokeWidth={1.5}
-                                                onClick={() => removeSegment(index)}
+                                                onClick={() => handleRemoveSegment(index)}
                                                 className="p-2 hover:bg-red-500/15 rounded-lg duration-300 cursor-pointer text-red-500" /></div>}
 
                                         </div>
