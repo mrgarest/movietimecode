@@ -49,7 +49,7 @@ export default function MovieTimecode({ movieId }: RootProps) {
                 <div className="text-lg md:text-xl text-foreground font-bold">{t('timecodes')}</div>
                 {isAuthorsLoading && <Skeleton className="h-9 w-34" />}
                 {!isAuthorsLoading && authors.length > 0 && <Select
-                    value={selectedAuthor ? String(selectedAuthor.timecode.id) : undefined}
+                    value={selectedAuthor ? String(selectedAuthor.timecode.id) : ""}
                     onValueChange={v => setSelectedAuthor(authors.find(author => String(author.timecode.id) == v) ?? null)}
                     disabled={authors.length <= 1}>
                     <SelectTrigger className="w-34">
