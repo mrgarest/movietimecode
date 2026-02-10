@@ -2,12 +2,12 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
-    @isset($seoData)
-        {!! seo($seoData) !!}
-    @endisset
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    @isset($seoData)
+        {!! seo($seoData) !!}
+    @endisset
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,6 +22,19 @@
     @viteReactRefresh
     @vite(['resources/css/app.css'])
     @yield('head')
+    @if ($googleAnalyticsId = config('analytics.google'))
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $googleAnalyticsId }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag('js', new Date());
+
+            gtag('config', {{ $googleAnalyticsId }});
+        </script>
+    @endif
 </head>
 
 <body>
