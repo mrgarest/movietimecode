@@ -5,7 +5,6 @@ namespace App\Services\IMDB;
 use App\Cache\ImdbCacheKey;
 use App\DTO\Movie\MovieContentRatingData;
 use App\Enums\ImdbContentRatingId;
-use App\Enums\MovieExternalId;
 use App\Models\ImdbContentRating;
 use App\Models\Movie;
 use Carbon\Carbon;
@@ -14,20 +13,6 @@ use Illuminate\Support\Facades\Cache;
 
 class ImdbService
 {
-    /**
-     * Get the IMDB ID for a movie.
-     *
-     * @param Movie $movie
-     * @return string|null
-     */
-    public function getImdbId(Movie $movie): ?string
-    {
-        return Cache::remember(ImdbCacheKey::id($movie->id), Carbon::now()->addMinutes(5), function () use ($movie) {
-            return $movie->externalIds->where('external_id', MovieExternalId::IMDB->value)->first()?->value;
-        });
-    }
-
-
     /**
      * Get content ratings from IMDB.
      *
@@ -60,9 +45,9 @@ class ImdbService
      * @param Movie $movie
      * @param string $imdbId
      */
-    public function updateContentRatings(ImdbParserService $parserService, Movie $movie, string $imdbId): void
+    public function updateContentRatings(ImdbParserService $parserService, Movie $movie): void
     {
-        $content = $parserService->contentInfo($imdbId);
+        $content = $parserService->contentInfo($movie->imdb_id);
         if (empty($content['rating'])) return;
 
         $now = Carbon::now();

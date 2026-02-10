@@ -2,8 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Enums\MovieExternalId as EnumsMovieExternalId;
-use App\Models\MovieExternalId;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Spatie\Sitemap\Sitemap;
@@ -40,28 +38,6 @@ class GenerateSitemap extends Command
         $sitemap->add(Url::create('/movies/timecodes')
             ->setPriority(0.8)
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY));
-
-        // Movies with timecodes
-        MovieExternalId::query()
-            ->join('movies', 'movie_external_ids.movie_id', '=', 'movies.id')
-            ->whereHas('movie.timecodes')
-            ->where('movie_external_ids.external_id', EnumsMovieExternalId::TMDB->value)
-            ->orderByDesc('movies.created_at')
-            ->select([
-                'movie_external_ids.value',
-                'movies.updated_at as movie_updated_at'
-            ])
-            ->limit(10000)
-            ->chunk(100, function ($externalIds) use ($sitemap) {
-                foreach ($externalIds as $externalId) {
-                    $sitemap->add(
-                        Url::create("/movies/{$externalId->value}")
-                            ->setLastModificationDate(Carbon::parse($externalId->movie_updated_at))
-                            ->setPriority(0.7)
-                            ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
-                    );
-                }
-            });
 
         // Save the file
         $sitemap->writeToFile(public_path('sitemap.xml'));

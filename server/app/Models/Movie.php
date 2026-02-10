@@ -11,6 +11,8 @@ class Movie extends Model
     use HasFactory;
     protected $fillable = [
         'storage_id',
+        'tmdb_id',
+        'imdb_id',
         'lang_code',
         'title',
         'duration',
@@ -24,6 +26,8 @@ class Movie extends Model
 
     protected $casts = [
         'storage_id' => 'int',
+        'tmdb_id' => 'int',
+        'imdb_id' => 'string',
         'duration' => 'int',
         'lang_code' => 'string',
         'title' => 'string',
@@ -52,17 +56,12 @@ class Movie extends Model
     {
         return $this->hasMany(ImdbContentRating::class, 'movie_id', 'id');
     }
-
-    public function externalIds()
-    {
-        return $this->hasMany(MovieExternalId::class);
-    }
-
+    
     public function companies()
     {
         return $this->hasMany(MovieCompany::class);
     }
-    
+
     public function timecodes()
     {
         return $this->hasMany(MovieTimecode::class);
@@ -83,6 +82,15 @@ class Movie extends Model
         return self::where('title', 'ILIKE', "%$title%");
     }
 
+    public function scopeTmdbId(Builder $query, int $tmdbId): Builder
+    {
+        return $query->where('tmdb_id', $tmdbId);
+    }
+
+    public function scopeTmdbIds(Builder $query, array $tmdbIds): Builder
+    {
+        return $query->whereIn('tmdb_id', $tmdbIds);
+    }
 
     /**
      * Scope for searching for a movie by titles list and release year.

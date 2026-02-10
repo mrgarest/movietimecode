@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SeoService;
+use Illuminate\Http\Request;
+
 class AppController extends Controller
 {
-    public function __invoke()
+    public function __invoke(Request $request)
     {
         return view('app');
     }

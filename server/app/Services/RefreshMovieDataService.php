@@ -4,12 +4,10 @@ namespace App\Services;
 
 use App\Cache\MovieCacheKey;
 use App\Enums\MovieCompanyRole;
-use App\Enums\MovieExternalId as EnumsMovieExternalId;
 use App\Enums\RefreshMovieDataType;
 use App\Jobs\RefreshMovieDataJob;
 use App\Models\Movie;
 use App\Models\MovieCompany;
-use App\Models\MovieExternalId;
 use App\Services\IMDB\ImdbService;
 use App\Services\IMDB\ImdbParserService;
 use Carbon\Carbon;
@@ -32,7 +30,7 @@ class RefreshMovieDataService
             $key = MovieCacheKey::refreshData($movieId, $type);
             if (Cache::has($key)) continue;
             $time = Carbon::now()->addSeconds(mt_rand(5, 240));
-            
+
             RefreshMovieDataJob::dispatch($movieId, $type)->delay($time);
             Cache::put($key, true, $time->addMinutes(10));
         }
@@ -59,17 +57,12 @@ class RefreshMovieDataService
     private function handleImdbInfo(int $movieId): void
     {
         $movie = Movie::with([
-            'externalIds' => fn($q) => $q->externalId(EnumsMovieExternalId::IMDB),
             'companies' => fn($q) => $q->where('role_id', MovieCompanyRole::DISTRIBUTOR->value),
         ])->find($movieId);
 
-        if (!$movie) return;
+        if (!$movie || !$movie->imdb_id) return;
 
-        $imdbId = $movie->externalIds->first()?->value;
-
-        if (!$imdbId) return;
-
-        $infoImdb = $this->imdbParserService->info($imdbId);
+        $infoImdb = $this->imdbParserService->info($movie->imdb_id);
 
         // Rating update
         if ($infoImdb->rating) $movie->update(['rating_imdb' => $infoImdb->rating]);
@@ -107,17 +100,13 @@ class RefreshMovieDataService
      */
     private function handleImdbContentRatings(int $movieId): void
     {
-        $external = MovieExternalId::with('movie')
-            ->where('movie_id', $movieId)
-            ->externalId(EnumsMovieExternalId::IMDB->value)
-            ->first();
+        $movie = Movie::find($movieId);
 
-        if (!$external || !$external) return;
+        if (!$movie) return;
 
         app(ImdbService::class)->updateContentRatings(
             parserService: $this->imdbParserService,
-            movie: $external->movie,
-            imdbId: $external->value
+            movie: $movie
         );
     }
 }

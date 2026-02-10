@@ -10,7 +10,6 @@ use App\DTO\Movie\MovieCheckRecommendationData;
 use App\DTO\Movie\MovieSanctionCountData;
 use App\Enums\EventType;
 use App\Enums\MovieCompanyRole;
-use App\Enums\MovieExternalId as EnumsMovieExternalId;
 use App\Enums\RefreshMovieDataType;
 use App\Enums\StorageId;
 use App\Exceptions\ApiException;
@@ -19,7 +18,6 @@ use App\Jobs\AddImagesToMovie;
 use App\Models\Event;
 use App\Models\Movie;
 use App\Models\MovieCompany;
-use App\Models\MovieExternalId;
 use App\Models\MovieTranslation;
 use App\Models\User;
 use App\Services\IMDB\ImdbService;
@@ -92,16 +90,13 @@ class MovieService
 
             // Searching for movies via externalIds
             $dbMovies = Movie::query()
-                ->select(['id'])
-                ->whereHas('externalIds', function ($query) use ($tmdbIds) {
-                    $query->externalId(EnumsMovieExternalId::TMDB)->whereIn('value', $tmdbIds);
-                })
-                ->with(['externalIds' => fn($q) => $q->externalId(EnumsMovieExternalId::TMDB)])
+                ->select(['id', 'tmdb_id'])
+                ->tmdbIds($tmdbIds)
                 ->when($needsTimecodeId && $user, function ($q) use ($user) {
                     $q->with(['timecodes' => fn($q) => $q->select(['id', 'movie_id', 'user_id'])->userId($user->id)]);
                 })
                 ->get()
-                ->keyBy(fn($m) => $m->externalIds->first()?->value);
+                ->keyBy(fn($m) => $m->tmdb_id);
 
             $movies->each(function (MovieSearchData $item) use ($user, $dbMovies, $needsMovieId, $needsTimecodeId) {
                 if ($movie = $dbMovies->get($item->tmdbId)) {
@@ -135,9 +130,7 @@ class MovieService
         // Convert the array back to a model object without querying the database
         if ($movieData = Cache::get($cacheKey)) return Movie::fromCache($movieData);
 
-        $movie = Movie::whereRelation('externalIds', function ($query) use ($tmdbId) {
-            $query->where('external_id', EnumsMovieExternalId::TMDB->value)->where('value', $tmdbId);
-        })->first();
+        $movie = Movie::tmdbId($tmdbId)->first();
 
         if ($movie) {
             Cache::put($cacheKey, $movie->toCache(), Carbon::now()->addMinutes(5));
@@ -198,6 +191,8 @@ class MovieService
             // Saving the movie to the database
             $movie = Movie::create([
                 'storage_id' => StorageId::TMDB->value,
+                'tmdb_id' => $movieDetails['id'],
+                'imdb_id' => $movieDetails['imdb_id'] ?? null,
                 'lang_code' => strtolower($movieDetails['original_language']),
                 'title' => $movieDetails['original_title'],
                 'duration' => $movieDetails['runtime'] * 60,
@@ -208,23 +203,6 @@ class MovieService
             ]);
 
             $now = Carbon::now();
-
-            // Saving external IDs
-            $externalIdsInsert = [[
-                'movie_id' => $movie->id,
-                'external_id' => EnumsMovieExternalId::TMDB,
-                'value' => $movieDetails['id'],
-                'created_at' => $now,
-                'updated_at' => $now
-            ]];
-            if (isset($movieDetails['imdb_id'])) $externalIdsInsert[] = [
-                'movie_id' => $movie->id,
-                'external_id' => EnumsMovieExternalId::IMDB,
-                'value' => $movieDetails['imdb_id'],
-                'created_at' => $now,
-                'updated_at' => $now
-            ];
-            MovieExternalId::insert($externalIdsInsert);
 
             // Translation processing
             $insertData = collect($movieTranslations['translations'])
@@ -270,8 +248,7 @@ class MovieService
         // Get the content rating from IMDB and add it to the movie
         if (isset($movieDetails['imdb_id'])) $imdbService->updateContentRatings(
             parserService: $imdbParserService,
-            movie: $movie,
-            imdbId: $movieDetails['imdb_id']
+            movie: $movie
         );
 
         // Asynchronous addition of localized images to a movie
@@ -429,9 +406,6 @@ class MovieService
                 ->with([
                     'movie.translations' => function ($q) use ($langCode) {
                         $q->whereIn('lang_code', [$langCode, 'en']);
-                    },
-                    'movie.externalIds' => function ($q) {
-                        $q->externalId(EnumsMovieExternalId::TMDB);
                     }
                 ])
                 ->orderByDesc('created_at')
@@ -451,7 +425,7 @@ class MovieService
 
                     return (new MovieSearchData(
                         id: $movie->id,
-                        tmdbId: $movie->externalIds->first()?->value,
+                        tmdbId: $movie->tmdb_id,
                         ratingImdb: $movie->rating_imdb,
                         releaseYear: $movie->release_date?->year,
                         title: $translation->title ?? $movie->title,
@@ -482,8 +456,7 @@ class MovieService
                 ->withMax('timecodes as latest_timecode_at', 'created_at')
                 ->orderByDesc('latest_timecode_at')
                 ->with([
-                    'translations' => fn($q) => $q->whereIn('lang_code', [$langCode, 'en']),
-                    'externalIds' => fn($q) => $q->externalId(EnumsMovieExternalId::TMDB),
+                    'translations' => fn($q) => $q->whereIn('lang_code', [$langCode, 'en'])
                 ])
                 ->paginate($limit, ['*'], 'page', $page);
 
@@ -498,7 +471,7 @@ class MovieService
                     $posterPath = !empty($translation->poster_path) ? $translation->poster_path : $movie->poster_path;
 
                     return (new MovieSearchData(
-                        tmdbId: $movie->externalIds->first()?->value,
+                        tmdbId: $movie->tmdb_id,
                         ratingImdb: $movie->rating_imdb,
                         releaseYear: $movie->release_date->year,
                         title: $translation->title ?? $movie->title,

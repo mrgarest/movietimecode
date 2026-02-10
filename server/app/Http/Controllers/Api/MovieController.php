@@ -122,7 +122,7 @@ class MovieController extends Controller
             'distributors' => $distributors,
             'sanctionCounts' => $sanctionCounts,
             'imdb' => [
-                'id' => $imdbService->getImdbId($movie),
+                'id' => $movie->imdb_id,
                 'content_ratings' => $contentRatings
             ],
             'recommendation' => $recommendation
@@ -183,7 +183,7 @@ class MovieController extends Controller
             'distributors' => $distributors,
             'sanctionCounts' => $sanctionCounts,
             'imdb' => [
-                'id' => $imdbService->getImdbId($movie),
+                'id' => $movie->imdb_id,
                 'content_ratings' => $contentRatings
             ],
             'recommendation' => $recommendation
