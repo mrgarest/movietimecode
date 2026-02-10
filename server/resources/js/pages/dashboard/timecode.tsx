@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Spinner, SpinnerFullScreen } from "@/components/ui/spinner";
 import { ErrorCode } from "@/enums/error-code";
 import { PostCommand } from "@/enums/post-command";
+import { useSeo } from "@/hooks/useSeo";
 import { ServerResponse } from "@/interfaces/response";
 import { useUserStore } from "@/store/useUserStore";
 import { ApiError, fetchApi } from "@/utils/fetch";
@@ -47,6 +48,8 @@ export default function TimecodePage() {
     const [isExtensionNotReadyDialogOpen, setExtensionNotReadyDialogOpen] = useState<boolean>(false);
     const [deleteData, setDeleteData] = useState<{ id: number, force: boolean } | undefined>(undefined);
     const [sort, setSort] = useState<TSort>('latest');
+    const { setSeo } = useSeo();
+    setSeo({ title: t('timecodes') });
 
     const {
         data,
@@ -152,7 +155,6 @@ export default function TimecodePage() {
 
     return (
         <>
-            <title>{t('timecodes')}</title>
             {isSpinnerFullScreen && <SpinnerFullScreen />}
             <div className="flex items-center">
                 <Select

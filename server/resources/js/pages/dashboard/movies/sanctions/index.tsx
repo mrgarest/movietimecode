@@ -21,6 +21,7 @@ import { Link } from "react-router-dom";
 import { SanctionReason, SanctionType } from "@/enums/sanction";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useSeo } from "@/hooks/useSeo";
 
 interface SanctionResponse extends ServerResponse {
     sanctions: {
@@ -56,6 +57,7 @@ export default function MovieSanctionPage() {
     const { i18n, t } = useTranslation();
     const { ref, inView } = useInView();
     const { logout } = useUserStore();
+    const { setSeo } = useSeo();
     const queryClient = useQueryClient();
     const [isSpinnerFullScreen, setSpinnerFullScreen] = useState<boolean>(false);
     const [isReportsOpenOld, setReportsOpenOld] = useState<boolean>(false);
@@ -64,6 +66,7 @@ export default function MovieSanctionPage() {
     const [isReportDialogOpen, setReportDialogOpen] = useState<boolean>(false);
     const [selectedReports, setSelectedReports] = useState<Reports[]>([]);
     const [filter, setFilter] = useState<TFilter>('all');
+    setSeo({ title: t('sanctions') });
 
     const {
         data,
@@ -231,7 +234,6 @@ export default function MovieSanctionPage() {
 
     return (
         <>
-            <title>{t('sanctions')}</title>
             {isSpinnerFullScreen && <SpinnerFullScreen />}
             <div className="flex justify-between items-center">
                 <Link to='/dashboard/movies/sanctions/add'><Button size="sm">{t("add")}</Button></Link>

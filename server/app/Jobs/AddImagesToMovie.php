@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Cache\SeoCacheKey;
 use App\Clients\TmdbClient;
 use App\Models\MovieTranslation;
 use Illuminate\Bus\Queueable;
@@ -9,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 
 class AddImagesToMovie implements ShouldQueue
 {
@@ -19,7 +21,7 @@ class AddImagesToMovie implements ShouldQueue
      */
     public function __construct(
         public int $movieId,
-        public string $tmdbId
+        public int $tmdbId
     ) {
         //
     }
@@ -57,6 +59,7 @@ class AddImagesToMovie implements ShouldQueue
             // Updating the database only if there is at least one localized image
             if (!empty($updateData)) {
                 $translation->update($updateData);
+                Cache::forget(SeoCacheKey::movie($this->tmdbId));
             }
         }
     }

@@ -12,10 +12,12 @@ import MovieTimecode from "@/components/movies/MovieTimecode";
 import { useEffect, useRef } from "react";
 import { event } from "@/utils/event";
 import { EventType } from "@/enums/event";
+import { useSeo } from "@/hooks/useSeo";
 
 export default function MovieDetailPage() {
     const { id } = useParams<{ id: string }>();
     const { i18n, t } = useTranslation();
+    const { setSeo } = useSeo();
     const location = useLocation();
     const hasSentEvent = useRef<boolean>(false);
     const fromSearch = location.state?.fromSearch;
@@ -42,9 +44,13 @@ export default function MovieDetailPage() {
 
     if (!movie) return <NotFoundPage />;
 
+    setSeo({
+        title: `${movie.title ? movie.title : movie.original_title}${movie.release?.release_date ? ` (${DateTime.fromISO(movie.release.release_date).year})` : ''}`,
+        description: t('seoDescription'),
+        image: movie.poster_url || undefined,
+    });
+
     return (<>
-        <title>{`${movie.title ? movie.title : movie.original_title}${movie.release?.release_date ? ` (${DateTime.fromISO(movie.release.release_date).year})` : ''} | Movie Timecode`}</title>
-        <meta name="description" content={t('homePage.description')} />
         <div className="space-y-6">
             <div className="w-full max-w-4xl mx-auto px-4">
                 <div className="flex flex-col md:flex-row gap-6">
@@ -93,7 +99,7 @@ export default function MovieDetailPage() {
                                 <div>{t('banCount')}</div>
                                 <div className="text-destructive font-medium">{movie.ban_count}</div>
                             </>}
-                            
+
                             {movie.sіtrike_count != null && movie.sіtrike_count > 0 && <>
                                 <div>{t('sіtrikeCount')}</div>
                                 <div className="text-destructive font-medium">{movie.sіtrike_count}</div>

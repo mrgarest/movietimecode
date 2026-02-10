@@ -1,7 +1,6 @@
 User-Agent: *
 Allow: /
 Disallow: /api/
-Disallow: /privacy
 Disallow: /images/
 Disallow: /auth/
 Disallow: /login

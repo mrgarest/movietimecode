@@ -15,3 +15,6 @@ Schedule::command('queue:process-jobs')->everyMinute();
 Schedule::command('cache:gc')->hourly();
 
 Schedule::command('model:prune')->hourly();
+
+// Generate sitemap
+Schedule::command('sitemap:generate')->hourly();

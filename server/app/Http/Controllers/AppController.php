@@ -7,8 +7,9 @@ use Illuminate\Http\Request;
 
 class AppController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, SeoService $seoService)
     {
-        return view('app');
+        $seoData = $seoService->getSeoData($request->path());
+        return view('app', compact('seoData'));
     }
 }

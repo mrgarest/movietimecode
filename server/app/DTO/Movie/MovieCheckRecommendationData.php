@@ -15,7 +15,7 @@ class MovieCheckRecommendationData
     {
         return new self(
             color: $color,
-            message: Lang::get('laravel.checkRecommendation.'.$key, [], $langCode),
+            message: Lang::get('checkRecommendation' . $key, [], $langCode),
         );
     }
 }

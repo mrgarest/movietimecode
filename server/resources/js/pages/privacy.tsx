@@ -1,11 +1,16 @@
+import { useSeo } from "@/hooks/useSeo";
 import { CalendarDays } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function PrivacyPage() {
-    return (<>
-        <title>Політика конфіденційності</title>
+    const { t } = useTranslation();
+    const { setSeo } = useSeo();
+    setSeo({ title: t('privacyPolicy') });
+
+    return (
         <div className="legal">
             <div className="space-y-1">
-                <h1 className="text-xl sm:text-2xl md:text-3xl text-foreground font-bold">Політика конфіденційності</h1>
+                <h1 className="text-xl sm:text-2xl md:text-3xl text-foreground font-bold">{t('privacyPolicy')}</h1>
                 <div className="text-xs text-muted font-medium flex items-center gap-1">
                     <CalendarDays size={14} />
                     <div>Оновлено: 15 січня 2026</div>
@@ -89,5 +94,5 @@ export default function PrivacyPage() {
                 <p>Усі оновлення та зміни до цієї Політики конфіденційності будуть опубліковані на цій сторінці та набирають чинності з моменту їх публікації. </p>
             </section>
         </div>
-    </>);
+    );
 };

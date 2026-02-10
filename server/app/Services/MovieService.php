@@ -345,14 +345,14 @@ class MovieService
         // Productions hazard
         if ($productions->isEmpty()) return MovieCheckRecommendationData::fromLang(
             color: 'red',
-            key: $isNew ? 'noProductionYear' : 'noProduction',
+            key: $isNew ? 'NoProductionYear' : 'NoProduction',
             langCode: $langCode
         );
 
         $prodHazard = $productions->max('hazardLevel') ?? 0;
         if ($prodHazard > 0) return MovieCheckRecommendationData::fromLang(
             color: 'red',
-            key: $isNew ? 'productionYear' : 'production',
+            key: $isNew ? 'ProductionYear' : 'Production',
             langCode: $langCode
         );
 
@@ -366,27 +366,27 @@ class MovieService
         // Distributors hazard
         if ($distributors->isEmpty()) return MovieCheckRecommendationData::fromLang(
             color: $isNew ? 'red' : 'yellow',
-            key: $isNew ? 'noDistributorYear' : 'noDistributor',
+            key: $isNew ? 'NoDistributorYear' : 'NoDistributor',
             langCode: $langCode
         );
 
         $distHazard = $distributors->max('hazardLevel') ?? 0;
         if ($distHazard > 0) return MovieCheckRecommendationData::fromLang(
             color: $isNew ? 'red' : 'yellow',
-            key: $isNew ? 'distributorYear' : 'distributor',
+            key: $isNew ? 'DistributorYear' : 'Distributor',
             langCode: $langCode
         );
 
         // Year
         if ($isNew) return MovieCheckRecommendationData::fromLang(
             color: 'yellow',
-            key: 'year',
+            key: 'Year',
             langCode: $langCode
         );
 
         return MovieCheckRecommendationData::fromLang(
             color: 'green',
-            key: 'safe',
+            key: 'Safe',
             langCode: $langCode
         );
     }
