@@ -88,7 +88,7 @@ class MovieService
             $user = $needsTimecodeId ? auth('api')->user() : null;
             $tmdbIds = $movies->pluck('tmdbId')->toArray();
 
-            // Searching for movies via externalIds
+            // Searching for movies in the database by TMDB IDs and loading timecodes if necessary
             $dbMovies = Movie::query()
                 ->select(['id', 'tmdb_id'])
                 ->tmdbIds($tmdbIds)
