@@ -9,7 +9,6 @@ Disallow: /dashboard
 Disallow: *?fbclid=
 Disallow: *?ref=
 Disallow: *?from=
-Disallow: *#
 
 Host: https://movietimecode.mrgarest.com
 Sitemap: https://movietimecode.mrgarest.com/sitemap.xml
