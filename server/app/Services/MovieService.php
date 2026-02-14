@@ -359,7 +359,7 @@ class MovieService
         // Checking for bans and sanctions
         if ($sanctionCounts->bans > 0 || $sanctionCounts->strikes > 0) return MovieCheckRecommendationData::fromLang(
             color: 'red',
-            key: 'sanction',
+            key: 'Sanction',
             langCode: $langCode
         );
 
