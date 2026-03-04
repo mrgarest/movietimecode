@@ -18,6 +18,7 @@ use App\Services\IMDB\ImdbService;
 use App\Services\MovieSanctionService;
 use App\Services\MovieService;
 use App\Services\RefreshMovieDataService;
+use App\Services\TimecodeService;
 use Illuminate\Http\Request;
 
 class MovieController extends Controller
@@ -79,6 +80,7 @@ class MovieController extends Controller
         int $movieId,
         MovieService $movieService,
         MovieSanctionService $sanctionService,
+        TimecodeService $timecodeService,
         CompanyService $companyService,
         ImdbService $imdbService
     ) {
@@ -92,6 +94,9 @@ class MovieController extends Controller
 
         // Get the count of bans/strikes
         $sanctionCounts = $sanctionService->getCounts($movie->id);
+
+        // Maximum count of added segments
+        $segmentsCount = $timecodeService->getMaxSegmentsCount($movie->id);
 
         // Get companies for the movie
         $companies = $companyService->getForMovie($movie);
@@ -121,6 +126,7 @@ class MovieController extends Controller
             'productions' => $productions,
             'distributors' => $distributors,
             'sanctionCounts' => $sanctionCounts,
+            'segmentsCount' => $segmentsCount,
             'imdb' => [
                 'id' => $movie->imdb_id,
                 'content_ratings' => $contentRatings

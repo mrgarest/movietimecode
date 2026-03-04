@@ -24,6 +24,8 @@
     "addTimecode": "Додати таймкод",
     "addTimecodes": "Додати таймкоди",
     "timecodes": "Таймкоди",
+    "timecodes_many": "Таймкодів",
+    "usersNotedThatTheyNotNeeded": "Користувачі зазначили, що вони не потрібні",
     "notFoundTimecodeDescription": "Для цього фільму ще не було додано таймкодів 😢.",
     "authorizationRequired": "Потрібна авторизація",
     "authorizationDescription": "Для доступу до певних функцій розширення необхідно пройти авторизацію через Twitch. Детальніше про те, які дані будуть використані, можна дізнатися в <a href='{{url}}' class='text-link' target='_blank' rel='noopener noreferrer'>Політиці конфіденційності</a>.",

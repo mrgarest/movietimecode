@@ -16,4 +16,9 @@ class TimecodeCacheKey
     {
         return  self::ROT . $timecodeId;
     }
+
+    public static function maxSegmentsCount(int $movieId): string
+    {
+        return  self::ROT . 'max_segments_count.' .$movieId;
+    }
 }

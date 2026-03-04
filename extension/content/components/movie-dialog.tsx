@@ -165,7 +165,7 @@ const MovieDialog = ({ data, onSelected }: RootProps) => {
                         <div className="mt-info-grid">
                             <div>{i18n.t('author')}</div>
                             <div>{author.user.username}</div>
-                            <div>{i18n.t('timecodes')}</div>
+                            <div>{i18n.t(author.timecode.segment_count > 0 ? 'timecodes_many' : 'timecodes')}</div>
                             <div>{author.timecode.segment_count}</div>
                             <div>{i18n.t('duration')}</div>
                             <div>{secondsToTime(author.timecode.duration)}</div>

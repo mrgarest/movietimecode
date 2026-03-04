@@ -84,6 +84,16 @@ export default function Check({ movie, onLoading, onError }: RootProps) {
                         <div>{i18n.t('sіtrikeCount')}</div>
                         <div className="mt-text-destructive mt-font-medium">{movieCheck.sіtrike_count}</div>
                     </>}
+                    {movieCheck.segments_count !== null && <>
+                        <div>{i18n.t(movieCheck.segments_count !== null && movieCheck.segments_count > 0
+                            ? 'timecodes_many'
+                            : 'timecodes'
+                        )}</div>
+                        <div className={cn(movieCheck.segments_count !== 0 && "mt-font-medium")}>{movieCheck.segments_count === 0
+                            ? i18n.t('usersNotedThatTheyNotNeeded')
+                            : movieCheck.segments_count
+                        }</div>
+                    </>}
                 </div>
 
                 {movieCheck.recommendation && <div className="mt-border-t">

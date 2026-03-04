@@ -24,6 +24,26 @@ use Illuminate\Support\Facades\DB;
 class TimecodeService
 {
     /**
+     * Returns the maximum number of segments among all users for a specific movie.
+     * If there are no segments, returns null.
+     * 
+     * @param int $movieId
+     * @return int|null
+     */
+    public function getMaxSegmentsCount(int $movieId): ?int
+    {
+        return Cache::remember(TimecodeCacheKey::maxSegmentsCount($movieId), Carbon::now()->addMinutes(5), function () use ($movieId) {
+            $result = MovieTimecode::query()
+                ->where('movie_id', $movieId)
+                ->withCount('segments')
+                ->orderByDesc('segments_count')
+                ->first();
+
+            return $result ? (int) $result->segments_count : null;
+        });
+    }
+
+    /**
      * Get a collection of timecode authors with timecode information.
      *
      * @param int $movieId

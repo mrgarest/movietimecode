@@ -24,6 +24,7 @@ export interface MovieCheckResponse extends ServerResponse {
   } | null;
   productions: MovieCheckCompany[] | null;
   distributors: MovieCheckCompany[] | null;
+  segments_count: number | null;
   ban_count: number | null;
   sіtrike_count: number | null;
   recommendation: {

@@ -28,6 +28,7 @@ class MovieCheckResource extends SuccessResource
             ] : null,
             'productions' => $this->formatCompanies($this->resource['productions']),
             'distributors' => $this->formatCompanies($this->resource['distributors']),
+            'segments_count' => $this->resource['segmentsCount'],
             'ban_count' => $this->resource['sanctionCounts']->bans,
             'sіtrike_count' => $this->resource['sanctionCounts']->strikes,
             'recommendation' => $this->when($recommendation, [
