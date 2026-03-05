@@ -23,6 +23,7 @@ export default function HeaderNavbar() {
                 target: "_blank"
             },
             { name: t("timecodes"), href: "/movies/timecodes" },
+            { name: t("faq"), href: "/faq" },
             {
                 name: "Telegram",
                 href: "https://t.me/+B-6MNbF-t6cyZDVi",

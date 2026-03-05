@@ -74,7 +74,7 @@ export default function MovieDetailPage() {
                     <div className="space-y-4">
                         <div className="py-1 max-md:hidden">
                             <h1 className="text-2xl text-foreground font-bold">{movie.title ? movie.title : movie.original_title}</h1>
-                            {movie.title != null && <h2 className="text-sm text-muted font-medium">{movie.original_title}</h2>}
+                            {movie.title != null && <h2 className="text-sm text-muted-foreground font-medium">{movie.original_title}</h2>}
                         </div>
 
                         <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">

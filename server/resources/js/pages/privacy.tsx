@@ -11,7 +11,7 @@ export default function PrivacyPage() {
         <div className="legal">
             <div className="space-y-1">
                 <h1 className="text-xl sm:text-2xl md:text-3xl text-foreground font-bold">{t('privacyPolicy')}</h1>
-                <div className="text-xs text-muted font-medium flex items-center gap-1">
+                <div className="text-xs text-muted-foreground font-medium flex items-center gap-1">
                     <CalendarDays size={14} />
                     <div>Оновлено: 10 лютого 2026</div>
                 </div>

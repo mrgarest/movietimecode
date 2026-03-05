@@ -12,6 +12,7 @@ import MovieDetailPage from "./pages/movies/detail";
 import MovieWithTimecodesPage from "./pages/movies/with-timecodes";
 import MovieSanctionPage from "./pages/dashboard/movies/sanctions";
 import MovieSanctionAddPage from "./pages/dashboard/movies/sanctions/add";
+import FaqPage from "./pages/faq";
 
 const router = createBrowserRouter([
     {
@@ -26,6 +27,7 @@ const router = createBrowserRouter([
                     { path: ":id", element: <MovieDetailPage /> }
                 ]
             },
+            { path: "/faq", element: <FaqPage /> },
             { path: "/privacy", element: <PrivacyPage /> },
             { path: "/logout", element: <LogoutPage /> },
             { path: "*", element: <NotFoundPage /> }

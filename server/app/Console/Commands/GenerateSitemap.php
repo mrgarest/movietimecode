@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\Movie;
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
@@ -37,8 +36,12 @@ class GenerateSitemap extends Command
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY));
 
         $sitemap->add(Url::create('/movies/timecodes')
-            ->setPriority(0.8)
+            ->setPriority(0.9)
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY));
+
+        $sitemap->add(Url::create('/faq')
+            ->setPriority(0.8)
+            ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY));
 
         // Dynamic Movie Pages
         Movie::select(['id', 'tmdb_id', 'updated_at'])
@@ -50,7 +53,7 @@ class GenerateSitemap extends Command
                     Url::create("/movies/{$movie->tmdb_id}")
                         ->setLastModificationDate($movie->updated_at)
                         ->setPriority(0.8)
-                        ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
+                        ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
                 );
             });
 

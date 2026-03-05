@@ -186,9 +186,9 @@ export default function TimecodePage() {
 
                         <div className="space-y-2">
                             <div>
-                                <span className="text-base text-foreground font-semibold">{item.movie.title}</span> <span className="text-xs text-muted">({item.movie.release_year})</span>
+                                <span className="text-base text-foreground font-semibold">{item.movie.title}</span> <span className="text-xs text-muted-foreground">({item.movie.release_year})</span>
                             </div>
-                            <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs text-muted font-medium">
+                            <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs text-muted-foreground font-medium">
                                 <div>{t('author')}</div>
                                 <div>{item.user.username}</div>
                                 <div>{t('timecodes')}</div>

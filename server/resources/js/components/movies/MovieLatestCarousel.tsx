@@ -40,7 +40,7 @@ export default function MovieLatestCarousel({ isLoading = false, loop = false, a
                         {(isLoading || movies.length > 0) && seeMoreUrl && <div className="flex-[0_0_200px] min-w-0 pl-4">
                             <Link to={seeMoreUrl} className="group block space-y-3 cursor-pointer">
                                 <div className="aspect-2/3 w-full rounded-xl bg-input/30 border border-border flex items-center justify-center">
-                                    <ChevronRight className="size-32 text-muted duration-300 group-hover:scale-120 group-hover:text-foreground" />
+                                    <ChevronRight className="size-32 text-muted-foreground duration-300 group-hover:scale-120 group-hover:text-foreground" />
                                 </div>
                                 <div className="text-sm text-foreground font-medium leading-tight truncate group-hover:text-foreground/70 transition-colors">{t('seeMore')}</div>
                             </Link>

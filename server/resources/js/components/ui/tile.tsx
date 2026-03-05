@@ -18,7 +18,7 @@ export function Tile({ isSkeleton = false, ico: Icon, title, value }: RootProps)
             </div>
             <div className="space-y-0.5">
                 {isSkeleton ? <Skeleton className="w-full h-6 rounded border-container" /> : <div className="text-base text-foreground font-medium">{value}</div>}
-                <div className="text-xs text-muted font-bold">{title}</div>
+                <div className="text-xs text-muted-foreground font-bold">{title}</div>
             </div>
         </div>
     )

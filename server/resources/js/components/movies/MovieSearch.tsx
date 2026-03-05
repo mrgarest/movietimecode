@@ -95,9 +95,9 @@ export default function MovieSearch({ withMovieId = false, inputSize = "default"
                                 <div className="flex flex-col overflow-hidden">
                                     <div>
                                         <span className="text-sm font-semibold">{item.title || item.original_title}</span>
-                                        <span className="text-xs text-muted ml-1">{item.release_year}</span>
+                                        <span className="text-xs text-muted-foreground ml-1">{item.release_year}</span>
                                     </div>
-                                    {item.title && <span className="text-xs text-muted  italic">{item.original_title}</span>}
+                                    {item.title && <span className="text-xs text-muted-foreground italic">{item.original_title}</span>}
                                 </div>
                             </div>)}</ScrollArea>}
                         </div>

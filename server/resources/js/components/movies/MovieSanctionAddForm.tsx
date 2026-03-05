@@ -146,9 +146,9 @@ export default function MovieSanctionAddForm({ onSuccess, onLoading }: RootProps
                                 src={selectedMovie.poster_url} />}
                             <div className="space-y-0.5">
                                 <div>
-                                    <span className="text-lg font-bold">{selectedMovie.title || selectedMovie.original_title}</span><span className="text-xs text-muted pt-1.5 pl-2">({selectedMovie.release_year})</span>
+                                    <span className="text-lg font-bold">{selectedMovie.title || selectedMovie.original_title}</span><span className="text-xs text-muted-foreground pt-1.5 pl-2">({selectedMovie.release_year})</span>
                                 </div>
-                                {selectedMovie.title != null && <div className="text-xs text-muted font-medium">{selectedMovie.original_title}</div>}
+                                {selectedMovie.title != null && <div className="text-xs text-muted-foreground font-medium">{selectedMovie.original_title}</div>}
                             </div>
                             <X onClick={() => { setSelectedMovie(undefined) }}
                                 className="absolute right-2 top-1/2 -translate-y-1/2 size-7 p-1 text-muted-foreground z-2 cursor-pointer duration-300 hover:text-red-500" />

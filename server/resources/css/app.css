@@ -40,6 +40,26 @@
     --radius-lg: var(--radius);
     --radius-xl: calc(var(--radius) + 4px);
     --radius-xl: calc(var(--radius) + 4px);
+
+    --animate-accordion-down: accordion-down 0.2s ease-out;
+    --animate-accordion-up: accordion-up 0.2s ease-out;
+
+    @keyframes accordion-down {
+        from {
+            height: 0;
+        }
+        to {
+            height: var(--radix-accordion-content-height);
+        }
+    }
+    @keyframes accordion-up {
+        from {
+            height: var(--radix-accordion-content-height);
+        }
+        to {
+            height: 0;
+        }
+    }
 }
 
 :root {
@@ -54,8 +74,8 @@
     --primary-foreground: hsl(0, 0%, 0%);
     --secondary: hsl(0, 0%, 11.76%);
     --secondary-foreground: oklch(0.985 0 0);
-    --muted: hsl(0, 0%, 56%);
-    --muted-foreground: hsl(0, 0%, 63%);
+    --muted: hsl(0, 0%, 48%);
+    --muted-foreground: hsl(0, 0%, 56%);
     --accent: oklch(0.269 0 0);
     --accent-foreground: oklch(0.985 0 0);
     --destructive: hsl(347, 100%, 50%);
@@ -129,12 +149,12 @@ ul {
 /*-------------------- table-border --------------------*/
 @layer components {
     .table-border {
-        @apply my-4 w-full border-separate border-spacing-0 text-left border border-secondary rounded-md overflow-hidden;
+        @apply my-4 w-full border-separate border-spacing-0 text-left border border-border rounded-md overflow-hidden;
     }
 
     .table-border th,
     .table-border td {
-        @apply border-b border-r border-secondary px-4 py-2;
+        @apply border-b border-r border-border px-4 py-2;
     }
 
     .table-border th:last-child,

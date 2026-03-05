@@ -263,9 +263,9 @@ export default function MovieSanctionPage() {
 
                         <div className="space-y-2">
                             <div>
-                                <span className="text-base text-foreground font-semibold">{item.movie.title}</span> <span className="text-xs text-muted">({item.movie.release_year})</span>
+                                <span className="text-base text-foreground font-semibold">{item.movie.title}</span> <span className="text-xs text-muted-foreground">({item.movie.release_year})</span>
                             </div>
-                            <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs text-muted font-medium">
+                            <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs text-muted-foreground font-medium">
                                 <div>Username</div>
                                 <div>{item.username}</div>
 
@@ -346,7 +346,7 @@ export default function MovieSanctionPage() {
                                 {item.comment &&
                                     <div className="text-sm">
                                         <div className="text-foreground">{t('comment')}</div>
-                                        <div className="text-muted">{item.comment}</div>
+                                        <div className="text-muted-foreground">{item.comment}</div>
                                     </div>}
                                 <div className="flex justify-end gap-2">
                                     <Button

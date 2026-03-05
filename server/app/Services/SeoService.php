@@ -29,6 +29,10 @@ class SeoService
                 description: Lang::get('seoDescriptionMoviesWithTimecodes', [], $this->langCode),
                 image: asset($this->image)
             ),
+            'faq' => new SEOData(
+                title: Lang::get('frequentlAskedQuestion', [], $this->langCode),
+                description: Lang::get('seoDescriptionFaq', [], $this->langCode)
+            ),
             'privacy' => new SEOData(title: Lang::get('privacyPolicy', [], $this->langCode)),
             default => new SEOData(
                 title: Lang::get('seoTitle', [], $this->langCode),
