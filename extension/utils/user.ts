@@ -19,7 +19,7 @@ export const logout = async () => await chrome.storage.sync.remove("user");
  */
 export const getUser = async (): Promise<User | undefined> => {
   const storage = await chrome.storage.sync.get("user");
-  return storage?.user;
+  return storage?.user as User | undefined;
 };
 
 /**
@@ -28,7 +28,7 @@ export const getUser = async (): Promise<User | undefined> => {
  * @returns Promise<string> - The device token.
  */
 export const getDeviceToken = async (): Promise<string> => {
-  const { device } = await chrome.storage.sync.get("device");
+  const { device } = await chrome.storage.sync.get<{ device?: { token: string } }>("device");
   if (device?.token) return device.token;
 
   const deviceToken = CryptoJS.lib.WordArray.random(18).toString();
