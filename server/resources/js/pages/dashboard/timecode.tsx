@@ -8,10 +8,10 @@ import { useSeo } from "@/hooks/useSeo";
 import { ServerResponse } from "@/interfaces/response";
 import { useUserStore } from "@/store/useUserStore";
 import { ApiError, fetchApi } from "@/utils/fetch";
+import { formatDate } from "@/utils/format";
 import { isExtensionReadyForMessages, postCommand } from "@/utils/post-command";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Ellipsis, Trash2 } from "lucide-react";
-import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useInView } from "react-intersection-observer";
@@ -75,19 +75,6 @@ export default function TimecodePage() {
             fetchNextPage();
         }
     }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-    /**
-     * Format date time.
-     * @param timestamp 
-     * @returns 
-     */
-    const formatDate = (timestamp: number | null) => {
-        if (!timestamp) return "N/A";
-
-        return DateTime.fromSeconds(timestamp)
-            .setLocale(i18n.language)
-            .toLocaleString(DateTime.DATETIME_SHORT);
-    };
 
     /**
      * If the extension is available, it allows you to go to the timecode editor.
@@ -177,7 +164,7 @@ export default function TimecodePage() {
                         className="grid grid-cols-[auto_1fr_auto] items-center gap-4 py-4 border-b border-border">
                         <div className="relative rounded-md overflow-hidden">
                             <img
-                                className="w-20 pointer-events-none"
+                                className="w-20 select-none"
                                 src={item.movie.poster_url || '/images/not_found_poster.webp'} />
                             {item.is_deleted && <div className="absolute top-0 left-0 right-0 bottom-0 z-[1px] flex items-center justify-center bg-black/80" >
                                 <Trash2 size={48} className="text-red-500" />
@@ -202,7 +189,7 @@ export default function TimecodePage() {
                             </div>
                         </div>
                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild><Ellipsis className="cursor-pointer" /></DropdownMenuTrigger>
+                            <DropdownMenuTrigger asChild><Ellipsis className="cursor-pointer text-muted-foreground hover:text-foreground duration-300" /></DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 <DropdownMenuItem onClick={() => handleOpenInEditor(item.id)}>{t('openInEditor')}</DropdownMenuItem>
                                 {item.is_deleted && <DropdownMenuItem

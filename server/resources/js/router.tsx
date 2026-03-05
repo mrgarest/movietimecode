@@ -13,6 +13,7 @@ import MovieWithTimecodesPage from "./pages/movies/with-timecodes";
 import MovieSanctionPage from "./pages/dashboard/movies/sanctions";
 import MovieSanctionAddPage from "./pages/dashboard/movies/sanctions/add";
 import FaqPage from "./pages/faq";
+import UsersPage from "./pages/dashboard/users";
 
 const router = createBrowserRouter([
     {
@@ -49,6 +50,7 @@ const router = createBrowserRouter([
                             { path: "sanctions/add", element: <MovieSanctionAddPage /> },
                         ]
                     },
+                    { path: 'users', element: <UsersPage /> }
                 ],
             },
         ],

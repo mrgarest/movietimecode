@@ -26,6 +26,7 @@ class User extends Authenticatable
         'password',
         'picture',
         'email_verified_at',
+        'last_login_at',
         'deactivated_at',
     ];
 
@@ -56,6 +57,7 @@ class User extends Authenticatable
             'created_at'       => 'datetime',
             'updated_at'       => 'datetime',
             'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'deactivated_at'   => 'datetime',
             'deleted_at'       => 'datetime',
         ];

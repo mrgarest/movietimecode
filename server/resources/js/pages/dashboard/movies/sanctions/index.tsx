@@ -11,17 +11,13 @@ import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useInView } from "react-intersection-observer";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Link } from "react-router-dom";
 import { SanctionReason, SanctionType } from "@/enums/sanction";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSeo } from "@/hooks/useSeo";
+import { formatDate } from "@/utils/format";
 
 interface SanctionResponse extends ServerResponse {
     sanctions: {
@@ -92,19 +88,6 @@ export default function MovieSanctionPage() {
             fetchNextPage();
         }
     }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-    /**
-     * Format date time.
-     * @param timestamp 
-     * @returns 
-     */
-    const formatDate = (timestamp: number | null) => {
-        if (!timestamp) return "N/A";
-
-        return DateTime.fromSeconds(timestamp)
-            .setLocale(i18n.language)
-            .toLocaleString(DateTime.DATETIME_SHORT);
-    };
 
     /**
     * Handles model openings with reports.
@@ -258,7 +241,7 @@ export default function MovieSanctionPage() {
                             (index !== 0 || pageIndex !== 0) && "border-t border-border"
                         )}>
                         <img
-                            className="w-20 pointer-events-none rounded-md"
+                            className="w-20 rounded-md select-none"
                             src={item.movie.poster_url || '/images/not_found_poster.webp'} />
 
                         <div className="space-y-2">

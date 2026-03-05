@@ -95,7 +95,8 @@ class AuthService
                     // Updating data every time you log in
                     $user->update([
                         'username' => $socialite->name ?? $socialite->nickname,
-                        'picture' => $socialite->avatar
+                        'picture' => $socialite->avatar,
+                        'last_login_at' => Carbon::now()
                     ]);
 
                     $userProvider->update(['name' => $socialite->name]);
@@ -106,6 +107,7 @@ class AuthService
                         'username' => $socialite->name ?? $socialite->nickname,
                         'email' => null,
                         'picture' => $socialite->avatar,
+                        'last_login_at' => Carbon::now()
                     ]);
 
                     UserProvider::create([

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
-import { ClockFading, Home, LogOut, VideoOff } from "lucide-react";
+import { ClockFading, Home, LogOut, UsersRound, VideoOff } from "lucide-react";
 import FloatingHamburger from "../FloatingHamburger";
 import { useMobileMenu } from "@/hooks/useMobileMenu";
 
@@ -25,6 +25,11 @@ export default function SideNavbar() {
             ico: VideoOff,
             to: '/dashboard/movies/sanctions',
             text: t('sanctions')
+        },
+        {
+            ico: UsersRound,
+            to: '/dashboard/users',
+            text: t('users')
         },
         {
             ico: LogOut,

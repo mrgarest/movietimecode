@@ -26,6 +26,10 @@ Route::prefix('dashboard')
                 Route::delete('/', 'delete');
             });
         });
+
+        Route::prefix('/users')->controller(UserController::class)->group(function () {
+            Route::get('/', 'users');
+        });
     });
 
 Route::prefix('movies')->middleware('throttle:api')->controller(MovieController::class)->group(function () {
