@@ -1,6 +1,6 @@
 import { ChatbotAccess, ChatbotAction } from "@/enums/chatbot";
 import { BlurPower, TimecodeAction } from "@/enums/timecode";
-import { ChatbotCmmand } from "@/interfaces/chatbot";
+import { ChatbotCommand } from "@/interfaces/chatbot";
 import { Settings } from "@/interfaces/settings";
 
 export const SettingsDefault = {
@@ -67,7 +67,7 @@ export const SettingsDefault = {
       action: ChatbotAction.currentMovieTime,
       access: ChatbotAccess.users,
     },
-  ] as ChatbotCmmand[],
+  ] as ChatbotCommand[],
 };
 
 /**

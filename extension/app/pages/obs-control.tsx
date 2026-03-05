@@ -20,7 +20,6 @@ import SettingsCard from '@/app/components/settings-card';
 import { cn } from '@/lib/utils';
 import i18n from '@/lib/i18n';
 import { ScrollArea } from '../components/ui/scroll-area';
-import { useSyncSetting } from '@/hooks/useSyncSetting';
 import { getSettings, updateSetting } from '@/utils/settings';
 
 const formSchemaConnection = z.object({
@@ -106,10 +105,10 @@ export default function OBSControlPage() {
                 return;
             }
         } catch (e) {
-
+            if (config.debug) console.error(e);
         }
         toast.error(i18n.t("connectionFailed"));
-        setObsClient(null); 
+        setObsClient(null);
         updateSetting('obsClient', null);
         setConnectionEnabled(true);
     }
@@ -246,7 +245,7 @@ export default function OBSControlPage() {
                 setTestLog((prevLogs) => [...prevLogs, { ok: false, msg: i18n.t("connectionFailed") }]);
             }
         } catch (e) {
-            if (config.debug) { console.error(e); }
+            if (config.debug) console.error(e);
             setTestLog((prevLogs) => [...prevLogs, { ok: false, msg: i18n.t("unknownError") }]);
         }
         setEnabledButtons(true);

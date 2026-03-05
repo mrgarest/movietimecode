@@ -11,7 +11,7 @@
   --mt-orange: hsl(24.6 95% 53.1%);
   --mt-border: hsla(0, 0%, 100%, 0.1);
   --mt-muted: hsl(0, 0%, 45%);
-  --mt-grean: hsl(85, 71%, 47%);
+  --mt-green: hsl(85, 71%, 47%);
   --mt-purple: hsl(271.5 81.3% 55.9%);
 
   --mt-text-xs: 0.75rem;
@@ -129,8 +129,8 @@
   border-radius: 0.5rem;
 }
 .mt-status.mt-active {
-  background-color: var(--mt-grean);
-  box-shadow: 0px 0px 7px 1px var(--mt-grean);
+  background-color: var(--mt-green);
+  box-shadow: 0px 0px 7px 1px var(--mt-green);
 }
 
 .mt-status.mt-inactive {
@@ -726,7 +726,7 @@
   bottom: 120%;
   left: 50%;
   transform: translateX(-50%);
-  font-family: var("mt-inter");
+  font-family: var(--mt-inter);
   font-size: var(--mt-text-xs);
   font-weight: 400;
   white-space: nowrap;

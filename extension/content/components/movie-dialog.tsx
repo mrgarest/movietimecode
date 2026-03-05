@@ -108,9 +108,9 @@ const MovieDialog = ({ data, onSelected }: RootProps) => {
                 if (config.debug) {
                     console.error(e);
                 }
+                return;
             } finally {
                 setLoading(false);
-                return;
             }
         }
 
@@ -147,7 +147,7 @@ const MovieDialog = ({ data, onSelected }: RootProps) => {
                                     onClick={() => handleItemSelected(index, item)}>
                                     <div className="mt-select-itme-left">
                                         {selectedIndex == index
-                                            ? <CircleCheck size={13} strokeWidth={3} color="var(--mt-grean)" />
+                                            ? <CircleCheck size={13} strokeWidth={3} color="var(--mt-green)" />
                                             : <Circle size={13} strokeWidth={3} color="oklch(0.76 0 0)" />
                                         }
                                         <span className="mt-select-itme-name">{item.user?.username || 'Невідомий'}</span>

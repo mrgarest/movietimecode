@@ -26,15 +26,11 @@ export default function TimecodePage() {
     const timecodeId = searchParams.get("id");
     const query = searchParams.get("q");
     const year = searchParams.get("y");
-    if (!query && !timecodeId) {
-        return <NotFound />
-    }
-
-    // Removes parameters from URL
-    window.history.replaceState(null, "", window.location.href.split("?")[0]);
-
 
     useEffect(() => {
+        // Removes parameters from URL
+        window.history.replaceState(null, "", window.location.href.split("?")[0]);
+
         /**
          * Checks authorization and launches a method to retrieve data from the backend.
          */
@@ -58,7 +54,6 @@ export default function TimecodePage() {
         init();
     }, []);
 
-
     /**
      * Saves the selected movie and proceeds to the next step.
      * @param movie
@@ -68,6 +63,9 @@ export default function TimecodePage() {
         setStep(2);
     };
 
+    if (!query && !timecodeId) {
+        return <NotFound />
+    }
 
     // Displaying the final message
     if (finalMessage != null) {

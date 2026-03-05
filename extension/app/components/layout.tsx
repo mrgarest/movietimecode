@@ -1,5 +1,5 @@
-import { Outlet, Link } from "react-router-dom";
-import { useState, ReactNode } from "react";
+import { Outlet, Link, useLocation } from "react-router-dom";
+import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Aperture, BotMessageSquare, Command, HardDriveDownload, LucideIcon, Settings, User } from "lucide-react";
 import { Footer } from "./footer";
@@ -44,7 +44,7 @@ const navItems: { ico?: LucideIcon; svg?: ReactNode; to: string; text: string; }
 ]
 
 export const SideNavLayout = () => {
-    const [navigationValue, setNavigationValue] = useState<string>("/settings");
+    const { pathname } = useLocation();
     return (
         <div className="container pt-6 grid grid-cols-[auto_1fr] gap-8 min-h-screen">
             <div className="relative">
@@ -53,8 +53,7 @@ export const SideNavLayout = () => {
                         <Link
                             key={index}
                             to={item.to}
-                            className={cn('flex items-center gap-2 px-3 py-2 font-normal rounded-md text-sm select-none cursor-pointer', (item.to == navigationValue ? 'bg-primary/10 text-primary' : 'hover:bg-neutral-800/50'))}
-                            onClick={() => setNavigationValue(item.to)}>
+                            className={cn('flex items-center gap-2 px-3 py-2 font-normal rounded-md text-sm select-none cursor-pointer', (item.to == pathname ? 'bg-primary/10 text-primary' : 'hover:bg-neutral-800/50'))}>
                             {item.ico && <item.ico size={16} />}
                             {item.svg && item.svg}
                             {item.text}

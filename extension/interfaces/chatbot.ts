@@ -1,4 +1,4 @@
-export interface ChatbotCmmand {
+export interface ChatbotCommand {
   enabled: boolean;
   command: string;
   action: string;

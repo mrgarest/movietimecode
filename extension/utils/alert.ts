@@ -3,7 +3,7 @@ import config from "config";
 /**
  * Plays an audio alert.
  */
-export function playAlerSound() {
+export function playAlertSound() {
   let audio: HTMLAudioElement | null = new Audio(
     chrome.runtime.getURL("sounds/alert.mp3")
   );
@@ -18,8 +18,6 @@ export function playAlerSound() {
   setTimeout(() => {
     if (!audio) return;
     audio.pause();
-    audio.src = "";
-    audio.load();
     audio = null;
   }, 1100);
 }

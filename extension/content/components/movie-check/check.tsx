@@ -81,7 +81,7 @@ export default function Check({ movie, onLoading, onError }: RootProps) {
                         <div className="mt-text-destructive mt-font-medium">{movieCheck.ban_count}</div>
                     </>}
                     {movieCheck.sіtrike_count != null && movieCheck.sіtrike_count > 0 && <>
-                        <div>{i18n.t('sіtrikeCount')}</div>
+                        <div>{i18n.t('strikeCount')}</div>
                         <div className="mt-text-destructive mt-font-medium">{movieCheck.sіtrike_count}</div>
                     </>}
                     {movieCheck.segments_count !== null && <>
@@ -239,7 +239,7 @@ const ContentRating = ({
                 break;
             case 1:
                 level = "mild";
-                color = 'grean';
+                color = 'green';
                 break;
             case 2:
                 level = "moderate";

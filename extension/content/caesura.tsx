@@ -7,12 +7,12 @@ import { setHeaderFonts, waitForDOMContentLoaded, waitForElement } from "@/utils
 import OBSClient, { OBSType, Scene } from "@/lib/obs-client";
 import { renderQuestionDialog } from "./components/question-dialog";
 import i18n from "@/lib/i18n";
-import { playAlerSound } from "@/utils/alert";
+import { playAlertSound } from "@/utils/alert";
 import { censorshipActionLog } from "@/utils/log";
 import ChatClient, { ChatMessage } from "@/lib/chat-client";
 import { User } from "@/interfaces/user";
 import { getUser } from "@/utils/user";
-import { ChatbotCmmand } from "@/interfaces/chatbot";
+import { ChatbotCommand } from "@/interfaces/chatbot";
 import { ChatbotAccess, ChatbotAction } from "@/enums/chatbot";
 import { secondsToTime } from "@/utils/format";
 import { isPlayerVisible, playerInvisible, playerMute, playerPause, playerPlay, playerSeek, playerUnmute, playerVisible } from "@/utils/player";
@@ -208,6 +208,7 @@ function handleTurnOffCensorship() {
             });
         }
     });
+    currentActionsState.clear();
     isCensorshipEnabled = false;
     timecodeSegments = [];
 
@@ -273,7 +274,7 @@ async function handleChatbot() {
         const message = msg.message.trim().toLocaleLowerCase();
 
         // Search for the desired command
-        const command: ChatbotCmmand | undefined = settings.chatbotCommands.find((cmd) => {
+        const command: ChatbotCommand | undefined = settings.chatbotCommands.find((cmd) => {
             if (!cmd.enabled) return false;
             return cmd.command.startsWith("!") ? message.startsWith(cmd.command) : message.includes(cmd.command);
         });
@@ -330,7 +331,7 @@ async function handleChatbot() {
                 const regex = new RegExp(`${command.command}\\s+(-?\\d+)`);
                 const match = message.match(regex);
                 if (!match) return;
-                playerSeek(player, currentMovieTime + (Number(match[1]) ?? 0));
+                playerSeek(player, currentMovieTime + (Number(match[1]) || 0));
                 return;
             case ChatbotAction.currentMovieTime:
                 if (currentMovieTime == 0) return;
@@ -469,10 +470,10 @@ const getActionForTag = (tag: TimecodeTag): TimecodeAction | null => {
  */
 async function connectOBS() {
     const obsClientSettings: SettingsOBSClientNull = (settings.obsClient as SettingsOBSClientNull) || SettingsDefault.obsClient;
-    const obsCensorSceneNmae: string | null = (settings.obsCensorScene as string | null) || SettingsDefault.obsCensorScene;
+    const obsCensorSceneName: string | null = (settings.obsCensorScene as string | null) || SettingsDefault.obsCensorScene;
 
     try {
-        if (!obsCensorSceneNmae) {
+        if (!obsCensorSceneName) {
             throw new Error("Scene not specified");
         }
 
@@ -494,7 +495,7 @@ async function connectOBS() {
         if (!isConnectedObsClient) {
             throw new Error("Failed to connect to OBS Client");
         }
-        const scene = await obsClient.findScene(obsCensorSceneNmae);
+        const scene = await obsClient.findScene(obsCensorSceneName);
         if (!scene) {
             throw new Error("Could not find the scene");
         }
@@ -514,10 +515,10 @@ async function connectOBS() {
  * Handles OBS client connection errors by displaying a dialog.
  */
 function handleObsClientError() {
-    const obsCensorSceneNmae: string | null = (settings.obsCensorScene as string | null) || SettingsDefault.obsCensorScene;
+    const obsCensorSceneName: string | null = (settings.obsCensorScene as string | null) || SettingsDefault.obsCensorScene;
 
     let obsName: string;
-    switch (obsCensorSceneNmae) {
+    switch (obsCensorSceneName) {
         case OBSType.obsstudio:
             obsName = "OBS Studio";
             break;
@@ -577,7 +578,7 @@ async function setPlayerCensorshipAction({
         case TimecodeAction.pause:
             if (!isCensored) break;
             playerPause(player);
-            playAlerSound();
+            playAlertSound();
             break;
         case TimecodeAction.skip:
             if (isCensored && segment.end_time) playerSeek(player, segment.end_time + 1);

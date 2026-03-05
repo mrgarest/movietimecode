@@ -69,7 +69,7 @@ const fetchData = (
   }
   (async () => {
     try {
-      const { url, options } = message;
+      const options = message.options ?? {};
 
       options.headers = {
         Accept: "application/json",
@@ -88,7 +88,7 @@ const fetchData = (
         options.headers["Extension-Version"] = config.version;
       }
 
-      const response = await fetch(url, options);
+      const response = await fetch(message.url, options);
       const data = await response.json();
       sendResponse(data);
     } catch (error) {

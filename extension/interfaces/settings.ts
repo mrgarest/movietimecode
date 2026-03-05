@@ -1,5 +1,5 @@
 import { BlurPower, TimecodeAction } from "@/enums/timecode";
-import { ChatbotCmmand } from "./chatbot";
+import { ChatbotCommand } from "./chatbot";
 
 export type SettingsOBSClientNull = SettingsOBSClient | null;
 
@@ -18,7 +18,7 @@ export interface Settings {
   chatbotEnabled: boolean;
   checkStreamLive: boolean;
   editTwitchContentClassification: boolean;
-  chatbotCommands: ChatbotCmmand[];
+  chatbotCommands: ChatbotCommand[];
 }
 
 export interface SettingsOBSClient {

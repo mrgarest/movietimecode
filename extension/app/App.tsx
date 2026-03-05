@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import SettingsPage from "./pages/settings";
 import OBSControlPage from "./pages/obs-control";
 import { SideNavLayout } from "@/app/components/layout";
@@ -24,6 +24,7 @@ export default function App() {
                 <Route path="user" element={<UserPage />} />
                 <Route path="backup" element={<BackupPage />} />
             </Route>
+            <Route index element={<Navigate to="/settings" replace />} />
             <Route path="timecode" element={<TimecodePage />} />
             <Route path="*" element={<NotFoundPage />} />
         </Routes>

@@ -11,6 +11,14 @@ export default function UserPage() {
     const [user, setUser] = useState<User | null>(null);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+    useEffect(() => {
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
+    }, []);
+
     const handleLogIn = async () => {
         login();
 

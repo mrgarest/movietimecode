@@ -1,6 +1,7 @@
-import { playAlerSound } from "@/utils/alert";
+import { playAlertSound } from "@/utils/alert";
 import { Button, TButtonStyle } from "./ui/button";
 import { removeDialog, renderDialog } from "@/utils/dialog";
+import { useEffect } from "preact/hooks";
 
 interface RootProps {
     id?: string;
@@ -26,7 +27,9 @@ interface QuestionDialogButton {
  * @param buttons - dialog buttons
  */
 const QuestionDialog = ({ title, description = undefined, buttons, sound = false }: RootProps) => {
-    sound && playAlerSound();
+    useEffect(() => {
+        sound && playAlertSound();
+    }, [])
 
     return (
         <div className="mt-dialog-container mt-dialog-question">

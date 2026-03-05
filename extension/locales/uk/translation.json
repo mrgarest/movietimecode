@@ -183,14 +183,14 @@
     },
     "chatbotAccess": {
         "users": "Користувачі",
-        "moderators": "Mодератори",
+        "moderators": "Модератори",
         "onlyMe": "Тільки я"
     },
     "movieIsPlayingValue": "фільм йде: {{value}}",
     "backup": "Резервна копія",
     "backupDescription": "На цій сторінці ви можете створити резервну копію налаштувань розширення або імпортувати вже збережений файл.",
     "export": "Експорт",
-    "import": "Iмпорт",
+    "import": "Імпорт",
     "settingsImportedSuccessfully": "Налаштування імпортовано успішно.",
     "settingsImportedError": "Не вдалося імпортувати налаштування.",
     "invalidFileFormat": "Неправильний формат файлу",
@@ -199,6 +199,6 @@
     "imdbContentRating": "Рейтинг контенту IMDB",
     "recommendation": "Рекомендація",
     "banCount": "Кількість банів",
-    "sіtrikeCount": "Кількість страйків",
+    "strikeCount": "Кількість страйків",
     "site": "Сайт"
 }

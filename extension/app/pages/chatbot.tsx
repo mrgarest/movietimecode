@@ -53,7 +53,7 @@ export default function ChatbotPage() {
     useEffect(() => {
         getSettings().then(settings => {
             setChatbotEnabled(settings.chatbotEnabled);
-            appendCommand(settings.chatbotCommands);
+            form.reset({ commands: settings.chatbotCommands })
         });
     }, []);
 
@@ -61,7 +61,7 @@ export default function ChatbotPage() {
     * Saves commands
     */
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        updateSetting('chatbotCommands', values.commands);
+       updateSetting('chatbotCommands', values.commands);
         toast.success(i18n.t("changesSaved"));
     };
 

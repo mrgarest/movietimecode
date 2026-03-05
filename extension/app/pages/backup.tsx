@@ -17,7 +17,6 @@ export default function BackupPage() {
         if (!chrome?.storage?.sync) return;
         setSpinner(true);
         getSettings().then(curentSettings => {
-            console.log(curentSettings);
             const {
                 obsClient,
                 obsCensorScene,

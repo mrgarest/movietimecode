@@ -26,6 +26,7 @@ export default function SettingsPage() {
             setNudity(settings.nudity);
             setViolence(settings.violence);
             setSensitiveExpressions(settings.sensitiveExpressions);
+            setSexualContentWithoutNudity(settings.sexualContentWithoutNudity);
             setUseDrugsAlcoholTobacco(settings.useDrugsAlcoholTobacco);
             setProhibitedSymbols(settings.prohibitedSymbols);
             setObsDisabled(settings.obsClient === null || settings.obsCensorScene === null);
@@ -48,11 +49,16 @@ export default function SettingsPage() {
         ];
     }, [obsDisabled]);
 
-    const handleTimeBuffer = (event: React.ChangeEvent<HTMLInputElement>) => {
-        let value = Math.max(0, Math.min(59, parseInt(event.target.value)));
-        setTimeBuffer(value);
-        updateSetting('timeBuffer', value);
-    };
+const handleTimeBuffer = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let value = parseInt(event.target.value);
+    
+    if (isNaN(value)) value = 0;
+    
+    value = Math.max(0, Math.min(59, value));
+    
+    setTimeBuffer(value);
+    updateSetting('timeBuffer', value);
+};
 
     return (
         <div className="space-y-8">

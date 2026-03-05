@@ -23,8 +23,5 @@ export const event = async (type: EventType, value: number | string) => {
       }),
     });
   } catch (err) {
-    if (config.debug) {
-      console.error(err);
-    }
   }
 };
