@@ -51,7 +51,7 @@ export default defineConfig({
 
         this.emitFile({
           type: "asset",
-          fileName: path.join("", "manifest.json"),
+          fileName: "manifest.json",
           source: manifestJson,
         });
       },
@@ -67,6 +67,7 @@ export default defineConfig({
         banner: banner,
       },
     },
+    sourcemap: config.debug,
   },
 });
 
@@ -91,6 +92,7 @@ export const buildDefineConfig = (options: TBuildDefineConfig): UserConfig => {
           banner: banner,
         },
       },
+      sourcemap: config.debug,
     },
   };
 };
@@ -120,12 +122,12 @@ function CustomLocalesPlugin(): Plugin {
         const translationFile = path.join(
           inputDir,
           langCode,
-          "translation.json"
+          "translation.json",
         );
         if (!fs.existsSync(translationFile)) continue;
 
         const translation: Record<string, string> = JSON.parse(
-          fs.readFileSync(translationFile, "utf-8")
+          fs.readFileSync(translationFile, "utf-8"),
         );
 
         const langOutputDir = path.join(outputDir, langCode);
@@ -137,12 +139,14 @@ function CustomLocalesPlugin(): Plugin {
             {
               appName: { message: translation.appName },
               appDesc: { message: translation.appDesc },
-              censoringPlayerContent: { message: translation.censoringPlayerContent },
+              censoringPlayerContent: {
+                message: translation.censoringPlayerContent,
+              },
             },
             null,
-            2
+            2,
           ),
-          "utf-8"
+          "utf-8",
         );
       }
     },
