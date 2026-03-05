@@ -201,11 +201,9 @@ class MovieController extends Controller
      */
     public function latest(MovieService $movieService)
     {
-        $limit = 15;
-
         return new SuccessResource([
-            'checked' => MovieCardResource::collection($movieService->latestChecked(limit: $limit)),
-            'timecodes' => MovieCardResource::collection($movieService->latestWithTimecodes(limit: $limit)['items'])
+            'checked' => MovieCardResource::collection($movieService->latestChecked(limit: 15)),
+            'timecodes' => MovieCardResource::collection($movieService->latestWithTimecodes(limit: 10)['items'])
         ]);
     }
 
