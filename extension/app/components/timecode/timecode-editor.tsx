@@ -507,9 +507,9 @@ export default function TimecodeEditorPage({ id = null, movieSearch = null, onMe
                             src={movie.posterUrl} />}
                         <div className="space-y-1">
                             <div>
-                                <span className="text-2xl font-bold">{movie.title || movie.originalTitle}</span><span className="text-xs text-muted pt-1.5 pl-2">({movie.releaseYear})</span>
+                                <span className="text-2xl font-bold">{movie.title || movie.originalTitle}</span><span className="text-xs text-muted-foreground pt-1.5 pl-2">({movie.releaseYear})</span>
                             </div>
-                            {movie.title != null && <div className="text-xs text-muted font-medium">{movie.originalTitle}</div>}
+                            {movie.title != null && <div className="text-xs text-muted-foreground font-medium">{movie.originalTitle}</div>}
                         </div>
                     </div>
                     <hr />
@@ -721,27 +721,27 @@ export default function TimecodeEditorPage({ id = null, movieSearch = null, onMe
                         <AccordionContent className="space-y-3 text-balance">
                             <div>
                                 <p><b>{i18n.t("nudity")}</b></p>
-                                <p className="text-muted font-medium">{i18n.t("nudityDescription")}</p>
+                                <p className="text-muted-foreground font-medium">{i18n.t("nudityDescription")}</p>
                             </div>
                             <div>
                                 <p><b>{i18n.t("sexualContentWithoutNudity")}</b></p>
-                                <p className="text-muted font-medium">{i18n.t("sexualContentWithoutNudityDescription")}</p>
+                                <p className="text-muted-foreground font-medium">{i18n.t("sexualContentWithoutNudityDescription")}</p>
                             </div>
                             <div>
                                 <p><b>{i18n.t("violence")}</b></p>
-                                <p className="text-muted font-medium">{i18n.t("violenceDescription")}</p>
+                                <p className="text-muted-foreground font-medium">{i18n.t("violenceDescription")}</p>
                             </div>
                             <div>
                                 <p><b>{i18n.t("sensitiveExpressions")}</b></p>
-                                <p className="text-muted font-medium">{i18n.t("sensitiveExpressionsDescription")}</p>
+                                <p className="text-muted-foreground font-medium">{i18n.t("sensitiveExpressionsDescription")}</p>
                             </div>
                             <div>
                                 <p><b>{i18n.t("useDrugsAlcoholTobacco")}</b></p>
-                                <p className="text-muted font-medium">{i18n.t("useDrugsAlcoholTobaccoDescription")}</p>
+                                <p className="text-muted-foreground font-medium">{i18n.t("useDrugsAlcoholTobaccoDescription")}</p>
                             </div>
                             <div>
                                 <p><b>{i18n.t("prohibitedSymbols")}</b></p>
-                                <p className="text-muted font-medium">{i18n.t("prohibitedSymbolsDescription")}</p>
+                                <p className="text-muted-foreground font-medium">{i18n.t("prohibitedSymbolsDescription")}</p>
                             </div>
                         </AccordionContent>
                     </AccordionItem>

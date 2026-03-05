@@ -15,8 +15,8 @@
   --primary-foreground: hsl(0, 0%, 0%);
   --secondary: hsl(0, 0%, 12%);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: hsl(0, 0%, 60%);
-  --muted-foreground: oklch(0.708 0 0);
+  --muted: hsl(0, 0%, 50%);
+  --muted-foreground: hsl(0, 0%, 60%);
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.62 0.26 21.66);
@@ -104,11 +104,11 @@
 }
 
 .text-link {
-  @apply underline duration-300 text-foreground hover:text-muted cursor-pointer;
+  @apply underline duration-300 text-foreground hover:text-muted-foreground cursor-pointer;
 }
 
 .description {
-  @apply text-xs text-muted font-medium;
+  @apply text-xs text-muted-foreground font-medium;
 }
 
 .text-h1 {

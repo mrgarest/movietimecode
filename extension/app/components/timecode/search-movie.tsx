@@ -114,9 +114,9 @@ export default function SearchMoviePage({ query, year = null, onSelected, onMess
                         src={item.poster_url || chrome.runtime.getURL("images/not_found_poster.webp")} />
                     <div className="space-y-1">
                         <div>
-                            <span className="text-sm font-semibold">{item.title ? item.title : item.original_title}</span> <span className="text-xs text-muted">({item.release_year})</span>
+                            <span className="text-sm font-semibold">{item.title ? item.title : item.original_title}</span> <span className="text-xs text-muted-foreground">({item.release_year})</span>
                         </div>
-                        {item.title != null && <h2 className="text-sm text-muted font-medium">{item.original_title}</h2>}
+                        {item.title != null && <h2 className="text-sm text-muted-foreground font-medium">{item.original_title}</h2>}
                     </div>
                 </div>)}
             </div>

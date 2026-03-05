@@ -340,7 +340,7 @@ export default function OBSControlPage() {
                         title={i18n.t("censorshipScene")}
                         description={i18n.t("selectSceneName")}>
                         {obsCensorSceneName ? <div className="space-y-2">
-                            <div className="text-xs text-muted font-medium">{i18n.t("selectedScene")}</div>
+                            <div className="text-xs text-muted-foreground font-medium">{i18n.t("selectedScene")}</div>
                             <Input readOnly value={obsCensorSceneName || "N/A"} />
                         </div> : <></>}
                     </SettingsCard>
