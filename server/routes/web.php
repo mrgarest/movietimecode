@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AppController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MovieController;
 use Illuminate\Support\Facades\Route;
 
 // Outdated authorization method
@@ -17,6 +18,8 @@ Route::controller(AuthController::class)->group(function () {
 
 // To prevent an error message stating that the router does not exist from appearing
 Route::get('/', AppController::class)->name('login');
+
+Route::get('/movies/timecodes', [MovieController::class, 'withTimecodes']);
 
 // React route
 Route::get('/{path?}', AppController::class)->where('path', '.*');

@@ -12,9 +12,9 @@ use RalphJSmit\Laravel\SEO\Support\SEOData;
 
 class SeoService
 {
-    private string $suffix = ' | Movie Timecode';
-    private string $langCode = 'uk';
-    private string $image = 'images/b35hj3.jpg';
+    const suffix = ' | Movie Timecode';
+    const langCode = 'uk';
+    const image = 'images/b35hj3.jpg';
 
     public function getSeoData(string $path): ?SEOData
     {
@@ -24,20 +24,16 @@ class SeoService
         }
 
         return match ($path) {
-            'movies/timecodes' => new SEOData(
-                title: Lang::get('seoTitleMoviesWithTimecodes', [], $this->langCode),
-                description: Lang::get('seoDescriptionMoviesWithTimecodes', [], $this->langCode),
-                image: asset($this->image)
-            ),
             'faq' => new SEOData(
-                title: Lang::get('frequentlAskedQuestion', [], $this->langCode),
-                description: Lang::get('seoDescriptionFaq', [], $this->langCode)
+                title: Lang::get('frequentlAskedQuestion', [], self::langCode),
+                description: Lang::get('seoDescriptionFaq', [], self::langCode),
+                image: asset(self::image)
             ),
-            'privacy' => new SEOData(title: Lang::get('privacyPolicy', [], $this->langCode)),
+            'privacy' => new SEOData(title: Lang::get('privacyPolicy', [], self::langCode)),
             default => new SEOData(
-                title: Lang::get('seoTitle', [], $this->langCode),
-                description: Lang::get('seoDescription', [], $this->langCode),
-                image: asset($this->image)
+                title: Lang::get('seoTitle', [], self::langCode),
+                description: Lang::get('seoDescription', [], self::langCode),
+                image: asset(self::image)
             ),
         };
     }
@@ -69,15 +65,15 @@ class SeoService
 
             return [
                 'title' => "{$title} ({$year})",
-                'image' => $poster ? TmdbClient::getImageUrl('w500', str_replace('/', '', $poster)) : asset($this->image)
+                'image' => $poster ? TmdbClient::getImageUrl('w500', str_replace('/', '', $poster)) : asset(self::langCode)
             ];
         });
 
         if (!$data) return null;
 
         return new SEOData(
-            title: $data['title'] . $this->suffix,
-            description: Lang::get('seoDescriptionMoviesWithTimecodes', [], $this->langCode),
+            title: $data['title'] . self::suffix,
+            description: Lang::get('seoDescriptionMoviesWithTimecodes', [], self::langCode),
             image: $data['image']
         );
     }
