@@ -2,8 +2,8 @@ import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { ClockFading, Home, LogOut, UsersRound, VideoOff } from "lucide-react";
-import FloatingHamburger from "../FloatingHamburger";
 import { useMobileMenu } from "@/hooks/useMobileMenu";
+import Hamburger from "hamburger-react";
 
 export default function SideNavbar() {
     const { pathname } = useLocation();
@@ -47,6 +47,7 @@ export default function SideNavbar() {
                 <div className="flex flex-col space-y-0.5 w-48 sticky top-6">
                     {navItems.map((item, index) => (
                         <Link
+                            onClick={() => isOpen && toggleMenu()}
                             key={index}
                             to={item.to}
                             className={cn(
@@ -62,7 +63,20 @@ export default function SideNavbar() {
             {isOpen && <div
                 onClick={() => toggleMenu()}
                 className={cn("duration-300 fixed top-0 right-0 left-0 bottom-0 bg-black/50 backdrop-blur-xs z-20", !isVisible && 'opacity-0')} />}
-            <FloatingHamburger hidden="md" isOpen={isOpen} onToggle={() => toggleMenu()} />
+            <div className={cn(
+                "bg-secondary rounded-full size-12 flex items-center justify-center border-border border gap-2 shadow-md shadow-black/30 overflow-hidden fixed right-8 bottom-8 z-40",
+                !isOpen && "md:hidden"
+            )}>
+                <div className="absolute">
+                    <Hamburger
+                        rounded
+                        hideOutline
+                        size={20}
+                        toggled={isOpen}
+                        onToggle={() => toggleMenu()}
+                    />
+                </div>
+            </div>
         </>
     );
 }

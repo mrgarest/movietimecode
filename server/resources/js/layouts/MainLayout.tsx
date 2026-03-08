@@ -8,7 +8,7 @@ export default function MainLayout() {
     return (
         <>
             <ScrollRestoration />
-            <div className="min-h-screen grid grid-rows-[auto_1fr_auto] max-sm:pt-4 w-full relative">
+            <div className="min-h-screen grid grid-rows-[auto_1fr_auto] w-full relative">
                 <HeaderNavbar />
                 <Outlet />
                 <Footer />

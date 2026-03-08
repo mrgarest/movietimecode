@@ -92,7 +92,7 @@ export default function HomePage() {
     ];
 
     return (<>
-        <div className="pt-15 pb-20 px-4 mx-auto">
+        <div className="pt-6 sm:pt-15 pb-20 px-4 mx-auto">
             <div className="size-24 relative mx-auto select-none pointer-events-none">
                 <img src="/images/icon.gif" className="size-full rounded-full absolute z-1" />
                 <div className="size-18 bg-[#598e3f] blur-xl rounded-full absolute z-0 -left-1 -bottom-2 opacity-45" />

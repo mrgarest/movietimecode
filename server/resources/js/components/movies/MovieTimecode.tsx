@@ -144,7 +144,7 @@ const SegmentItem = ({ segment }: { segment: TimecodeSegment }) => {
             <div className="px-2">—</div>
             <div
                 onClick={handleReveal}
-                className={cn(showSpoiler && 'bg-foreground text-foreground animate-pulse rounded-sm cursor-pointer w-max')}>{segment.description ?? 'N/A'}</div>
+                className={cn(showSpoiler && 'bg-foreground text-foreground animate-pulse rounded-sm cursor-pointer')}>{segment.description ?? 'N/A'}</div>
         </>
     )
 }
