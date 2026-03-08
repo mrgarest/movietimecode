@@ -17,7 +17,7 @@ class Event extends Model
     ];
 
     protected $casts = [
-        'device_token' => 'int',
+        'device_token' => 'string',
         'type' => EventType::class,
         'value' => 'string',
         'created_at' => 'datetime',

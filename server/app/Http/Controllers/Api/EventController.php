@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\EventType;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\EventLogResource;
 use App\Http\Resources\SuccessResource;
 use App\Services\EventService;
 use Illuminate\Http\Request;
@@ -24,11 +25,28 @@ class EventController extends Controller
         ]);
 
         $this->eventService->store(
-           deviceToken: $validated['device_token'],
-           type: EventType::from($validated['type']),
-           value: $validated['value'],
+            deviceToken: $validated['device_token'],
+            type: EventType::from($validated['type']),
+            value: $validated['value'],
         );
 
         return new SuccessResource(null);
+    }
+
+
+    public function eventLog(Request $request)
+    {
+        $validated = $request->validate(['page' => 'nullable|numeric']);
+
+        $events = $this->eventService->getLatestPaginated(
+            page: $validated['page'] ?? 1,
+            langCode: 'uk'
+        );
+
+        return new SuccessResource([
+            'current_page' => $events->currentPage(),
+            'last_page' => $events->lastPage(),
+            'events' => EventLogResource::collection($events),
+        ]);
     }
 }

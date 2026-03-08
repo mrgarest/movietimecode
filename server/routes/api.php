@@ -30,7 +30,10 @@ Route::prefix('dashboard')
         Route::prefix('/users')->controller(UserController::class)->group(function () {
             Route::get('/', 'users');
         });
+
+        Route::get('/events', [EventController::class, 'eventLog']);
     });
+
 
 Route::prefix('movies')->middleware('throttle:api')->controller(MovieController::class)->group(function () {
     Route::get('/latest', 'latest');
