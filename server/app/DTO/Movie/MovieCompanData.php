@@ -20,7 +20,7 @@ class MovieCompanData
         $nameLower = mb_strtolower($movieCompany->company->name);
         $hazardLevel = match (true) {
             Str::contains($nameLower, ['marvel']) => 3,
-            Str::contains($nameLower, ['warner', 'disney', 'netflix', 'apple', 'hbo', 'amazon', 'crunchyroll']) => 2,
+            Str::contains($nameLower, ['warner', 'disney', 'lucasfilm', 'netflix', 'apple', 'hbo', 'amazon', 'crunchyroll']) => 2,
             default => 0,
         };
 
