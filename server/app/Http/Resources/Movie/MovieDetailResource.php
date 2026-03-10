@@ -34,7 +34,7 @@ class MovieDetailResource extends SuccessResource
             'productions' => $this->formatCompanies($this->resource['productions']),
             'distributors' => $this->formatCompanies($this->resource['distributors']),
             'ban_count' => $this->resource['sanctionCounts']->bans,
-            'sіtrike_count' => $this->resource['sanctionCounts']->strikes,
+            'sitrike_count' => $this->resource['sanctionCounts']->strikes,
             'recommendation' => $this->when($recommendation, [
                 'color' => $recommendation->color,
                 'message' => $recommendation->message

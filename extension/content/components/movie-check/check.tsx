@@ -80,9 +80,9 @@ export default function Check({ movie, onLoading, onError }: RootProps) {
                         <div>{i18n.t('banCount')}</div>
                         <div className="mt-text-destructive mt-font-medium">{movieCheck.ban_count}</div>
                     </>}
-                    {movieCheck.sіtrike_count != null && movieCheck.sіtrike_count > 0 && <>
+                    {movieCheck.sitrike_count != null && movieCheck.sitrike_count > 0 && <>
                         <div>{i18n.t('strikeCount')}</div>
-                        <div className="mt-text-destructive mt-font-medium">{movieCheck.sіtrike_count}</div>
+                        <div className="mt-text-destructive mt-font-medium">{movieCheck.sitrike_count}</div>
                     </>}
                     {movieCheck.segments_count !== null && <>
                         <div>{i18n.t(movieCheck.segments_count !== null && movieCheck.segments_count > 0

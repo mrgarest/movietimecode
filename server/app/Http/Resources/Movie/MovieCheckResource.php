@@ -30,7 +30,7 @@ class MovieCheckResource extends SuccessResource
             'distributors' => $this->formatCompanies($this->resource['distributors']),
             'segments_count' => $this->resource['segmentsCount'],
             'ban_count' => $this->resource['sanctionCounts']->bans,
-            'sіtrike_count' => $this->resource['sanctionCounts']->strikes,
+            'sitrike_count' => $this->resource['sanctionCounts']->strikes,
             'recommendation' => $this->when($recommendation, [
                 'color' => $recommendation->color,
                 'message' => $recommendation->message

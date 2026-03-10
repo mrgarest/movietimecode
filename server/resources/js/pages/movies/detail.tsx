@@ -100,9 +100,9 @@ export default function MovieDetailPage() {
                                 <div className="text-destructive font-medium">{movie.ban_count}</div>
                             </>}
 
-                            {movie.sіtrike_count != null && movie.sіtrike_count > 0 && <>
+                            {movie.sitrike_count != null && movie.sitrike_count > 0 && <>
                                 <div>{t('strikeCount')}</div>
-                                <div className="text-destructive font-medium">{movie.sіtrike_count}</div>
+                                <div className="text-destructive font-medium">{movie.sitrike_count}</div>
                             </>}
                         </div>
 
