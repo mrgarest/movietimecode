@@ -1,3 +1,6 @@
+User-agent: GPTBot
+Disallow: /movies/
+
 User-Agent: *
 Allow: /
 Disallow: /api/
