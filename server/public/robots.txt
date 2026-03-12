@@ -1,5 +1,15 @@
 User-agent: GPTBot
+Allow: /
+Disallow: /api/
+Disallow: /images/
+Disallow: /auth/
+Disallow: /login
+Disallow: /logout
+Disallow: /dashboard
 Disallow: /movies/
+Disallow: *?fbclid=
+Disallow: *?ref=
+Disallow: *?from=
 
 User-Agent: *
 Allow: /
