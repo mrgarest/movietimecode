@@ -30,6 +30,11 @@ export const useUserStore = create<UserState>()(
             setUser: (user) => set({ user }),
 
             checkAuth: async () => {
+                if (!Cookies.get('uat')) {
+                    set({ user: null, isInitialized: true });
+                    return;
+                }
+
                 try {
                     const data = await fetchApi<AuthUser>('/api/v2/user');
 
@@ -59,7 +64,7 @@ export const useUserStore = create<UserState>()(
             },
         }),
         {
-            name: 'user', 
+            name: 'user',
             partialize: (state) => ({ user: state.user }),
         }
     )
