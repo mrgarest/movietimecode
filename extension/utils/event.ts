@@ -10,7 +10,10 @@ import { EventType } from "@/enums/event";
  * @param type The type of event.
  * @param value The value associated with the event.
  */
-export const event = async (type: EventType, value: number | string) => {
+export const event = async (
+  type: EventType,
+  value: number | string | null = null,
+) => {
   if (config.debug) return;
   try {
     const deviceToken = await getDeviceToken();
@@ -19,9 +22,9 @@ export const event = async (type: EventType, value: number | string) => {
       body: JSON.stringify({
         device_token: deviceToken,
         type,
-        value: value.toString(),
+        platform: "extension",
+        ...(value !== null ? { value: value.toString() } : {}),
       }),
     });
-  } catch (err) {
-  }
+  } catch (err) {}
 };

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Cache\EventCacheKey;
 use App\DTO\EventLogData;
+use App\Enums\EventPlatform;
 use App\Enums\EventType;
 use App\Models\Event;
 use App\Models\MovieTimecode;
@@ -18,9 +19,10 @@ class EventService
      *
      * @param string $deviceToken
      * @param EventType $type
+     * @param EventPlatform $platform
      * @param int|string $value
      */
-    public function store(string $deviceToken, EventType $type, int|string $value): void
+    public function store(string $deviceToken, EventType $type, EventPlatform $platform, int|string $value): void
     {
         // Check cache to prevent duplicate events
         $cacheKey = EventCacheKey::store($deviceToken, $type, $value);
@@ -31,6 +33,7 @@ class EventService
         Event::insert([
             'device_token' => $deviceToken,
             'type' => $type->value,
+            'platform' => $platform,
             'value' => $value,
             'created_at' => $now,
             'updated_at' => $now
@@ -65,7 +68,6 @@ class EventService
             ])
             ->orderByDesc('created_at')
             ->paginate(20, ['*'], 'page', $page)
-            // ->map(fn(Event $event) => EventLogData::fromModel($event, $langCode))
             ->through(fn(Event $event) => EventLogData::fromModel($event, $langCode));
     }
 }

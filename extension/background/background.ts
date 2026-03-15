@@ -1,11 +1,18 @@
 import config from "config";
 import { User } from "@/interfaces/user";
 import { getDeviceToken, getUser } from "@/utils/user";
+import { event } from "@/utils/event";
+import { EventType } from "@/enums/event";
 
 /**
  * Ensures a device token is generated when the extension is installed.
  */
-chrome.runtime.onInstalled.addListener(() => getDeviceToken());
+chrome.runtime.onInstalled.addListener(async (details) => {
+  await getDeviceToken();
+  if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+    event(EventType.INSTALLED);
+  }
+});
 
 /**
  * Opens the extension page when the browser action icon is clicked.
@@ -61,7 +68,7 @@ const goToTab = (message: any) => {
  */
 const fetchData = (
   message: any,
-  sendResponse: (response?: any) => void
+  sendResponse: (response?: any) => void,
 ): boolean => {
   if (!message.url) {
     sendResponse({ error: "URL is required" });
@@ -74,7 +81,7 @@ const fetchData = (
       options.headers = {
         Accept: "application/json",
         "Content-Type": "application/json",
-        "Extension-ID": chrome.runtime.id as string,
+        "Extension-Id": chrome.runtime.id as string,
         ...options.headers,
       };
 

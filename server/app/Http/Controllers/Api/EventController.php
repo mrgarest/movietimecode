@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\EventPlatform;
 use App\Enums\EventType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\EventLogResource;
@@ -21,12 +22,14 @@ class EventController extends Controller
         $validated = $request->validate([
             'device_token' => 'required|string',
             'type' => ['required', new Enum(EventType::class)],
+            'platform' => ['nullable', new Enum(EventPlatform::class)],
             'value' => 'required|string|numeric',
         ]);
 
         $this->eventService->store(
             deviceToken: $validated['device_token'],
             type: EventType::from($validated['type']),
+            platform: isset($validated['platform']) ? EventPlatform::from($validated['platform']) : EventPlatform::EXTENSION,
             value: $validated['value'],
         );
 

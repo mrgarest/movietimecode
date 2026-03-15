@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EventPlatform;
 use App\Enums\EventType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,7 @@ class Event extends Model
     protected $fillable = [
         'device_token',
         'type',
+        'platform',
         'value',
         'created_at',
         'updated_at'
@@ -19,6 +21,7 @@ class Event extends Model
     protected $casts = [
         'device_token' => 'string',
         'type' => EventType::class,
+        'platform' => EventPlatform::class,
         'value' => 'string',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

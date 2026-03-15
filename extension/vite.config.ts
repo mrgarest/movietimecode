@@ -71,12 +71,12 @@ export default defineConfig({
   },
 });
 
-type TBuildDefineConfig = {
+interface BuildDefineConfig {
   plugins?: PluginOption[];
   input: Record<string, string>;
 };
 
-export const buildDefineConfig = (options: TBuildDefineConfig): UserConfig => {
+export const buildDefineConfig = (options: BuildDefineConfig): UserConfig => {
   return {
     plugins: options.plugins,
     resolve: {

@@ -16,6 +16,7 @@ export const event = async (type: EventType, value: number | string) => {
             body: {
                 device_token: getDeviceToken(),
                 type,
+                platform: "web",
                 value: value.toString(),
             },
         });

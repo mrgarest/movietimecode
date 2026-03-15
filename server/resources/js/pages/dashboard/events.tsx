@@ -12,6 +12,7 @@ import { useInView } from "react-intersection-observer";
 interface EventItem {
     id: number;
     type: string;
+    platform: string | null;
     device_token: string | null;
     value: number | string | null;
     description: string | null;
@@ -91,6 +92,10 @@ function EventTypeBadge({ type }: { type: string }) {
     const { t } = useTranslation();
 
     const eventTypeConfig: Partial<Record<EventType, { label: string; className: string }>> = {
+        INSTALLED: {
+            label: t('installed'),
+            className: "bg-lime-500/10 text-lime-500",
+        },
         CHECK_MOVIE: {
             label: t('check'),
             className: "bg-blue-500/10 text-blue-500",

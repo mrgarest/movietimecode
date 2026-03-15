@@ -2,6 +2,7 @@
 
 namespace App\DTO;
 
+use App\Enums\EventPlatform;
 use App\Enums\EventType;
 use App\Models\Event;
 use Carbon\Carbon;
@@ -14,7 +15,8 @@ readonly class EventLogData
         public Carbon $createdAt,
         public string $deviceToken,
         public int|string|null $value = null,
-        public ?string $description = null
+        public ?string $description = null,
+        public ?EventPlatform $platform = null
     ) {}
 
     public static function fromModel(Event $event, string $langCode): self
@@ -27,6 +29,7 @@ readonly class EventLogData
         return new self(
             id: $event->id,
             type: $event->type,
+            platform: $event->platform,
             deviceToken: $event->device_token,
             value: $data['value'],
             description: $data['description'],
