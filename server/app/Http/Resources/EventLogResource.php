@@ -20,7 +20,7 @@ class EventLogResource extends JsonResource
         return [
             'id' => $this->id,
             'type' => $this->type->value,
-            'platform' => $this->type->platform,
+            'platform' => $this->platform?->value,
             'device_token' => $this->deviceToken,
             'value' => $this->value,
             'description' => $this->description,
