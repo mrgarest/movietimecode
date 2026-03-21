@@ -29,11 +29,6 @@
     @isset($jsonPageData)
         <script id="JSON_PAGE_DATA" type="application/json">{!!json_encode($jsonPageData)!!}</script>
     @endisset
-    @isset($appData)
-        <script>
-            window.__APP_DATA__ = @json($appData);
-        </script>
-    @endisset
 </body>
 
 </html>

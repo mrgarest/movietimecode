@@ -24,6 +24,11 @@ class SeoService
         }
 
         return match ($path) {
+            'movies/timecodes' => new SEOData(
+                title: Lang::get('seoTitleMoviesWithTimecodes', [], self::langCode),
+                description: Lang::get('seoDescriptionMoviesWithTimecodes', [], self::langCode),
+                image: asset(self::image)
+            ),
             'faq' => new SEOData(
                 title: Lang::get('frequentlAskedQuestion', [], self::langCode),
                 description: Lang::get('seoDescriptionFaq', [], self::langCode),

@@ -3,17 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import { fetchApi } from '@/utils/fetch';
-import { MovieCard, MovieListResponse } from '@/interfaces/movie';
+import { MovieListResponse } from '@/interfaces/movie';
 import MovieCardItem from '@/components/movies/MovieCardItem';
 import { useSeo } from '@/hooks/useSeo';
-import { useAppData } from '@/hooks/useAppData';
-
-interface InitialData {
-    items: MovieCard[];
-    lastPage: number;
-}
-
-const initialData = useAppData<InitialData>();
 
 export default function MovieWithTimecodesPage() {
     const { t } = useTranslation();
@@ -39,17 +31,7 @@ export default function MovieWithTimecodesPage() {
             lastPage.current_page < lastPage.last_page
                 ? lastPage.current_page + 1
                 : undefined,
-        initialPageParam: initialData ? 2 : 1,
-        initialData: initialData ? {
-            pages: [{
-                success: true,
-                items: initialData.items,
-                current_page: 1,
-                last_page: initialData.lastPage,
-            }],
-            pageParams: [1],
-        } : undefined,
-        initialDataUpdatedAt: initialData ? Date.now() : undefined,
+        initialPageParam: 1,
         staleTime: 5 * 60 * 1000,
     });
 

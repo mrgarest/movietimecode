@@ -1,5 +1,4 @@
-import { Loader2Icon, LucideProps } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { LucideProps } from "lucide-react"
 import { ForwardRefExoticComponent, RefAttributes } from "react";
 import { Skeleton } from "./skeleton";
 
