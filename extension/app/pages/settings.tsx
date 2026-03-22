@@ -12,6 +12,7 @@ export default function SettingsPage() {
     const [blurPower, setBlurPower] = useState<BlurPower>(SettingsDefault.blurPower);
     const [nudity, setNudity] = useState<TimecodeAction>(SettingsDefault.nudity);
     const [sexualContentWithoutNudity, setSexualContentWithoutNudity] = useState<TimecodeAction>(SettingsDefault.sexualContentWithoutNudity);
+    const [eroticSounds, setEroticSounds] = useState<TimecodeAction>(SettingsDefault.eroticSounds);
     const [violence, setViolence] = useState<TimecodeAction>(SettingsDefault.violence);
     const [sensitiveExpressions, setSensitiveExpressions] = useState<TimecodeAction>(SettingsDefault.sensitiveExpressions);
     const [useDrugsAlcoholTobacco, setUseDrugsAlcoholTobacco] = useState<TimecodeAction>(SettingsDefault.useDrugsAlcoholTobacco);
@@ -24,6 +25,7 @@ export default function SettingsPage() {
             setTimeBuffer(settings.timeBuffer);
             setBlurPower(settings.blurPower);
             setNudity(settings.nudity);
+            setEroticSounds(settings.eroticSounds);
             setViolence(settings.violence);
             setSensitiveExpressions(settings.sensitiveExpressions);
             setSexualContentWithoutNudity(settings.sexualContentWithoutNudity);
@@ -119,6 +121,24 @@ const handleTimeBuffer = (event: React.ChangeEvent<HTMLInputElement>) => {
                         onValueChange={sync("sexualContentWithoutNudity", setSexualContentWithoutNudity)}
                         defaultValue={sexualContentWithoutNudity.toString()}
                         value={sexualContentWithoutNudity.toString()}>
+                        <SelectTrigger className="w-44">
+                            <SelectValue placeholder={i18n.t("selectBehavior")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                {selectItemBehavior.map((item, index) => <SelectItem key={index} disabled={item.disabled} value={item.value.toString()}>{item.text}</SelectItem>)}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </SettingsCard>
+                <hr />
+                <SettingsCard
+                    title={i18n.t("eroticSounds")}
+                    description={i18n.t("eroticSoundsDescription")}>
+                    <Select
+                        onValueChange={sync("eroticSounds", setEroticSounds)}
+                        defaultValue={eroticSounds.toString()}
+                        value={eroticSounds.toString()}>
                         <SelectTrigger className="w-44">
                             <SelectValue placeholder={i18n.t("selectBehavior")} />
                         </SelectTrigger>

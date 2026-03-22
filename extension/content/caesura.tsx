@@ -70,6 +70,7 @@ const handleSettings = (s: Settings) => {
     neededOBSClient = [
         s.nudity,
         s.sexualContentWithoutNudity,
+        s.eroticSounds,
         s.violence,
         s.sensitiveExpressions,
         s.useDrugsAlcoholTobacco,
@@ -460,6 +461,8 @@ const getActionForTag = (tag: TimecodeTag): TimecodeAction | null => {
             return settings.useDrugsAlcoholTobacco;
         case TimecodeTag.PROHIBITED_SYMBOLS:
             return settings.prohibitedSymbols;
+        case TimecodeTag.EROTIC_SOUNDS:
+            return settings.eroticSounds;
         default:
             return null;
     }

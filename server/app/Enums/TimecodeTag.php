@@ -10,4 +10,5 @@ enum TimecodeTag: int
     case SEXUAL_CONTENT_WITHOUT_NUDITY = 103;
     case USE_DRUGS_ALCOHOL_TOBACCO = 104;
     case PROHIBITED_SYMBOLS = 105;
+    case EROTIC_SOUNDS = 106;
 }

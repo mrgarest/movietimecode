@@ -8,6 +8,7 @@ export const SettingsDefault = {
   blurPower: BlurPower.base,
   nudity: TimecodeAction.blur,
   sexualContentWithoutNudity: TimecodeAction.blur,
+  eroticSounds: TimecodeAction.mute,
   violence: TimecodeAction.blur,
   sensitiveExpressions: TimecodeAction.mute,
   playerContentCensorshipCommand: TimecodeAction.blur,

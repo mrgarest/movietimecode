@@ -144,6 +144,7 @@ export default function TimecodeEditorPage({ id = null, movieSearch = null, onMe
         switch (tagId) {
             case TimecodeTag.NUDITY:
             case TimecodeTag.SEXUAL_CONTENT_WITHOUT_NUDITY:
+            case TimecodeTag.EROTIC_SOUNDS:
                 return TwitchContentClassification.SEXUAL_THEMES;
             case TimecodeTag.VIOLENCE:
                 return TwitchContentClassification.VIOLENT_GRAPHIC;
@@ -579,6 +580,7 @@ export default function TimecodeEditorPage({ id = null, movieSearch = null, onMe
                                                         <SelectContent>
                                                             <SelectItem value={String(TimecodeTag.NUDITY)}>{i18n.t("nudity")}</SelectItem>
                                                             <SelectItem value={String(TimecodeTag.SEXUAL_CONTENT_WITHOUT_NUDITY)}>{i18n.t("sexualContentWithoutNudity")}</SelectItem>
+                                                            <SelectItem value={String(TimecodeTag.EROTIC_SOUNDS)}>{i18n.t("eroticSounds")}</SelectItem>
                                                             <SelectItem value={String(TimecodeTag.VIOLENCE)}>{i18n.t("violence")}</SelectItem>
                                                             <SelectItem value={String(TimecodeTag.SENSITIVE_EXPRESSIONS)}>{i18n.t("sensitiveExpressions")}</SelectItem>
                                                             <SelectItem value={String(TimecodeTag.USE_DRUGS_ALCOHOL_TOBACCO)}>{i18n.t("useDrugsAlcoholTobacco")}</SelectItem>
@@ -726,6 +728,10 @@ export default function TimecodeEditorPage({ id = null, movieSearch = null, onMe
                             <div>
                                 <p><b>{i18n.t("sexualContentWithoutNudity")}</b></p>
                                 <p className="text-muted-foreground font-medium">{i18n.t("sexualContentWithoutNudityDescription")}</p>
+                            </div>
+                            <div>
+                                <p><b>{i18n.t("eroticSounds")}</b></p>
+                                <p className="text-muted-foreground font-medium">{i18n.t("eroticSoundsDescription")}</p>
                             </div>
                             <div>
                                 <p><b>{i18n.t("violence")}</b></p>

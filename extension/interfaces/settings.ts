@@ -8,6 +8,7 @@ export interface Settings {
   blurPower: BlurPower;
   nudity: TimecodeAction;
   sexualContentWithoutNudity: TimecodeAction;
+  eroticSounds: TimecodeAction;
   violence: TimecodeAction;
   sensitiveExpressions: TimecodeAction;
   useDrugsAlcoholTobacco: TimecodeAction;
