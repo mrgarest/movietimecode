@@ -264,7 +264,7 @@ async function handleChatbot() {
         username: user.username,
         accessToken: user.twitch.accessToken!,
     });
-    const isConnect = await chatClient.connect()
+    const isConnect = await chatClient.connect();
 
     if (!isConnect) return;
     isChatConnected = true;

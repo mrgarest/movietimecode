@@ -53,7 +53,7 @@ export const SideNavLayout = () => {
                         <Link
                             key={index}
                             to={item.to}
-                            className={cn('flex items-center gap-2 px-3 py-2 font-normal rounded-md text-sm select-none cursor-pointer', (item.to == pathname ? 'bg-primary/10 text-primary' : 'hover:bg-neutral-800/50'))}>
+                            className={cn('flex items-center font-medium gap-2 px-3 py-2 rounded-md text-sm select-none cursor-pointer', (item.to == pathname ? 'bg-primary/95 text-primary-foreground' : 'hover:bg-primary/10'))}>
                             {item.ico && <item.ico size={16} />}
                             {item.svg && item.svg}
                             {item.text}
