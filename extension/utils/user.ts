@@ -6,7 +6,8 @@ import CryptoJS from "crypto-js";
 /**
  * Opens a new tab for authorization.
  */
-export const login = () => goToTab({ url: `${config.baseUrl}/login/extension` });
+export const login = () =>
+  goToTab({ url: `${config.baseUrl}/login/extension` });
 
 /**
  * Log out of the system.
@@ -18,8 +19,16 @@ export const logout = async () => await chrome.storage.sync.remove("user");
  * @returns A user object of type User or undefined if the user is not found.
  */
 export const getUser = async (): Promise<User | undefined> => {
-  const storage = await chrome.storage.sync.get("user");
-  return storage?.user as User | undefined;
+  const { user } = (await chrome.storage.sync.get("user")) as { user?: User };
+
+  if (
+    !user ||
+    (user.expiresAt && Math.floor(Date.now() / 1000) >= user.expiresAt)
+  ) {
+    return undefined;
+  }
+
+  return user;
 };
 
 /**
@@ -28,11 +37,13 @@ export const getUser = async (): Promise<User | undefined> => {
  * @returns Promise<string> - The device token.
  */
 export const getDeviceToken = async (): Promise<string> => {
-  const { device } = await chrome.storage.sync.get<{ device?: { token: string } }>("device");
+  const { device } = await chrome.storage.sync.get<{
+    device?: { token: string };
+  }>("device");
   if (device?.token) return device.token;
 
   const deviceToken = CryptoJS.lib.WordArray.random(18).toString();
   await chrome.storage.sync.set({ device: { token: deviceToken } });
-  
+
   return deviceToken;
 };
