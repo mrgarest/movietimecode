@@ -1,4 +1,5 @@
 User-agent: GPTBot
+User-agent: ClaudeBot
 Allow: /
 Disallow: /api/
 Disallow: /images/
