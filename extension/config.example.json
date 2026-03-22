@@ -7,7 +7,6 @@
     "telegramChannelUrl": "https://t.me/+B-6MNbF-t6cyZDVi",
     "hostPermissions": {
         "caesura": [
-            "*://*.uakino.me/*",
             "*://*.uakino.best/*"
         ]
     }

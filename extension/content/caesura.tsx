@@ -130,7 +130,6 @@ const playerMap: Record<
         getYear: () => number | null;
     }
 > = {
-    "uakino.me": uakino, // old
     "uakino.best": uakino
 };
 
