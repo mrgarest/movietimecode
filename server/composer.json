@@ -5,13 +5,13 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
-        "laravel-notification-channels/telegram": "^6.0",
-        "laravel/framework": "^12.0",
-        "laravel/passport": "^12.0",
+        "php": "^8.3",
+        "laravel-notification-channels/telegram": "^7.0",
+        "laravel/framework": "^13.0",
+        "laravel/passport": "^13.0",
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.23",
-        "laravel/tinker": "^2.9",
+        "laravel/tinker": "^3.0",
         "predis/predis": "^3.3",
         "ralphjsmit/laravel-seo": "^1.7",
         "spatie/laravel-sitemap": "^7.3"
@@ -24,8 +24,8 @@
         "laravel/sail": "^1.26",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.1",
-        "pestphp/pest": "^3.5",
-        "pestphp/pest-plugin-laravel": "^3.0"
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.1"
     },
     "autoload": {
         "psr-4": {
