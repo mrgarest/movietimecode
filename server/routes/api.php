@@ -10,9 +10,11 @@ use App\Http\Controllers\Api\TimecodeController;
 use App\Http\Controllers\Api\TwitchController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
+use Laravel\Passport\Http\Middleware\CheckToken;
+use Laravel\Passport\Http\Middleware\CheckTokenForAnyScope;
 
 Route::prefix('dashboard')
-    ->middleware(['throttle:api', 'auth:api', 'not_deactivated', 'scopes:server', 'check_role:' . RoleId::ADMIN->value])
+    ->middleware(['throttle:api', 'auth:api', 'not_deactivated', CheckToken::using('server'), 'check_role:' . RoleId::ADMIN->value])
     ->group(function () {
         Route::controller(DashboardController::class)->group(function () {
             Route::get('/statistics', 'statistics');
@@ -44,14 +46,14 @@ Route::prefix('v2')->middleware('throttle:api')->group(function () {
     Route::post('/auth/extension', [AuthController::class, 'extension']);
 
     Route::prefix('user')
-        ->middleware(['auth:api', 'not_deactivated', 'scopes:server'])
+        ->middleware(['auth:api', 'not_deactivated', CheckToken::using('server')])
         ->controller(UserController::class)
         ->group(function () {
             Route::get('/', 'me');
         });
 
     Route::prefix('twitch')
-        ->middleware(['auth:api', 'not_deactivated', 'scopes:extension'])
+        ->middleware(['auth:api', 'not_deactivated', CheckToken::using('extension')])
         ->controller(TwitchController::class)
         ->group(function () {
             Route::get('/stream/status', 'streamStatus');
@@ -74,7 +76,7 @@ Route::prefix('v2')->middleware('throttle:api')->group(function () {
             });
 
             Route::prefix('timecodes')->controller(TimecodeController::class)->group(function () {
-                Route::middleware(['auth:api', 'not_deactivated', 'scopes:extension'])->group(function () {
+                Route::middleware(['auth:api', 'not_deactivated', CheckToken::using('extension')])->group(function () {
                     Route::post('/editor/new', 'new');
                 });
                 Route::get('/authors', 'authors');
@@ -85,11 +87,11 @@ Route::prefix('v2')->middleware('throttle:api')->group(function () {
     Route::prefix('timecodes/{timecodeId}')->controller(TimecodeController::class)->group(function () {
         Route::get('/', 'timecodes');
         Route::middleware(['auth:api', 'not_deactivated'])->group(function () {
-            Route::prefix('editor')->middleware(['scopes:extension'])->group(function () {
+            Route::prefix('editor')->middleware([CheckToken::using('extension')])->group(function () {
                 Route::get('/', 'editor');
                 Route::post('/', 'edit');
             });
-            Route::middleware(['scope_or:extension,server'])->delete('/', 'delete');
+            Route::middleware([CheckTokenForAnyScope::using('extension', 'server')])->delete('/', 'delete');
         });
     });
 
