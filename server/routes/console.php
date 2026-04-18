@@ -10,7 +10,7 @@ Artisan::command('inspire', function () {
 
 Schedule::command('queue:process-jobs')->everyMinute();
 
-// Schedule::command('imdb:refresh-cookies')->everyThreeMinutes();
+Schedule::command('imdb:refresh-cookies')->everyThreeMinutes();
 
 Schedule::command('cache:gc')->hourly();
 
