@@ -79,7 +79,7 @@ export default function MovieDetailPage() {
 
                         <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
                             {movie.rating_imdb && <>
-                                <div>IMDB</div>
+                                <div>IMDb</div>
                                 <div>{movie.rating_imdb}</div>
                             </>}
 

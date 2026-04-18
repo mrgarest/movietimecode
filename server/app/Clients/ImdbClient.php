@@ -13,7 +13,7 @@ class ImdbClient
     protected string $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
     /**
-     * Refresh cookies from IMDB via browserless to bypass parsing protection.
+     * Refresh cookies from IMDb via browserless to bypass parsing protection.
      */
     public function refreshCookies(): bool
     {
@@ -65,7 +65,7 @@ class ImdbClient
     }
 
     /**
-     * Sends a GET request to parse data from IMDB.
+     * Sends a GET request to parse data from IMDb.
      */
     public function get(string $url)
     {
