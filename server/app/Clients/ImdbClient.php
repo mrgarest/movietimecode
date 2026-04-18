@@ -77,10 +77,10 @@ class ImdbClient
             'Accept-Language' => 'en-US,en;q=0.5',
         ];
 
-        if($cookie) $header[] = $cookie;
+        if ($cookie) $header['Cookie'] = $cookie;
 
         /** @var Response $response */
-        $response = Http::withHeaders($header)->get(self::API_BASE . $url);
+        $response = Http::withHeaders($header)->timeout(10)->get(self::API_BASE . $url);
 
         return $response->successful() ? $response->body() : null;
     }
