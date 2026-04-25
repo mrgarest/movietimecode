@@ -1,0 +1,23 @@
+[phases.setup]
+nixPkgs = [
+    'php84',
+    'php84Packages.composer',
+    'nginx',
+    'libmysqlclient',
+    'nodejs_22'
+]
+
+[phases.install]
+dependsOn = ['setup']
+cmds = [
+    'mkdir -p /var/log/nginx && mkdir -p /var/cache/nginx',
+    'composer install --ignore-platform-reqs',
+    'npm ci'
+]
+
+[phases.build]
+dependsOn = ['install']
+cmds = ['npm run build']
+
+[start]
+cmd = 'node /assets/scripts/prestart.mjs /assets/nginx.template.conf /nginx.conf && (php-fpm -y /assets/php-fpm.conf & nginx -c /nginx.conf)'
