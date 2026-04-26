@@ -61,7 +61,7 @@ export default function MovieTimecode({ movieId }: RootProps) {
             {(isAuthorsLoading || isTimecodesLoading) && <Skeleton className="h-24 w-full" />}
 
             {!isTimecodesLoading && segments.length > 0 && <>
-                <div className="grid grid-cols-[repeat(4,auto)_1fr] gap-y-1.5 text-sm select-none">{segments.map((segment, index) => <SegmentItem key={index} segment={segment} />)}</div>
+                <div className="grid grid-cols-[repeat(4,auto)_1fr] gap-y-1.5 text-sm">{segments.map((segment, index) => <SegmentItem key={index} segment={segment} />)}</div>
                 {selectedAuthor && <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1.5 text-sm pt-2">
                     <div>{t('movieDuration')}</div>
                     <div>{secondsToTime(selectedAuthor?.timecode.duration)}</div>
