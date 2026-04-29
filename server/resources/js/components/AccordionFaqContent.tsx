@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils"
 import { AccordionContent } from "./ui/accordion"
-import { FaqItem } from "@/interfaces/faq"
+import { FaqItem } from "@/types/faq"
 import ModalImage from "react-modal-image"
 
 export default function AccordionFaqContent({ item }: { item: FaqItem }) {

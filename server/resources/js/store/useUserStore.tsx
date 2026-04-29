@@ -1,5 +1,5 @@
-import { ServerResponse } from '@/interfaces/response';
-import { User } from '@/interfaces/user';
+import { ServerResponse } from '@/types/response';
+import { User } from '@/types/user';
 import { fetchApi } from '@/utils/fetch';
 import Cookies from 'js-cookie';
 import { create } from 'zustand';

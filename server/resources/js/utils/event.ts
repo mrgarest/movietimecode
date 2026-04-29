@@ -1,4 +1,4 @@
-import { ServerResponse } from "@/interfaces/response";
+import { ServerResponse } from "@/types/response";
 import { fetchApi } from "./fetch";
 import { EventType } from "@/enums/event";
 import { getDeviceToken } from "./cookies";

@@ -5,7 +5,7 @@ import { Spinner, SpinnerFullScreen } from "@/components/ui/spinner";
 import { ErrorCode } from "@/enums/error-code";
 import { PostCommand } from "@/enums/post-command";
 import { useSeo } from "@/hooks/useSeo";
-import { ServerResponse } from "@/interfaces/response";
+import { ServerResponse } from "@/types/response";
 import { useUserStore } from "@/store/useUserStore";
 import { ApiError, fetchApi } from "@/utils/fetch";
 import { formatDate } from "@/utils/format";

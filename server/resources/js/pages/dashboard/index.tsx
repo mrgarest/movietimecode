@@ -1,6 +1,6 @@
 import { Tile } from "@/components/ui/tile";
 import { useSeo } from "@/hooks/useSeo";
-import { ServerResponse } from "@/interfaces/response";
+import { ServerResponse } from "@/types/response";
 import { fetchApi } from "@/utils/fetch";
 import { useQuery } from "@tanstack/react-query";
 import { ClockFading, Film, UsersRound } from "lucide-react";

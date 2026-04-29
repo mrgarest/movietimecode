@@ -1,6 +1,6 @@
 import { Spinner } from "@/components/ui/spinner";
 import { EventType } from "@/enums/event";
-import { ServerResponse } from "@/interfaces/response";
+import { ServerResponse } from "@/types/response";
 import { cn } from "@/lib/utils";
 import { fetchApi } from "@/utils/fetch";
 import { formatDate } from "@/utils/format";

@@ -1,4 +1,4 @@
-import { MovieCard } from "@/interfaces/movie";
+import { MovieCard } from "@/types/movie";
 import { useTranslation } from "react-i18next";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from 'embla-carousel-autoplay'

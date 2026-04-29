@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { MovieSearchItem, MovieSearchResponse } from "@/interfaces/movie";
+import { MovieSearchItem, MovieSearchResponse } from "@/types/movie";
 import { cn } from "@/lib/utils";
 import { ApiError, fetchApi } from "@/utils/fetch";
 import { useQuery, keepPreviousData } from '@tanstack/react-query';

@@ -1,4 +1,4 @@
-import { MovieCard } from "@/interfaces/movie";
+import { MovieCard } from "@/types/movie";
 import { Link } from "react-router-dom";
 import { Skeleton } from "../ui/skeleton";
 import { cn } from "@/lib/utils";

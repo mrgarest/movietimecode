@@ -1,7 +1,7 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { ServerResponse } from "@/interfaces/response";
+import { ServerResponse } from "@/types/response";
 import { fetchApi } from "@/utils/fetch";
 import { formatDate } from "@/utils/format";
 import { useInfiniteQuery } from "@tanstack/react-query";

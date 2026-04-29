@@ -3,7 +3,7 @@ import { ApiError, fetchApi } from "@/utils/fetch";
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { TimecodeAuthor, TimecodeAuthorsResponse, TimecodeResponse, TimecodeSegment } from "@/interfaces/timecode";
+import { TimecodeAuthor, TimecodeAuthorsResponse, TimecodeResponse, TimecodeSegment } from "@/types/timecode";
 import { TimecodeTag } from "@/enums/timecode";
 import { secondsToTime } from "@/utils/format";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

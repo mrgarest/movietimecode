@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner, SpinnerFullScreen } from "@/components/ui/spinner";
 import { ErrorCode } from "@/enums/error-code";
-import { ServerResponse } from "@/interfaces/response";
+import { ServerResponse } from "@/types/response";
 import { useUserStore } from "@/store/useUserStore";
 import { ApiError, fetchApi } from "@/utils/fetch";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";

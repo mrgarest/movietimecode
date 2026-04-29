@@ -1,7 +1,7 @@
 import { useSeo } from "@/hooks/useSeo";
 import { useTranslation } from "react-i18next";
 import { Accordion, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { FaqSection } from "@/interfaces/faq";
+import { FaqSection } from "@/types/faq";
 import { useEffect, useState } from "react";
 import AccordionFaqContent from "@/components/AccordionFaqContent";
 

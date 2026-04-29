@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import { fetchApi } from '@/utils/fetch';
-import { MovieListResponse } from '@/interfaces/movie';
+import { MovieListResponse } from '@/types/movie';
 import MovieCardItem from '@/components/movies/MovieCardItem';
 import { useSeo } from '@/hooks/useSeo';
 

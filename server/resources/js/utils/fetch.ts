@@ -1,4 +1,4 @@
-import { ServerResponseError } from "@/interfaces/response";
+import { ServerResponseError } from "@/types/response";
 import Cookies from "js-cookie";
 
 interface FetchOptions {

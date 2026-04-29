@@ -1,4 +1,4 @@
-import { ImdbContentRating, MovieCheckCompany, MovieDetailResponse } from "@/interfaces/movie";
+import { ImdbContentRating, MovieCheckCompany, MovieDetailResponse } from "@/types/movie";
 import { cn } from "@/lib/utils";
 import { ApiError, fetchApi } from "@/utils/fetch";
 import { useQuery } from '@tanstack/react-query';
