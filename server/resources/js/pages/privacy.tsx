@@ -13,7 +13,7 @@ export default function PrivacyPage() {
                 <h1 className="text-xl sm:text-2xl md:text-3xl text-foreground font-bold">{t('privacyPolicy')}</h1>
                 <div className="text-xs text-muted-foreground font-medium flex items-center gap-1">
                     <CalendarDays size={14} />
-                    <div>Оновлено: 10 лютого 2026</div>
+                    <div>Оновлено: 30 квітня 2026</div>
                 </div>
             </div>
             <section>
@@ -85,7 +85,8 @@ export default function PrivacyPage() {
                 <p>Розширення Movie Timecode має доступ лише до тих вебсайтів, які перераховані в його маніфесті:</p>
                 <ul>
                     <li>Movie Timecode.</li>
-                    <li>UAKino.</li>
+                    <li>uakino.best.</li>
+                    <li>uaserials.com.</li>
                 </ul>
                 <p>Це обмеження гарантує, що розширення не отримує доступ до інших вебсайтів, забезпечуючи безпеку та належну роботу для користувачів.</p>
                 <p>Окрім цього, якщо увімкнена функція чат-бота, розширення може підключатися до вашого Twitch-чату через Twitch API. Це дозволяє надсилати повідомлення від вашого імені та читати повідомлення з чату, щоб забезпечити роботу чат-бота.</p>
