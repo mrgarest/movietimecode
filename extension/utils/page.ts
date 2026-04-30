@@ -7,7 +7,7 @@ export async function waitForDOMContentLoaded() {
   }
 
   await new Promise((resolve) =>
-    window.addEventListener("DOMContentLoaded", resolve, { once: true })
+    window.addEventListener("DOMContentLoaded", resolve, { once: true }),
   );
 }
 
@@ -16,28 +16,70 @@ export async function waitForDOMContentLoaded() {
  *
  * @template T - The type of element returned.
  * @param selector - Selector for searching for an element.
- * @param timeout - Maximum wait time in milliseconds.
- * @param interval - The interval between checks in milliseconds.
+ * @param options.root - Root element.
+ * @param options.timeout - Maximum wait time in milliseconds.
+ * @param options.interval - The interval between checks in milliseconds.
  * @returns A promise that resolves with the found element or is rejected on timeout.
  */
 export const waitForElement = <T extends Element = Element>(
   selector: string,
-  timeout: number = 10000,
-  interval: number = 100
+  options: {
+    root?: ShadowRoot;
+    timeout?: number;
+    interval?: number;
+  } = {},
 ): Promise<T> => {
+  const { root, timeout = 10000, interval = 100 } = options;
+
   return new Promise((resolve, reject) => {
     const startTime = Date.now();
+    const context = root ?? document;
 
     const check = (): void => {
-      const element = document.querySelector(selector) as T | null;
+      const element = context.querySelector<T>(selector);
 
       if (element) {
         resolve(element);
       } else if (Date.now() - startTime >= timeout) {
         reject(
           new Error(
-            `The element “${selector}” did not appear within ${timeout} ms`
-          )
+            `The element "${selector}" did not appear within ${timeout} ms`,
+          ),
+        );
+      } else {
+        setTimeout(check, interval);
+      }
+    };
+
+    check();
+  });
+};
+
+/**
+ * Waits until the element behind the selector appears in the DOM and has a shadowRoot.
+ * @param selector - Selector for searching for an element.
+ * @param timeout - Maximum wait time in milliseconds.
+ * @param interval - The interval between checks in milliseconds.
+ */
+export const waitForShadowRoot = (
+  selector: string,
+  timeout: number = 10000,
+  interval: number = 100,
+): Promise<ShadowRoot> => {
+  return new Promise((resolve, reject) => {
+    const startTime = Date.now();
+
+    const check = (): void => {
+      const shadowRoot =
+        document.querySelector<HTMLElement>(selector)?.shadowRoot;
+
+      if (shadowRoot) {
+        resolve(shadowRoot);
+      } else if (Date.now() - startTime >= timeout) {
+        reject(
+          new Error(
+            `shadowRoot of "${selector}" did not appear within ${timeout} ms`,
+          ),
         );
       } else {
         setTimeout(check, interval);
@@ -56,7 +98,7 @@ export const setDisabledScroll = (disabled: boolean) =>
   document.body.classList.toggle("mt-no-scroll", disabled);
 
 /**
- * Adds font support in head 
+ * Adds font support in head
  */
 export const setHeaderFonts = () => {
   [

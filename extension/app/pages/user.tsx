@@ -1,7 +1,7 @@
 import { Button } from "@/app/components/ui/button";
 import { login } from "@/utils/navigation";
 import { useEffect, useRef, useState } from "react";
-import { User } from "@/interfaces/user";
+import { User } from "@/types/user";
 import { getUser, logout } from "@/utils/user";
 import config from "config";
 import i18n from "@/lib/i18n";

@@ -1,5 +1,5 @@
 import config from "config";
-import { MovieSearchResponse } from "@/interfaces/movie";
+import { MovieSearchResponse } from "@/types/movie";
 
 /**
  * Sends a request to the background script.

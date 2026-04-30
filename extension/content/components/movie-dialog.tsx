@@ -1,4 +1,4 @@
-import { TimecodeAuthor, TimecodeAuthorsResponse, TimecodeResponse, TimecodeSegment } from "@/interfaces/timecode";
+import { TimecodeAuthor, TimecodeAuthorsResponse, TimecodeResponse, TimecodeSegment } from "@/types/timecode";
 import { Button } from "./ui/button";
 import { useEffect, useState } from 'preact/hooks';
 import { Check, Circle, CircleCheck } from "lucide-react";
@@ -7,7 +7,7 @@ import { secondsToTime } from "@/utils/format";
 import i18n from "@/lib/i18n";
 import config from "@/config.json";
 import { fetchBackground } from "@/utils/fetch";
-import { MovieSearchTimecodesResponse } from "@/interfaces/movie";
+import { MovieSearchTimecodesResponse } from "@/types/movie";
 import { LoadingSpinner } from "./ui/loading";
 import { event } from "@/utils/event";
 import { EventType } from "@/enums/event";
@@ -147,8 +147,8 @@ const MovieDialog = ({ data, onSelected }: RootProps) => {
                                     onClick={() => handleItemSelected(index, item)}>
                                     <div className="mt-select-itme-left">
                                         {selectedIndex == index
-                                            ? <CircleCheck size={13} strokeWidth={3} color="var(--mt-green)" />
-                                            : <Circle size={13} strokeWidth={3} color="oklch(0.76 0 0)" />
+                                            ? <CircleCheck size={13} strokeWidth={3} className="mt-circle-check" />
+                                            : <Circle size={13} strokeWidth={3} className="mt-circle" />
                                         }
                                         <span className="mt-select-itme-name">{item.user?.username || 'Невідомий'}</span>
                                     </div>
@@ -246,7 +246,7 @@ const ContentClassificationItem = ({
 
     return (
         <>
-            <Check size={9} strokeWidth={8} className="mt-check" />
+            <Check size={13} strokeWidth={8} className="mt-check" />
             <div>{i18n.t('twitchContentClassificationOptions.' + localeKey)}</div>
         </>
     );

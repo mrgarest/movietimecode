@@ -2,7 +2,7 @@ import { BlurPower, TimecodeAction, TimecodeTag } from "@/enums/timecode";
 import { render } from "preact";
 import config from "config";
 import { ControlBar } from "./components/control-bar";
-import { Settings, SettingsOBSClientNull } from "@/interfaces/settings";
+import { Settings, SettingsOBSClientNull } from "@/types/settings";
 import { setHeaderFonts, waitForDOMContentLoaded, waitForElement } from "@/utils/page";
 import OBSClient, { OBSType, Scene } from "@/lib/obs-client";
 import { renderQuestionDialog } from "./components/question-dialog";
@@ -10,15 +10,16 @@ import i18n from "@/lib/i18n";
 import { playAlertSound } from "@/utils/alert";
 import { censorshipActionLog } from "@/utils/log";
 import ChatClient, { ChatMessage } from "@/lib/chat-client";
-import { User } from "@/interfaces/user";
+import { User } from "@/types/user";
 import { getUser } from "@/utils/user";
-import { ChatbotCommand } from "@/interfaces/chatbot";
+import { ChatbotCommand } from "@/types/chatbot";
 import { ChatbotAccess, ChatbotAction } from "@/enums/chatbot";
 import { secondsToTime } from "@/utils/format";
 import { isPlayerVisible, playerInvisible, playerMute, playerPause, playerPlay, playerSeek, playerUnmute, playerVisible } from "@/utils/player";
-import { TimecodeSegment } from "@/interfaces/timecode";
+import { TimecodeSegment } from "@/types/timecode";
 import { isStreamLive, isTwitchTokenExpires, refreshTwitchToken } from "@/utils/twitch";
 import { getSettings, onSettingsChanged, SettingsDefault } from "@/utils/settings";
+import { getSiteDriver } from "./sites/driver";
 
 let isHotkeyPressed: boolean = false;
 let isCensorshipEnabled: boolean = false;
@@ -93,51 +94,11 @@ const handleSettings = (s: Settings) => {
 
 onSettingsChanged(handleSettings);
 
-/**
- * Determines the player and movie title based on the site domain.
- */
-const uakino = {
-    getPlayer: async (): Promise<HTMLIFrameElement | undefined> => {
-        if (document.querySelector<HTMLDivElement>(".movie-right .players-section .playlists-ajax") == undefined) {
-            return document.querySelector<HTMLIFrameElement>('.movie-right .players-section iframe#pre') ?? undefined;
-        }
-        try {
-            return await waitForElement<HTMLIFrameElement>('.movie-right .players-section .playlists-ajax iframe#playerfr');
-        } catch (e) {
-            return undefined;
-        }
-    },
-    getContainerForControlBar: (): HTMLDivElement | undefined =>
-        document.querySelector<HTMLDivElement>(".movie-right .players-section .box.full-text.visible") ?? undefined,
-    getTitle: (): string | null =>
-        document.querySelector(".alltitle .solototle")?.textContent?.trim() ?? null,
-    getOriginalTitle: (): string | null =>
-        document.querySelector(".alltitle .origintitle i")?.textContent?.trim() ?? null,
-    getYear: (): number | null => {
-        const match = document.body.innerHTML.match(/:\/\/[a-z0-9.-]+\.[a-z0-9]+\/find\/year\/(\d+)\//i);
-        const year = match?.[1] ? parseInt(match[1], 10) : null;
-        return Number.isNaN(year) ? null : year;
-    }
-};
-
-const playerMap: Record<
-    string,
-    {
-        getPlayer: () => Promise<Thtml>;
-        getContainerForControlBar: () => HTMLDivElement | undefined;
-        getTitle: () => string | null;
-        getOriginalTitle: () => string | null;
-        getYear: () => number | null;
-    }
-> = {
-    "uakino.best": uakino
-};
-
 (async () => {
     await waitForDOMContentLoaded();
     user = await getUser();
     const hostname = window.location.hostname;
-    const site = playerMap[hostname];
+    const site = getSiteDriver(hostname);
     if (!site) {
         if (config.debug) {
             console.warn(`The website ${hostname} is not supported.`);

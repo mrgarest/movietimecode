@@ -17,8 +17,8 @@ import { Label } from "@/app/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/app/components/ui/textarea";
 import { secondsToTimeHMS, timeToseconds } from "@/utils/format";
-import { MovieSearchItem } from "@/interfaces/movie";
-import { ServerResponse } from "@/interfaces/response";
+import { MovieSearchItem } from "@/types/movie";
+import { ServerResponse } from "@/types/response";
 import { logout } from "@/utils/user";
 import i18n from "@/lib/i18n";
 import {
@@ -28,7 +28,7 @@ import {
     AccordionTrigger,
 } from "@/app/components/ui/accordion"
 import { ErrorCode } from "@/enums/error-code";
-import { TimecodeEditor } from "@/interfaces/timecode";
+import { TimecodeEditor } from "@/types/timecode";
 import { TwitchContentClassification } from "@/enums/twitch";
 
 /**

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings } from '@/interfaces/settings'
+import { Settings } from '@/types/settings'
 import i18n from '@/lib/i18n';
 import { Button } from '../components/ui/button';
 import { HardDriveDownload, HardDriveUpload } from 'lucide-react';

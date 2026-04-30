@@ -20,7 +20,7 @@ export default function getManifest() {
         suggested_key: {
           default: "Alt+X",
         },
-        description: "__MSG_censoringPlayerContent__"
+        description: "__MSG_censoringPlayerContent__",
       },
     },
     action: {
@@ -62,7 +62,7 @@ export default function getManifest() {
     ],
     web_accessible_resources: [
       {
-        resources: ["images/*", "icons/*", "sounds/*"],
+        resources: ["images/*", "icons/*", "sounds/*", "assets/content.css"],
         matches: ["<all_urls>"],
       },
     ],

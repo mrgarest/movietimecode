@@ -1,5 +1,5 @@
 import config from "config";
-import { User } from "@/interfaces/user";
+import { User } from "@/types/user";
 import { getDeviceToken, getUser } from "@/utils/user";
 import { event } from "@/utils/event";
 import { EventType } from "@/enums/event";

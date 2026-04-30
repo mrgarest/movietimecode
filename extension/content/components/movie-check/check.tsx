@@ -1,4 +1,4 @@
-import { ImdbContentRating, MovieCheckResponse, MovieCheckCompany, MovieSearchItem } from "@/interfaces/movie";
+import { ImdbContentRating, MovieCheckResponse, MovieCheckCompany, MovieSearchItem } from "@/types/movie";
 import { useEffect, useState } from "preact/hooks";
 import config from "config";
 import { fetchBackground } from "@/utils/fetch";

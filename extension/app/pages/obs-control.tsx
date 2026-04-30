@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select"
-import { SettingsOBSClientNull } from '@/interfaces/settings'
+import { SettingsOBSClientNull } from '@/types/settings'
 import { Input } from '@/app/components/ui/input';
 import config from 'config';
 import { zodResolver } from "@hookform/resolvers/zod"

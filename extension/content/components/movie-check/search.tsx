@@ -1,4 +1,4 @@
-import { MovieSearchResponse, MovieSearchItem } from "@/interfaces/movie";
+import { MovieSearchResponse, MovieSearchItem } from "@/types/movie";
 import { useEffect, useState } from "preact/hooks";
 import config from "config";
 import { fetchSearchMovie } from "@/utils/fetch";

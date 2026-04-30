@@ -1,6 +1,6 @@
 import config from "config";
 import { goToTab } from "./navigation";
-import { User } from "@/interfaces/user";
+import { User } from "@/types/user";
 import CryptoJS from "crypto-js";
 
 /**

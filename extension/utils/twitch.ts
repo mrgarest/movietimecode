@@ -1,8 +1,8 @@
 import config from "config";
-import { User, UserTwitch } from "@/interfaces/user";
+import { User, UserTwitch } from "@/types/user";
 import { fetchBackground } from "./fetch";
-import { StreamStatusResponse, TwitchTokenResponse } from "@/interfaces/twitch";
-import { ServerResponse } from "@/interfaces/response";
+import { StreamStatusResponse, TwitchTokenResponse } from "@/types/twitch";
+import { ServerResponse } from "@/types/response";
 import { getUser } from "./user";
 import { getSetting } from "./settings";
 

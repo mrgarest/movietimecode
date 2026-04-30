@@ -1,7 +1,7 @@
 import { ChatbotAccess, ChatbotAction } from "@/enums/chatbot";
 import { BlurPower, TimecodeAction } from "@/enums/timecode";
-import { ChatbotCommand } from "@/interfaces/chatbot";
-import { Settings } from "@/interfaces/settings";
+import { ChatbotCommand } from "@/types/chatbot";
+import { Settings } from "@/types/settings";
 
 export const SettingsDefault = {
   timeBuffer: 0,

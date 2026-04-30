@@ -1,5 +1,5 @@
 import config from "config";
-import { ServerResponse } from "@/interfaces/response";
+import { ServerResponse } from "@/types/response";
 import { fetchBackground } from "./fetch";
 import { getDeviceToken } from "./user";
 import { EventType } from "@/enums/event";

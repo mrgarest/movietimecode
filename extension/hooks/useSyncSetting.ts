@@ -1,4 +1,4 @@
-import { Settings } from "@/interfaces/settings";
+import { Settings } from "@/types/settings";
 import { updateSetting } from "@/utils/settings";
 
 /**

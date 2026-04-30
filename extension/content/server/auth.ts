@@ -1,7 +1,7 @@
 import { fetchBackground } from "@/utils/fetch";
 import config from "config";
-import { User } from "@/interfaces/user";
-import { ServerResponse } from "@/interfaces/response";
+import { User } from "@/types/user";
+import { ServerResponse } from "@/types/response";
 import { PostMessageSource } from "@/enums/post-command";
 
 /**

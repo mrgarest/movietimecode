@@ -1,7 +1,7 @@
 import { fetchSearchMovie } from "@/utils/fetch";
 import config from "config";
 import { useEffect, useState } from "react";
-import { MovieSearchResponse, MovieSearchItem } from "@/interfaces/movie";
+import { MovieSearchResponse, MovieSearchItem } from "@/types/movie";
 import { logout } from "@/utils/user";
 import i18n from "@/lib/i18n";
 

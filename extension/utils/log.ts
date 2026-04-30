@@ -1,7 +1,7 @@
 import { TimecodeAction } from "@/enums/timecode";
 import { secondsToTime } from "./format";
 import config from "config";
-import { TimecodeSegment } from "@/interfaces/timecode";
+import { TimecodeSegment } from "@/types/timecode";
 
 /**
  * Logs information about the censorship action for debugging.

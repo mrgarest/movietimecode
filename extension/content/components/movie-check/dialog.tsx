@@ -1,7 +1,7 @@
 import { removeDialog, renderDialog } from "@/utils/dialog";
 import SearchMovie from "./search";
 import { useState } from "preact/hooks";
-import { MovieSearchItem } from "@/interfaces/movie";
+import { MovieSearchItem } from "@/types/movie";
 import { X } from "lucide-react";
 import { renderQuestionDialog } from "../question-dialog";
 import Check from "./check";

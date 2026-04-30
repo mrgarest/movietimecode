@@ -1,12 +1,12 @@
 import { useLocation } from "react-router-dom";
 import NotFound from "./not-found";
 import config from "config";
-import { User } from "@/interfaces/user";
+import { User } from "@/types/user";
 import { useEffect, useState } from "react";
 import { Button } from "@/app/components/ui/button";
 import { login } from "@/utils/navigation";
 import { cn } from "@/lib/utils";
-import { MovieSearchItem } from "@/interfaces/movie";
+import { MovieSearchItem } from "@/types/movie";
 import { Footer } from "@/app/components/footer";
 import { getUser } from "@/utils/user";
 import i18n from "@/lib/i18n";

@@ -5,15 +5,16 @@ import { renderMovieDialog, TimecodeSelect } from "./movie-dialog";
 import { renderQuestionDialog } from "./question-dialog";
 import { fetchBackground } from "@/utils/fetch";
 import config from "@/config.json";
-import { User } from "@/interfaces/user";
+import { User } from "@/types/user";
 import { goToTab, login } from "@/utils/navigation";
 import { getUser } from "@/utils/user";
 import { renderMovieCheckDialog } from "./movie-check/dialog";
 import i18n from "@/lib/i18n";
-import { MovieSearchTimecodesResponse } from '@/interfaces/movie';
+import { MovieSearchTimecodesResponse } from '@/types/movie';
 import { ErrorCode } from '@/enums/error-code';
-import { TimecodeSegment } from '@/interfaces/timecode';
+import { TimecodeSegment } from '@/types/timecode';
 import { updateTwitchContentClassification } from '@/utils/twitch';
+import { cn } from '@/lib/utils';
 
 interface RootProps {
     player: HTMLIFrameElement;
@@ -215,7 +216,10 @@ export const ControlBar = ({ player, movie, onTurnOffCensorship, onCensorship }:
             <div className="mt-container">
                 <div className={`mt-status mt-${statusIndicator}`}></div>
                 <div
-                    className={`mt-button mt-primary${isSearchButtonDisabled ? " mt-disabled" : ""}`}
+                    className={cn(
+                        "mt-button mt-primary",
+                        isSearchButtonDisabled && "mt-disabled"
+                    )}
                     onClick={handleClickSearch}>
                     <searchButton.icon size={iconSize} />
                     <span>{searchButton.title}</span>

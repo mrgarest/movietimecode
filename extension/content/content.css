@@ -2,7 +2,7 @@
   --mt-inter: "Inter", sans-serif;
   --mt-roboto: "Roboto", sans-serif;
   --mt-background: hsl(0, 0%, 9%);
-  --mt-background-foreground: hsl(0, 0%, 100%);
+  --mt-foreground: hsl(0, 0%, 100%);
   --mt-primary: hsl(0, 0%, 100%);
   --mt-primary-foreground: hsl(0, 0%, 0%);
   --mt-secondary: hsl(0, 0%, 12%);
@@ -49,6 +49,24 @@
   background: transparent;
 }
 
+/*********************** colors ***********************/
+
+.mt-bg-background {
+  background-color: var(--mt-background);
+}
+
+.mt-bg-foreground {
+  background-color: var(--mt-foreground);
+}
+
+.mt-text-background {
+  color: var(--mt-background);
+}
+
+.mt-text-foreground {
+  color: var(--mt-foreground);
+}
+
 /*********************** text size ***********************/
 .mt-text-sm {
   font-size: var(--mt-text-sm);
@@ -91,12 +109,14 @@
   height: 0.4375rem;
 }
 /*********************** control-bar ***********************/
+
 .mt-control-bar {
   font-family: var(--mt-inter);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-top: 0.75rem;
+  color: var(--mt-foreground);
 }
 
 .mt-container {
@@ -205,6 +225,11 @@
 .mt-button.mt-outline {
   padding-inline: 0.8rem;
 }
+
+.mt-button.mt-outline {
+  color: var(--mt-foreground);
+}
+
 .mt-button.mt-primary {
   color: var(--mt-primary-foreground);
   background-color: var(--mt-primary);
@@ -260,6 +285,11 @@
   z-index: 999;
   background-color: #0000008a;
   backdrop-filter: blur(10px);
+  color: var(--mt-foreground);
+}
+
+.mt-dialog * {
+  box-sizing: border-box;
 }
 
 .mt-dialog .mt-buttons {
@@ -296,6 +326,7 @@
 .mt-dialog-question .mt-title {
   font-size: var(--mt-text-xl);
   font-weight: 700;
+  color: var(--mt-foreground);
 }
 
 .mt-dialog-question .mt-description {
@@ -360,6 +391,7 @@
 .mt-dialog-movie .mt-title {
   font-size: var(--mt-text-xl);
   font-weight: 700;
+  color: var(--mt-foreground);
 }
 
 .mt-dialog-movie .mt-origin-title {
@@ -378,6 +410,7 @@
 .mt-dialog-movie .mt-info-title {
   font-size: var(--mt-text-base);
   font-weight: 700;
+  color: var(--mt-foreground);
 }
 
 .mt-dialog-movie .mt-info-grid {
@@ -388,7 +421,7 @@
 }
 
 .mt-dialog-movie .mt-info-grid > div {
-  color: var(--mt-background-foreground);
+  color: var(--mt-foreground);
   font-size: var(--mt-text-sm);
   font-weight: 500;
 }
@@ -399,7 +432,7 @@
   row-gap: 0.4rem;
   user-select: none;
   transition: 0.3s;
-  color: var(--mt-background-foreground);
+  color: var(--mt-foreground);
   font-size: var(--mt-text-sm);
 }
 
@@ -412,8 +445,8 @@
 }
 
 .mt-dialog-movie .mt-segments .mt-spoiler {
-  background-color: var(--mt-background-foreground);
-  color: var(--mt-background-foreground);
+  background-color: var(--mt-foreground);
+  color: var(--mt-foreground);
   max-width: max-content;
   border-radius: 4px;
   cursor: pointer;
@@ -433,7 +466,7 @@
 }
 
 .mt-dialog-movie .mt-check {
-  background-color: var(--mt-background-foreground);
+  background-color: var(--mt-foreground);
   color: var(--mt-background);
   border-radius: 2px;
   padding: 2px;
@@ -454,6 +487,7 @@
 
 .mt-dialog .mt-select .mt-select-itmes {
   background-color: var(--mt-secondary);
+  color: var(--mt-foreground);
   border: 1px solid oklch(1 0 0 / 0.08);
   border-radius: 0.56rem;
   max-height: 1.8rem;
@@ -466,6 +500,7 @@
   user-select: none;
   cursor: pointer;
 }
+
 .mt-dialog .mt-select .mt-select-itmes,
 .mt-dialog .mt-select .mt-select-itmes > div {
   display: flex;
@@ -475,6 +510,14 @@
 .mt-dialog .mt-select .mt-select-itmes .mt-select-itme-left {
   justify-content: start;
   gap: 0.5rem;
+}
+
+.mt-dialog .mt-select .mt-select-itmes .mt-select-itme-left .mt-circle {
+  stroke: oklch(0.76 0 0) !important;
+}
+
+.mt-dialog .mt-select .mt-select-itmes .mt-select-itme-left .mt-circle-check {
+  stroke: var(--mt-green) !important;
 }
 
 .mt-dialog .mt-select .mt-select-itmes .mt-select-itme-right {
@@ -582,6 +625,7 @@
 
 .mt-dialog-mc .mt-search-list .mt-movie-item .mt-title {
   font-size: var(--mt-text-sm);
+  color: var(--mt-foreground);
 }
 .mt-dialog-mc .mt-movie-header.mt-movie-item .mt-title {
   font-size: 1.25rem;
@@ -617,6 +661,7 @@
   font-size: var(--mt-text-base);
   font-weight: 700;
   margin-bottom: 0.8rem;
+  color: var(--mt-foreground);
 }
 
 .mt-dialog-mc .mt-check .mt-info-grid {
@@ -634,7 +679,7 @@
 }
 .mt-dialog-mc .mt-check .mt-info-grid a {
   font-weight: 400;
-  color: var(--mt-background-foreground);
+  color: var(--mt-foreground);
   text-decoration: none;
   transition: 0.3s ease;
 }
@@ -718,7 +763,7 @@
   backdrop-filter: blur(15px);
   background-color: hsl(0deg 0% 12% / 27%);
   border: 1px solid hsl(0deg 0% 100% / 9%);
-  color: var(--mt-background-foreground);
+  color: var(--mt-foreground);
   text-align: center;
   border-radius: 0.75rem;
   padding: 0.2rem 0.5rem;
