@@ -50,7 +50,6 @@ export class OBSBackground {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = undefined;
     }
-    this.connectionId = undefined;
   }
 
   async disconnect(): Promise<void> {
