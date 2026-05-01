@@ -2,8 +2,13 @@ import { ChatbotAccess, ChatbotAction } from "@/enums/chatbot";
 import { BlurPower, TimecodeAction } from "@/enums/timecode";
 import { ChatbotCommand } from "@/types/chatbot";
 import { Settings } from "@/types/settings";
+import config from "config";
 
-export const SettingsDefault = {
+// Default settings for the extension.
+export const DEFAULT_SETTINGS: Settings = {
+  installedAt: null,
+  user: null,
+  deviceToken: null,
   timeBuffer: 0,
   blurPower: BlurPower.base,
   nudity: TimecodeAction.blur,
@@ -72,97 +77,153 @@ export const SettingsDefault = {
 };
 
 /**
- * Get all settings, filling in missing fields with values from SettingsDefault.
+ * Extension Settings Manager.
+ * Provides synchronous access to the cache, asynchronous loading, updates, and change subscriptions.
  */
-export const getSettings = async (): Promise<Settings>=> {
-  const result = await chrome.storage.sync.get("settings");
-  const storedSettings = (result.settings as Settings) || {};
+class SettingsManager {
+  private cache: Settings = { ...DEFAULT_SETTINGS };
+  private listeners: Partial<{
+    [K in keyof Settings]: ((key: K, newValue: Settings[K]) => void)[];
+  }> = {};
 
-  return {
-    ...SettingsDefault,
-    ...storedSettings,
-  } as Required<Settings>;
-};
-
-/**
- * Get a specific field from the ‘settings’ object in chrome.storage.
- * @param key
- */
-export const getSetting = async <K extends keyof Settings>(
-  key: K
-): Promise<Settings[K]> => {
-  const settings = await getSettings();
-  return settings[key];
-};
-
-/**
- * Subscription to changes in settings in chrome.storage.
- * @param callback The function that will receive the updated Settings object
- */
-export const onSettingsChanged = (
-  callback: (newSettings: Settings) => void
-) => {
-  const listener = (
-    changes: { [key: string]: chrome.storage.StorageChange },
-    areaName: string
-  ) => {
-    if (areaName === "sync" && changes.settings) {
-      callback(changes.settings.newValue as Settings);
-    }
-  };
-
-  chrome.storage.onChanged.addListener(listener);
-
-  return () => chrome.storage.onChanged.removeListener(listener);
-};
-
-/**
- * Updating settings in chrome.storage.
- *
- * @param updates
- */
-export const updateSettings = async (
-  updates: Partial<Settings>
-): Promise<void> => {
-  const currentSettings = await getSettings();
-
-  // Create a copy for safe editing
-  const sanitizedUpdates: Partial<Settings> = { ...updates };
-
-  for (const key in sanitizedUpdates) {
-    const k = key as keyof Settings;
-    const newValue = sanitizedUpdates[k];
-    const defaultValue = SettingsDefault[k as keyof typeof SettingsDefault];
-
-    // If the default is a number and a string is received, convert it to a number.
-    if (typeof defaultValue === "number" && typeof newValue === "string") {
-      (sanitizedUpdates[k] as any) = Number(newValue);
-    }
-    // If the default is boolean, but a string is received
-    else if (
-      typeof defaultValue === "boolean" &&
-      typeof newValue === "string"
-    ) {
-      (sanitizedUpdates[k] as any) = newValue === "true";
-    }
+  constructor() {
+    this.init();
   }
 
-  const updatedSettings = {
-    ...currentSettings,
-    ...sanitizedUpdates,
-  };
+  private async init() {
+    const res = await chrome.storage.local.get(Object.keys(DEFAULT_SETTINGS));
+    this.cache = { ...DEFAULT_SETTINGS, ...res } as unknown as Settings;
 
-  await chrome.storage.sync.set({ settings: updatedSettings });
-};
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local") {
+        for (const [key, change] of Object.entries(changes)) {
+          if (key in this.cache) {
+            (this.cache as any)[key] = change.newValue;
+
+            const keyListeners = this.listeners[key as keyof Settings];
+            if (keyListeners) {
+              for (const listener of keyListeners) {
+                (listener as (key: unknown, value: unknown) => void)(
+                  key,
+                  change.newValue,
+                );
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Retrieves the current setting value from the cache (synchronously).
+   */
+  get<K extends keyof Settings>(key: K): Settings[K] {
+    return this.cache[key];
+  }
+
+  /**
+   * Loads all settings from `chrome.storage.local` with their default values.
+   */
+  async getAll(): Promise<Settings> {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(Object.keys(DEFAULT_SETTINGS), (result) => {
+        resolve({ ...DEFAULT_SETTINGS, ...result } as unknown as Settings);
+      });
+    });
+  }
+
+  /**
+   * Sets one or more settings.
+   */
+  async set(values: Partial<Settings>): Promise<void> {
+    await chrome.storage.local.set(values);
+  }
+
+  /**
+   * Creates a handler to synchronize React state with chrome.storage.
+   * Used in the UI for two-way communication.
+   */
+  sync<K extends keyof Settings>(key: K, setter: (value: Settings[K]) => void) {
+    return (newValue: Settings[K]) => {
+      setter(newValue);
+      chrome.storage.local.set({ [key]: newValue }, () => {
+        if (chrome.runtime.lastError && config.debug) {
+          console.error(`Error saving ${key}:`, chrome.runtime.lastError);
+        }
+      });
+    };
+  }
+
+  /**
+   * Subscribes to changes to one or more settings.
+   * @returns Unsubscribe function
+   */
+  onChange<K extends keyof Settings>(
+    keys: K | K[],
+    listener: (key: K, newValue: Settings[K]) => void,
+  ): () => void {
+    const keysArray = Array.isArray(keys) ? keys : [keys];
+
+    for (const key of keysArray) {
+      if (!this.listeners[key]) {
+        this.listeners[key] = [];
+      }
+      this.listeners[key]!.push(
+        listener as (key: K, value: Settings[K]) => void,
+      );
+    }
+
+    return () => {
+      for (const key of keysArray) {
+        this.listeners[key] = this.listeners[key]!.filter(
+          (l) => l !== listener,
+        ) as (typeof this.listeners)[K];
+      }
+    };
+  }
+}
+
+export const settings = new SettingsManager();
 
 /**
- * Updates the specific field in chrome.storage
- * @param key
- * @param value
+ * Migration from the old chrome.storage.sync format to chrome.storage.local.
  */
-export const updateSetting = async <K extends keyof Settings>(
-  key: K,
-  value: Settings[K]
-): Promise<void> => {
-  await updateSettings({ [key]: value });
+export const migrateSettings = async (): Promise<void> => {
+  const { migrated } = await chrome.storage.local.get("migrated");
+  if (migrated) return;
+
+  const old = await chrome.storage.sync.get("settings");
+  const oldSettings = old.settings as Partial<Settings> | undefined;
+
+  if (oldSettings) {
+    // Filter only those keys that are in DEFAULT_SETTINGS
+    const validKeys = Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[];
+    const migratedSettings: Partial<Settings> = {};
+
+    for (const key of validKeys) {
+      if (key in oldSettings) {
+        (migratedSettings as any)[key] = oldSettings[key];
+      }
+    }
+
+    await chrome.storage.local.set(migratedSettings);
+    await chrome.storage.sync.remove("settings");
+
+    if (config.debug)
+      console.log("Settings migrated from sync to local:", migratedSettings);
+  }
+
+  const { device } = await chrome.storage.sync.get<{
+    device?: { token: string };
+  }>("device");
+
+  if (device) {
+    await chrome.storage.sync.remove("device");
+    settings.set({ deviceToken: device.token });
+  }
+
+  await chrome.storage.sync.remove("user");
+
+  await chrome.storage.local.set({ migrated: 1 });
 };

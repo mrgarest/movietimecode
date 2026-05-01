@@ -4,7 +4,7 @@ import { fetchBackground } from "./fetch";
 import { StreamStatusResponse, TwitchTokenResponse } from "@/types/twitch";
 import { ServerResponse } from "@/types/response";
 import { getUser } from "./user";
-import { getSetting } from "./settings";
+import { settings } from "./settings";
 
 /**
  * Checks if the user's Twitch token has expired.
@@ -30,7 +30,7 @@ export const isTwitchTokenExpires = (user: User): boolean => {
  * @returns Promise<UserTwitch | null>
  */
 export const refreshTwitchToken = async (
-  user: User
+  user: User,
 ): Promise<UserTwitch | null> => {
   if (!user?.twitch?.refreshToken) return null;
   try {
@@ -38,7 +38,7 @@ export const refreshTwitchToken = async (
       `${config.baseUrl}/api/v2/twitch/token?grant_type=refresh_token&refresh_token=${user.twitch.refreshToken}`,
       {
         method: "POST",
-      }
+      },
     );
 
     if (!data.success) {
@@ -51,12 +51,7 @@ export const refreshTwitchToken = async (
       expiresAt: data.expires_at,
     };
 
-    await chrome.storage.sync.set({
-      user: {
-        ...user,
-        twitch: twitch,
-      } as User,
-    });
+    await settings.set({ user: { ...user, twitch } });
 
     return twitch;
   } catch (err) {
@@ -74,13 +69,13 @@ export const refreshTwitchToken = async (
  * @returns Promise<boolean>
  */
 export const isStreamLive = async (user: User): Promise<boolean> => {
-  const checkStreamLive = await getSetting("checkStreamLive");
+  const checkStreamLive = settings.get("checkStreamLive");
   if (!checkStreamLive) return true;
-  
+
   if (!user?.twitch?.accessToken) return false;
   try {
     const data = await fetchBackground<StreamStatusResponse>(
-      `${config.baseUrl}/api/v2/twitch/stream/status?access_token=${user.twitch.accessToken}`
+      `${config.baseUrl}/api/v2/twitch/stream/status?access_token=${user.twitch.accessToken}`,
     );
 
     return data.success && data.is_live;
@@ -103,8 +98,8 @@ export const updateTwitchContentClassification = async ({
     return false;
   }
 
-  const editTwitchContentClassification = await getSetting(
-    "editTwitchContentClassification"
+  const editTwitchContentClassification = settings.get(
+    "editTwitchContentClassification",
   );
   if (!editTwitchContentClassification) return false;
 
@@ -136,7 +131,7 @@ export const updateTwitchContentClassification = async ({
           enabled: enabled,
           ids: ids,
         }),
-      }
+      },
     );
 
     return data.success;

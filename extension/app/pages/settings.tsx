@@ -4,35 +4,31 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { BlurPower, TimecodeAction } from '@/enums/timecode';
 import { Input } from '@/app/components/ui/input';
 import i18n from '@/lib/i18n';
-import { useSyncSetting } from '@/hooks/useSyncSetting';
-import { getSettings, SettingsDefault, updateSetting } from '@/utils/settings';
+import { DEFAULT_SETTINGS, settings } from '@/utils/settings';
 
 export default function SettingsPage() {
-    const [timeBuffer, setTimeBuffer] = useState<number>(SettingsDefault.timeBuffer);
-    const [blurPower, setBlurPower] = useState<BlurPower>(SettingsDefault.blurPower);
-    const [nudity, setNudity] = useState<TimecodeAction>(SettingsDefault.nudity);
-    const [sexualContentWithoutNudity, setSexualContentWithoutNudity] = useState<TimecodeAction>(SettingsDefault.sexualContentWithoutNudity);
-    const [eroticSounds, setEroticSounds] = useState<TimecodeAction>(SettingsDefault.eroticSounds);
-    const [violence, setViolence] = useState<TimecodeAction>(SettingsDefault.violence);
-    const [sensitiveExpressions, setSensitiveExpressions] = useState<TimecodeAction>(SettingsDefault.sensitiveExpressions);
-    const [useDrugsAlcoholTobacco, setUseDrugsAlcoholTobacco] = useState<TimecodeAction>(SettingsDefault.useDrugsAlcoholTobacco);
-    const [prohibitedSymbols, setProhibitedSymbols] = useState<TimecodeAction>(SettingsDefault.prohibitedSymbols);
+    const [timeBuffer, setTimeBuffer] = useState<number>(DEFAULT_SETTINGS.timeBuffer);
+    const [blurPower, setBlurPower] = useState<BlurPower>(DEFAULT_SETTINGS.blurPower);
+    const [nudity, setNudity] = useState<TimecodeAction>(DEFAULT_SETTINGS.nudity);
+    const [sexualContentWithoutNudity, setSexualContentWithoutNudity] = useState<TimecodeAction>(DEFAULT_SETTINGS.sexualContentWithoutNudity);
+    const [eroticSounds, setEroticSounds] = useState<TimecodeAction>(DEFAULT_SETTINGS.eroticSounds);
+    const [violence, setViolence] = useState<TimecodeAction>(DEFAULT_SETTINGS.violence);
+    const [sensitiveExpressions, setSensitiveExpressions] = useState<TimecodeAction>(DEFAULT_SETTINGS.sensitiveExpressions);
+    const [useDrugsAlcoholTobacco, setUseDrugsAlcoholTobacco] = useState<TimecodeAction>(DEFAULT_SETTINGS.useDrugsAlcoholTobacco);
+    const [prohibitedSymbols, setProhibitedSymbols] = useState<TimecodeAction>(DEFAULT_SETTINGS.prohibitedSymbols);
     const [obsDisabled, setObsDisabled] = useState<boolean>(true);
-    const { sync } = useSyncSetting();
 
     useEffect(() => {
-        getSettings().then(settings => {
-            setTimeBuffer(settings.timeBuffer);
-            setBlurPower(settings.blurPower);
-            setNudity(settings.nudity);
-            setEroticSounds(settings.eroticSounds);
-            setViolence(settings.violence);
-            setSensitiveExpressions(settings.sensitiveExpressions);
-            setSexualContentWithoutNudity(settings.sexualContentWithoutNudity);
-            setUseDrugsAlcoholTobacco(settings.useDrugsAlcoholTobacco);
-            setProhibitedSymbols(settings.prohibitedSymbols);
-            setObsDisabled(settings.obsClient === null || settings.obsCensorScene === null);
-        });
+        setTimeBuffer(settings.get("timeBuffer"));
+        setBlurPower(settings.get("blurPower"));
+        setNudity(settings.get("nudity"));
+        setEroticSounds(settings.get("eroticSounds"));
+        setViolence(settings.get("violence"));
+        setSensitiveExpressions(settings.get("sensitiveExpressions"));
+        setSexualContentWithoutNudity(settings.get("sexualContentWithoutNudity"));
+        setUseDrugsAlcoholTobacco(settings.get("useDrugsAlcoholTobacco"));
+        setProhibitedSymbols(settings.get("prohibitedSymbols"));
+        setObsDisabled(settings.get("obsClient") === null || settings.get("obsCensorScene") === null);
     }, []);
 
     const selectItemBehavior = useMemo(() => {
@@ -51,16 +47,16 @@ export default function SettingsPage() {
         ];
     }, [obsDisabled]);
 
-const handleTimeBuffer = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let value = parseInt(event.target.value);
-    
-    if (isNaN(value)) value = 0;
-    
-    value = Math.max(0, Math.min(59, value));
-    
-    setTimeBuffer(value);
-    updateSetting('timeBuffer', value);
-};
+    const handleTimeBuffer = (event: React.ChangeEvent<HTMLInputElement>) => {
+        let value = parseInt(event.target.value);
+
+        if (isNaN(value)) value = 0;
+
+        value = Math.max(0, Math.min(59, value));
+
+        setTimeBuffer(value);
+        settings.set({ timeBuffer: value });
+    };
 
     return (
         <div className="space-y-8">
@@ -70,7 +66,7 @@ const handleTimeBuffer = (event: React.ChangeEvent<HTMLInputElement>) => {
                     title={i18n.t("blurStrength")}
                     description={i18n.t("blurStrengthDescription")}>
                     <Select
-                        onValueChange={sync("blurPower", setBlurPower)}
+                        onValueChange={settings.sync("blurPower", setBlurPower)}
                         defaultValue={blurPower}
                         value={blurPower}>
                         <SelectTrigger className="w-36">
@@ -100,7 +96,7 @@ const handleTimeBuffer = (event: React.ChangeEvent<HTMLInputElement>) => {
                     title={i18n.t("nudity")}
                     description={i18n.t("nudityDescription")}>
                     <Select
-                        onValueChange={sync("nudity", setNudity)}
+                        onValueChange={(value) => settings.sync("nudity", setNudity)(Number(value) as TimecodeAction)}
                         defaultValue={nudity.toString()}
                         value={nudity.toString()}>
                         <SelectTrigger className="w-44">
@@ -118,7 +114,7 @@ const handleTimeBuffer = (event: React.ChangeEvent<HTMLInputElement>) => {
                     title={i18n.t("sexualContentWithoutNudity")}
                     description={i18n.t("sexualContentWithoutNudityDescription")}>
                     <Select
-                        onValueChange={sync("sexualContentWithoutNudity", setSexualContentWithoutNudity)}
+                        onValueChange={(value) => settings.sync("sexualContentWithoutNudity", setSexualContentWithoutNudity)(Number(value) as TimecodeAction)}
                         defaultValue={sexualContentWithoutNudity.toString()}
                         value={sexualContentWithoutNudity.toString()}>
                         <SelectTrigger className="w-44">
@@ -136,7 +132,7 @@ const handleTimeBuffer = (event: React.ChangeEvent<HTMLInputElement>) => {
                     title={i18n.t("eroticSounds")}
                     description={i18n.t("eroticSoundsDescription")}>
                     <Select
-                        onValueChange={sync("eroticSounds", setEroticSounds)}
+                        onValueChange={(value) => settings.sync("eroticSounds", setEroticSounds)(Number(value) as TimecodeAction)}
                         defaultValue={eroticSounds.toString()}
                         value={eroticSounds.toString()}>
                         <SelectTrigger className="w-44">
@@ -154,7 +150,7 @@ const handleTimeBuffer = (event: React.ChangeEvent<HTMLInputElement>) => {
                     title={i18n.t("violence")}
                     description={i18n.t("violenceDescription")}>
                     <Select
-                        onValueChange={sync("violence", setViolence)}
+                        onValueChange={(value) => settings.sync("violence", setViolence)(Number(value) as TimecodeAction)}
                         defaultValue={violence.toString()}
                         value={violence.toString()}>
                         <SelectTrigger className="w-44">
@@ -172,7 +168,7 @@ const handleTimeBuffer = (event: React.ChangeEvent<HTMLInputElement>) => {
                     title={i18n.t("sensitiveExpressions")}
                     description={i18n.t("sensitiveExpressionsDescription")}>
                     <Select
-                        onValueChange={sync("sensitiveExpressions", setSensitiveExpressions)}
+                        onValueChange={(value) => settings.sync("sensitiveExpressions", setSensitiveExpressions)(Number(value) as TimecodeAction)}
                         defaultValue={sensitiveExpressions.toString()}
                         value={sensitiveExpressions.toString()}>
                         <SelectTrigger className="w-44">
@@ -190,7 +186,7 @@ const handleTimeBuffer = (event: React.ChangeEvent<HTMLInputElement>) => {
                     title={i18n.t("useDrugsAlcoholTobacco")}
                     description={i18n.t("useDrugsAlcoholTobaccoDescription")}>
                     <Select
-                        onValueChange={sync("useDrugsAlcoholTobacco", setUseDrugsAlcoholTobacco)}
+                        onValueChange={(value) => settings.sync("useDrugsAlcoholTobacco", setUseDrugsAlcoholTobacco)(Number(value) as TimecodeAction)}
                         defaultValue={useDrugsAlcoholTobacco.toString()}
                         value={useDrugsAlcoholTobacco.toString()}>
                         <SelectTrigger className="w-44">
@@ -208,7 +204,7 @@ const handleTimeBuffer = (event: React.ChangeEvent<HTMLInputElement>) => {
                     title={i18n.t("prohibitedSymbols")}
                     description={i18n.t("prohibitedSymbolsDescription")}>
                     <Select
-                        onValueChange={sync("prohibitedSymbols", setProhibitedSymbols)}
+                        onValueChange={(value) => settings.sync("prohibitedSymbols", setProhibitedSymbols)(Number(value) as TimecodeAction)}
                         defaultValue={prohibitedSymbols.toString()}
                         value={prohibitedSymbols.toString()}>
                         <SelectTrigger className="w-44">

@@ -14,7 +14,7 @@ export const goToTab = ({
   url?: string;
 }) =>
   chrome.runtime.sendMessage({
-    action: "goToTab",
+    type: "goToTab",
     to: to,
     url: url,
   });

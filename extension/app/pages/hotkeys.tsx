@@ -4,23 +4,19 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { TimecodeAction } from '@/enums/timecode';
 import i18n from '@/lib/i18n';
 import { Button } from '../components/ui/button';
-import { getSettings, SettingsDefault } from '@/utils/settings';
-import { useSyncSetting } from '@/hooks/useSyncSetting';
+import { DEFAULT_SETTINGS, settings } from '@/utils/settings';
 
 const altKey: string = /Macintosh|MacIntel|MacPPC|Mac68K/i.test(navigator.userAgent) ? "⌥" : "Alt";
 
 
 export default function HotkeysPage() {
     const [obsDisabled, setObsDisabled] = useState<boolean>(true);
-    const [playerContentCensorshipCommand, setPlayerContentCensorshipCommand] = useState<TimecodeAction>(SettingsDefault.playerContentCensorshipCommand);
+    const [playerContentCensorshipCommand, setPlayerContentCensorshipCommand] = useState<TimecodeAction>(DEFAULT_SETTINGS.playerContentCensorshipCommand);
     const [playerContentCensorshipHotkey, setPlayerContentCensorshipHotkey] = useState<string>(`${altKey}+X`);
-    const { sync } = useSyncSetting();
 
     useEffect(() => {
-        getSettings().then(settings => {
-            setPlayerContentCensorshipCommand(settings.playerContentCensorshipCommand);
-            setObsDisabled(settings.obsClient === null || settings.obsCensorScene === null);
-        });
+        setPlayerContentCensorshipCommand(settings.get("playerContentCensorshipCommand"));
+        setObsDisabled(settings.get("obsClient") === null || settings.get("obsCensorScene") === null);
         if (chrome.commands) {
             chrome.commands.getAll((commands) => commands.forEach((command) => {
                 switch (command.name) {
@@ -63,7 +59,7 @@ export default function HotkeysPage() {
                     title={i18n.t("censoringPlayerContent")}
                     description={i18n.t("censoringPlayerContentDescription")}>
                     <Select
-                        onValueChange={sync("playerContentCensorshipCommand", setPlayerContentCensorshipCommand)}
+                        onValueChange={(value) => settings.sync("playerContentCensorshipCommand", setPlayerContentCensorshipCommand)(Number(value) as TimecodeAction)}
                         defaultValue={playerContentCensorshipCommand.toString()}
                         value={playerContentCensorshipCommand.toString()}>
                         <SelectTrigger className="w-44">

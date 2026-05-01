@@ -1,8 +1,8 @@
 import { fetchBackground } from "@/utils/fetch";
 import config from "config";
-import { User } from "@/types/user";
 import { ServerResponse } from "@/types/response";
 import { PostMessageSource } from "@/enums/post-command";
+import { settings } from "@/utils/settings";
 
 /**
  * Sends an error message and clears user from storage.
@@ -14,7 +14,7 @@ const postError = () => {
       source: PostMessageSource.EXTENSION,
       type: "error",
     },
-    "*"
+    "*",
   );
 };
 
@@ -51,39 +51,35 @@ const onMessage = async (event: any) => {
       `${config.baseUrl}/api/v2/auth/extension?id=${auth.id}&token=${auth.token}`,
       {
         method: "POST",
-      }
+      },
     );
     if (data.success) {
-      chrome.storage.sync.set(
-        {
-          user: {
-            id: data.id,
-            roleId: data.role_id,
-            username: data.username,
-            picture: data?.picture ?? undefined,
-            accessToken: data.access_token,
-            expiresAt: data.expires_at,
-            twitch:
-              data?.twitch &&
-              data?.twitch?.access_token &&
-              data?.twitch?.refresh_token
-                ? {
-                    accessToken: data.twitch.access_token,
-                    refreshToken: data.twitch.refresh_token,
-                    expiresAt: data.twitch?.expires_at,
-                  }
-                : null,
-          } as User,
+      await settings.set({
+        user: {
+          id: data.id,
+          roleId: data.role_id,
+          username: data.username,
+          picture: data?.picture ?? undefined,
+          accessToken: data.access_token,
+          expiresAt: data.expires_at,
+          twitch:
+            data?.twitch &&
+            data?.twitch?.access_token &&
+            data?.twitch?.refresh_token
+              ? {
+                  accessToken: data.twitch.access_token,
+                  refreshToken: data.twitch.refresh_token,
+                  expiresAt: data.twitch?.expires_at,
+                }
+              : null,
         },
-        () => {
-          window.postMessage(
-            {
-              source: PostMessageSource.EXTENSION,
-              type: "success",
-            },
-            "*"
-          );
-        }
+      });
+      window.postMessage(
+        {
+          source: PostMessageSource.EXTENSION,
+          type: "success",
+        },
+        "*",
       );
 
       return;

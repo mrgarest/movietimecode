@@ -1,9 +1,13 @@
 import { BlurPower, TimecodeAction } from "@/enums/timecode";
 import { ChatbotCommand } from "./chatbot";
+import { User } from "./user";
 
 export type SettingsOBSClientNull = SettingsOBSClient | null;
 
 export interface Settings {
+  installedAt: number | null;
+  user: User | null;
+  deviceToken: string | null;
   timeBuffer: number;
   blurPower: BlurPower;
   nudity: TimecodeAction;

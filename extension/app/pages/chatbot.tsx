@@ -12,8 +12,7 @@ import { Input } from '../components/ui/input';
 import { ChatbotAccess, ChatbotAction } from '@/enums/chatbot';
 import { CirclePlus, Trash2 } from 'lucide-react';
 import toast from "react-hot-toast";
-import { useSyncSetting } from '@/hooks/useSyncSetting';
-import { getSettings, SettingsDefault, updateSetting } from '@/utils/settings';
+import { DEFAULT_SETTINGS, settings } from '@/utils/settings';
 
 /**
  * Form validation scheme
@@ -34,8 +33,7 @@ const formSchema = z.object({
 })
 
 export default function ChatbotPage() {
-    const [chatbotEnabled, setChatbotEnabled] = useState<boolean>(SettingsDefault.chatbotEnabled);
-    const { sync } = useSyncSetting();
+    const [chatbotEnabled, setChatbotEnabled] = useState<boolean>(DEFAULT_SETTINGS.chatbotEnabled);
 
     // Form initialization
     const form = useForm<z.infer<typeof formSchema>>({
@@ -51,17 +49,15 @@ export default function ChatbotPage() {
     });
 
     useEffect(() => {
-        getSettings().then(settings => {
-            setChatbotEnabled(settings.chatbotEnabled);
-            form.reset({ commands: settings.chatbotCommands })
-        });
+        setChatbotEnabled(settings.get("chatbotEnabled"));
+        form.reset({ commands: settings.get("chatbotCommands") })
     }, []);
 
     /**
     * Saves commands
     */
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-       updateSetting('chatbotCommands', values.commands);
+        settings.set({chatbotCommands: values.commands});
         toast.success(i18n.t("changesSaved"));
     };
 
@@ -80,7 +76,7 @@ export default function ChatbotPage() {
                     description={i18n.t("enableChatbotDescription")}>
                     <Switch
                         checked={chatbotEnabled}
-                        onCheckedChange={sync("chatbotEnabled", setChatbotEnabled)}
+                        onCheckedChange={settings.sync("chatbotEnabled", setChatbotEnabled)}
                     />
                 </SettingsCard>
                 <hr />

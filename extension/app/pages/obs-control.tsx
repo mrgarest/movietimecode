@@ -6,7 +6,7 @@ import config from 'config';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import OBSClient, { OBSType, Scene } from "@/lib/obs-client"
+import { OBSClient } from "@/lib/obs/client"
 import { Button } from "@/app/components/ui/button"
 import {
     Form,
@@ -20,7 +20,8 @@ import SettingsCard from '@/app/components/settings-card';
 import { cn } from '@/lib/utils';
 import i18n from '@/lib/i18n';
 import { ScrollArea } from '../components/ui/scroll-area';
-import { getSettings, updateSetting } from '@/utils/settings';
+import { settings } from '@/utils/settings';
+import { OBSType, Scene } from '@/types/obs';
 
 const formSchemaConnection = z.object({
     host: z.string().ip(),
@@ -44,7 +45,7 @@ export default function OBSControlPage() {
 
     const formConnection = useForm<z.infer<typeof formSchemaConnection>>({
         resolver: zodResolver(formSchemaConnection),
-        defaultValues: {
+        defaultValues: settings.get("obsClient") || {
             host: '127.0.0.1',
             port: 0,
             auth: '',
@@ -53,19 +54,19 @@ export default function OBSControlPage() {
     });
 
     useEffect(() => {
-        getSettings().then(settings => {
-            if (settings.obsClient) {
-                formConnection.setValue('host', settings.obsClient.host);
-                formConnection.setValue('port', settings.obsClient.port);
-                formConnection.setValue('auth', settings.obsClient.auth);
-                formConnection.setValue('type', settings.obsClient.type);
-                setTestEnabled(true);
-                setSceneEnabled(true);
-                setObsClient(settings.obsClient);
-            } else setObsClient(null);
+        const obs = settings.get("obsClient");
 
-            setObsCensorSceneName(settings.obsCensorScene);
-        });
+        if (obs) {
+            formConnection.setValue('host', obs.host);
+            formConnection.setValue('port', obs.port);
+            formConnection.setValue('auth', obs.auth);
+            formConnection.setValue('type', obs.type);
+            setTestEnabled(true);
+            setSceneEnabled(true);
+            setObsClient(obs);
+        } else setObsClient(null);
+
+        setObsCensorSceneName(settings.get("obsCensorScene"));
     }, []);
 
     const setEnabledButtons = (enabled: boolean) => {
@@ -99,7 +100,7 @@ export default function OBSControlPage() {
             obsClient.disconnect();
             if (isConnected) {
                 setObsClient(obsClientSettings);
-                updateSetting('obsClient', obsClientSettings);
+                settings.set({ obsClient: obsClientSettings });
                 toast.success(i18n.t("obsSuccessfullyConnected"))
                 setEnabledButtons(true);
                 return;
@@ -109,7 +110,7 @@ export default function OBSControlPage() {
         }
         toast.error(i18n.t("connectionFailed"));
         setObsClient(null);
-        updateSetting('obsClient', null);
+        settings.set({ obsClient: null });
         setConnectionEnabled(true);
     }
 
@@ -151,7 +152,7 @@ export default function OBSControlPage() {
      * @param name 
      */
     function heandleSelectScene(name: string) {
-        updateSetting('obsCensorScene', name);
+        settings.set({ obsCensorScene: name });
         setObsCensorSceneName(name);
         setChangeSceneDialog(false);
         setObsScene([]);

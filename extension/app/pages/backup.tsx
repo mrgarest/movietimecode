@@ -5,7 +5,11 @@ import { Button } from '../components/ui/button';
 import { HardDriveDownload, HardDriveUpload } from 'lucide-react';
 import toast from "react-hot-toast";
 import { SpinnerFullScreen } from '../components/ui/spinner';
-import { getSettings, updateSettings } from '@/utils/settings';
+import { settings } from '@/utils/settings';
+
+// ПFields we do not export/import
+type ExcludedKeys = "installedAt" | "user" | "deviceToken" | "obsClient" | "obsCensorScene";
+type ExportableSettings = Omit<Settings, ExcludedKeys>;
 
 export default function BackupPage() {
     const [isSpinner, setSpinner] = useState<boolean>(false);
@@ -13,27 +17,21 @@ export default function BackupPage() {
     /**
      * Processes export of settings.
      */
-    const handleExport = () => {
-        if (!chrome?.storage?.sync) return;
+    const handleExport = async () => {
         setSpinner(true);
-        getSettings().then(curentSettings => {
-            const {
-                obsClient,
-                obsCensorScene,
-                ...settingsForExport
-            } = curentSettings;
+        try {
+            const { user, deviceToken, obsClient, obsCensorScene, ...settingsForExport } = await settings.getAll();
 
             const blob = new Blob([JSON.stringify(settingsForExport, null, 2)], { type: "application/json" });
-
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = "movietimecode-settings.json";
+            a.download = `movietimecode-settings-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
-
             URL.revokeObjectURL(url);
+        } finally {
             setSpinner(false);
-        });
+        }
     };
 
     /**
@@ -53,22 +51,15 @@ export default function BackupPage() {
                 setSpinner(true);
                 try {
                     const text = event.target?.result as string;
-                    const imported = JSON.parse(text) as Partial<Settings>;
+                    const imported = JSON.parse(text) as Partial<ExportableSettings>;
 
                     if (typeof imported !== "object" || imported === null) {
                         throw new Error("Invalid format");
                     }
 
-                    // Delete keys that cannot be imported (security)
-                    delete imported.obsClient;
-                    delete imported.obsCensorScene;
-
-                    // Storage updates
-                    await updateSettings(imported);
-
+                    await settings.set(imported);
                     toast.success(i18n.t("settingsImportedSuccessfully"));
-
-                } catch (error) {
+                } catch {
                     toast.error(i18n.t("settingsImportedError"));
                 } finally {
                     setSpinner(false);

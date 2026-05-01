@@ -2,19 +2,15 @@ import { useEffect, useState } from 'react';
 import SettingsCard from '@/app/components/settings-card';
 import i18n from '@/lib/i18n';
 import { Switch } from '../components/ui/switch';
-import { getSettings, SettingsDefault } from '@/utils/settings';
-import { useSyncSetting } from '@/hooks/useSyncSetting';
+import { DEFAULT_SETTINGS, settings } from '@/utils/settings';
 
 export default function TwitchPage() {
-    const [checkStreamLive, setCheckStreamLive] = useState<boolean>(SettingsDefault.checkStreamLive);
-    const [editTwitchContentClassification, setEditTwitchContentClassification] = useState<boolean>(SettingsDefault.editTwitchContentClassification);
-    const { sync } = useSyncSetting();
+    const [checkStreamLive, setCheckStreamLive] = useState<boolean>(DEFAULT_SETTINGS.checkStreamLive);
+    const [editTwitchContentClassification, setEditTwitchContentClassification] = useState<boolean>(DEFAULT_SETTINGS.editTwitchContentClassification);
 
     useEffect(() => {
-        getSettings().then(settings => {
-            setCheckStreamLive(settings.checkStreamLive);
-            setEditTwitchContentClassification(settings.editTwitchContentClassification);
-        });
+        setCheckStreamLive(settings.get("checkStreamLive"));
+        setEditTwitchContentClassification(settings.get("editTwitchContentClassification"));
     }, []);
 
     return (
@@ -32,7 +28,7 @@ export default function TwitchPage() {
                     description={i18n.t("checkStreamLiveDescription")}>
                     <Switch
                         checked={checkStreamLive}
-                        onCheckedChange={sync("checkStreamLive", setCheckStreamLive)}
+                        onCheckedChange={settings.sync("checkStreamLive", setCheckStreamLive)}
                     />
                 </SettingsCard>
                 <hr />
@@ -41,7 +37,7 @@ export default function TwitchPage() {
                     description={i18n.t("editTwitchContentClassificationDescription")}>
                     <Switch
                         checked={editTwitchContentClassification}
-                        onCheckedChange={sync("editTwitchContentClassification", setEditTwitchContentClassification)}
+                        onCheckedChange={settings.sync("editTwitchContentClassification", setEditTwitchContentClassification)}
                     />
                 </SettingsCard>
             </div>

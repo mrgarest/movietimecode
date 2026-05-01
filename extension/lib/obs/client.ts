@@ -1,16 +1,7 @@
 import sha256 from "crypto-js/sha256";
 import Base64 from "crypto-js/enc-base64";
 import config from "config";
-
-export enum OBSType {
-  streamlabs = "streamlabs",
-  obsstudio = "obsstudio",
-}
-
-export interface Scene {
-  id: string;
-  name: string;
-};
+import { OBSType, Scene } from "@/types/obs";
 
 interface Options {
   type: string;
@@ -19,7 +10,7 @@ interface Options {
   auth?: string | null;
 }
 
-export default class OBSClient {
+export class OBSClient {
   private options: Options;
   private ws: WebSocket | null = null;
   private timeout:number = 5000;
@@ -89,7 +80,7 @@ export default class OBSClient {
         this.disconnect();
       }, this.timeout);
 
-      this.ws = new WebSocket(`http://${host}:${this.options.port}${path}`);
+      this.ws = new WebSocket(`ws://${host}:${this.options.port}${path}`);
 
       this.ws.onerror = (event: any) => {
         if (config.debug) {
@@ -101,11 +92,12 @@ export default class OBSClient {
         this.connectPromise?.resolve(false);
       };
 
-      this.ws.onclose = () => {
+      this.ws.onclose = (event) => {
         this.isConnected = false;
         if (config.debug) console.log("[OBSClient] WebSocket Close");
         if (this.onCloseListener != null) this.onCloseListener(event);
       };
+      
       this.message();
       this.ws!.onopen = () => {
         if (config.debug) console.log("[OBSClient] WebSocket Open");

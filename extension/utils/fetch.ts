@@ -15,7 +15,7 @@ export const fetchBackground = async <T>(
 ): Promise<T> => {
   return new Promise<T>((resolve, reject) => {
     chrome.runtime.sendMessage(
-      { action: "fetchData", url, options },
+      { type: "fetchData", url, options },
       (response) =>
         chrome.runtime.lastError
           ? reject(chrome.runtime.lastError)

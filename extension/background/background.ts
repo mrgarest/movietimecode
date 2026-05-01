@@ -3,13 +3,18 @@ import { User } from "@/types/user";
 import { getDeviceToken, getUser } from "@/utils/user";
 import { event } from "@/utils/event";
 import { EventType } from "@/enums/event";
+import { migrateSettings, settings } from "@/utils/settings";
+import { handleOBSMessage } from "./obs";
 
 /**
  * Ensures a device token is generated when the extension is installed.
  */
 chrome.runtime.onInstalled.addListener(async (details) => {
+  await migrateSettings();
   await getDeviceToken();
-  if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+  const installedAt = settings.get("installedAt");
+  if (!installedAt) {
+    await settings.set({ installedAt: Date.now() });
     event(EventType.INSTALLED);
   }
 });
@@ -32,7 +37,7 @@ chrome.commands.onCommand.addListener(async (command) => {
  * Handles messages received via `chrome.runtime.onMessage`.
  */
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  switch (message.action) {
+  switch (message.type) {
     case "fetchData":
       return fetchData(message, sendResponse);
     case "goToTab":
@@ -41,6 +46,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     default:
       break;
   }
+
+  if (!message.type?.startsWith("obs:") || !sender.tab?.id) return false;
+
+  handleOBSMessage(message, sender.tab.id)
+    .then(sendResponse)
+    .catch((error) =>
+      sendResponse({ type: message.type, error: String(error) }),
+    );
+
+  return true;
 });
 
 /**

@@ -2,6 +2,7 @@ import config from "config";
 import { goToTab } from "./navigation";
 import { User } from "@/types/user";
 import CryptoJS from "crypto-js";
+import { settings } from "./settings";
 
 /**
  * Opens a new tab for authorization.
@@ -12,14 +13,14 @@ export const login = () =>
 /**
  * Log out of the system.
  */
-export const logout = async () => await chrome.storage.sync.remove("user");
+export const logout = async () => await chrome.storage.local.remove("user");
 
 /**
  * Receives user data.
  * @returns A user object of type User or undefined if the user is not found.
  */
 export const getUser = async (): Promise<User | undefined> => {
-  const { user } = (await chrome.storage.sync.get("user")) as { user?: User };
+  const user = settings.get("user");
 
   if (
     !user ||
@@ -37,13 +38,11 @@ export const getUser = async (): Promise<User | undefined> => {
  * @returns Promise<string> - The device token.
  */
 export const getDeviceToken = async (): Promise<string> => {
-  const { device } = await chrome.storage.sync.get<{
-    device?: { token: string };
-  }>("device");
-  if (device?.token) return device.token;
+  let deviceToken = settings.get("deviceToken");
+  if (deviceToken) return deviceToken;
 
-  const deviceToken = CryptoJS.lib.WordArray.random(18).toString();
-  await chrome.storage.sync.set({ device: { token: deviceToken } });
+  deviceToken = CryptoJS.lib.WordArray.random(18).toString();
+  settings.set({ deviceToken });
 
   return deviceToken;
 };
