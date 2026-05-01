@@ -58,25 +58,6 @@ const playerContentCensorshipEnabled: { blur: boolean; hide: boolean; obsSceneCh
     obsSceneChange: false,
 };
 
-/**
- * Processes setting updates
- */
-const handleSettingsChange = () => {
-    // OBS client
-
-    if (!neededOBSClient() && obsClient) {
-        obsClient.disconnect();
-        obsClient = null;
-    } else if (isCensorshipEnabled && neededOBSClient() && !obsClient) {
-        connectOBS();
-    }
-
-    // chatbot
-    if (!settings.get("chatbotEnabled") && isChatConnected && chatClient) {
-        chatClient.disconnect();
-    }
-};
-
 const neededOBSClient = (): boolean => {
     // OBS client
     return [
