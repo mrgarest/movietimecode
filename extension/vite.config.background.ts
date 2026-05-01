@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import { buildDefineConfig } from "./vite.config";
+import { buildDefineConfig } from "./vite.utils";
 
 export default defineConfig(
   buildDefineConfig({
