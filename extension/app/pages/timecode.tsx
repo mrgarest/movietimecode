@@ -74,7 +74,7 @@ export default function TimecodePage() {
 
     return (
         <>
-            <div className={cn("max-w-[40rem] mx-auto w-full pt-8 gap-8 min-h-screen space-y-8", isHideContent && 'hidden')}>
+            <div className={cn("max-w-160 mx-auto w-full pt-8 gap-8 min-h-screen space-y-8", isHideContent && 'hidden')}>
                 {step == 0 && <div className="space-y-4 text-center">
                     <div className="text-2xl text-foreground font-bold">{i18n.t("authorizationRequired")}</div>
                     <div className="text-base text-foreground">{i18n.t("authorizationRequiredDescription")}</div>
