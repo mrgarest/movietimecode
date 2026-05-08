@@ -22,9 +22,6 @@ cmds = ['npm run build']
 [phases.release]
 dependsOn = ['build']
 cmds = [
-    'php artisan config:cache',
-    'php artisan route:cache',
-    'php artisan view:cache',
     'php artisan cache:clear',
     'php artisan storage:link'
 ]
