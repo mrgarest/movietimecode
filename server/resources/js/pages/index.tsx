@@ -3,23 +3,22 @@ import ChromeWebStoreBadge from "@/components/ChromeWebStoreBadge";
 import MovieLatestCarousel from "@/components/movies/MovieLatestCarousel";
 import MovieSearch from "@/components/movies/MovieSearch";
 import { Accordion, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useSeo } from "@/hooks/useSeo";
 import { FaqItem } from "@/types/faq";
-import { MovieLatestResponse, MovieSearchItem } from "@/types/movie";
+import { MovieImportResponse, MovieLatestResponse, MovieSearchItem } from "@/types/movie";
 import { ApiError, fetchApi } from "@/utils/fetch";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, router } from '@inertiajs/react'
+import { MetaTag } from "@/components/MetaTag";
+import { useState } from "react";
+import { SpinnerFullScreen } from "@/components/ui/spinner";
+import { event } from "@/utils/event";
+import { EventType } from "@/enums/event";
 
 export default function HomePage() {
     const { t } = useTranslation();
-    const navigate = useNavigate();
-    const { setSeo } = useSeo();
-    setSeo({
-        title: t('seoTitle'),
-        description: t('seoDescription')
-    });
+    const [isSpinner, setSpinner] = useState<boolean>(false);
 
     // Request for the latest movies
     const { data, isLoading, isError, error } = useQuery<MovieLatestResponse, ApiError>({
@@ -32,9 +31,27 @@ export default function HomePage() {
      * Opening the movie page.
      * @param movie 
      */
-    const handleMovieSelected = (movie: MovieSearchItem) => navigate(`/movies/${movie.tmdb_id}`, {
-        state: { fromSearch: true }
-    });
+    const handleMovieSelected = async (movie: MovieSearchItem) => {
+        // if the movie already exists, just open it
+        if (movie.id) {
+            event(EventType.CHECK_MOVIE, movie.id);
+            router.visit(`/movies/${movie.tmdb_id}`);
+            return;
+        }
+
+        // Import the movie and then open it
+        setSpinner(true);
+
+        try {
+            const data = await fetchApi<MovieImportResponse>(`/api/v2/movies/${movie.tmdb_id}/import`, { method: "POST" });
+            if (data.success) {
+                event(EventType.CHECK_MOVIE, data.id);
+            }
+        } finally {
+            setSpinner(false);
+            router.visit(`/movies/${movie.tmdb_id}`);
+        }
+    };
 
     const faqItems: FaqItem[] = [
         {
@@ -93,6 +110,10 @@ export default function HomePage() {
     ];
 
     return (<>
+        <MetaTag
+            title={t('seoTitle')}
+            description={t('seoDescription')} />
+        {isSpinner && <SpinnerFullScreen />}
         <div className="pt-6 sm:pt-15 pb-20 px-4 mx-auto">
             <div className="size-24 relative mx-auto select-none pointer-events-none">
                 <img src="/images/icon.gif" className="size-full rounded-full absolute z-1" />
@@ -101,6 +122,7 @@ export default function HomePage() {
             <h1 className="text-5xl min-[370px]:text-6xl min-[420px]:text-7xl text-center font-nunito font-extrabold mt-6 mb-3 text-shadow-lg/40 text-shadow-white/30 flex flex-col sm:flex-row sm:gap-4"><span>Movie</span><span>Timecode</span></h1>
             <p className="max-w-lg mx-auto text-center text-xs sm:text-sm font-normal text-white/70 text-shadow-lg/20  text-shadow-white/20">{t('seoDescription')}</p>
             <MovieSearch
+                withMovieId
                 inputSize="lg"
                 className="max-w-md mx-auto my-5"
                 onSelected={handleMovieSelected}
@@ -137,7 +159,7 @@ export default function HomePage() {
             </Accordion>
             <div className="flex justify-center">
                 <Link
-                    to="/faq"
+                    href="/faq"
                     className="group relative flex items-center gap-1 py-1 text-sm font-medium tracking-tight text-muted-foreground transition-colors hover:text-foreground uppercase">
                     <span>{t('otherFaq')}</span>
                     <ChevronRight

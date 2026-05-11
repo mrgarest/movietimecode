@@ -4,6 +4,10 @@ export interface MovieSearchResponse extends ServerResponse {
     id: number;
     items: MovieSearchItem[] | null;
 }
+export interface MovieImportResponse extends ServerResponse {
+    id: number;
+    tmdb_id: number;
+}
 
 export interface MovieSearchItem {
     id?: number | null;

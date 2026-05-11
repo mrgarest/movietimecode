@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { SanctionReason, SanctionType } from "@/enums/sanction";
 import { DatePicker } from "../ui/date-picker";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { MovieSearchItem } from "@/types/movie";
 import { ApiError, fetchApi } from "@/utils/fetch";
 import MovieSearch from "./MovieSearch";

@@ -1,46 +1,43 @@
 import { cn } from "@/lib/utils";
-import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { ClockFading, Home, LogOut, ScrollText, UsersRound, VideoOff } from "lucide-react";
 import { useMobileMenu } from "@/hooks/useMobileMenu";
 import Hamburger from "hamburger-react";
+import { Link, usePage } from "@inertiajs/react";
+import { ClientOnly } from "../ClientOnly";
 
 export default function SideNavbar() {
-    const { pathname } = useLocation();
+    const { url } = usePage();
+    const pathname = new URL(url, 'http://localhost').pathname;
     const { t } = useTranslation();
     const { isOpen, isVisible, toggleMenu } = useMobileMenu();
 
     const navItems = [
         {
             ico: Home,
-            to: '/dashboard',
+            href: '/dashboard',
             text: t('home')
         },
         {
             ico: ClockFading,
-            to: '/dashboard/timecodes',
+            href: '/dashboard/timecodes',
             text: t('timecodes')
         },
         {
             ico: VideoOff,
-            to: '/dashboard/movies/sanctions',
+            href: '/dashboard/movies/sanctions',
             text: t('sanctions')
         },
         {
             ico: UsersRound,
-            to: '/dashboard/users',
+            href: '/dashboard/users',
             text: t('users')
         },
         {
             ico: ScrollText,
-            to: '/dashboard/events',
+            href: '/dashboard/events',
             text: t('events')
-        },
-        {
-            ico: LogOut,
-            to: '/logout',
-            text: t('logout')
-        },
+        }
     ];
 
     return (
@@ -54,15 +51,21 @@ export default function SideNavbar() {
                         <Link
                             onClick={() => isOpen && toggleMenu()}
                             key={index}
-                            to={item.to}
+                            href={item.href}
                             className={cn(
                                 'flex items-center gap-2 px-3 py-2 font-medium rounded-md text-sm select-none cursor-pointer',
-                                item.to == pathname ? 'bg-primary/95 text-primary-foreground' : 'hover:bg-primary/10'
+                                item.href == pathname ? 'bg-primary/95 text-primary-foreground' : 'hover:bg-primary/10'
                             )}>
                             <item.ico size={16} />
                             {item.text}
                         </Link>
                     ))}
+                    <a
+                        href="/logout"
+                        className="flex items-center gap-2 px-3 py-2 font-medium rounded-md text-sm select-none cursor-pointer hover:bg-primary/10">
+                        <LogOut size={16} />
+                        {t('logout')}
+                    </a>
                 </div>
             </div>
             {isOpen && <div
@@ -72,15 +75,13 @@ export default function SideNavbar() {
                 "bg-secondary rounded-full size-12 flex items-center justify-center border-border border gap-2 shadow-md shadow-black/30 overflow-hidden fixed right-8 bottom-8 z-40",
                 !isOpen && "md:hidden"
             )}>
-                <div className="absolute">
-                    <Hamburger
-                        rounded
-                        hideOutline
-                        size={20}
-                        toggled={isOpen}
-                        onToggle={() => toggleMenu()}
-                    />
-                </div>
+                <div className="absolute"><ClientOnly asChild><Hamburger
+                    rounded
+                    hideOutline
+                    size={20}
+                    toggled={isOpen}
+                    onToggle={() => toggleMenu()}
+                /></ClientOnly></div>
             </div>
         </>
     );

@@ -1,18 +1,13 @@
 import './bootstrap';
-import './lib/i18n';
-import { createRoot } from "react-dom/client";
-import { RouterProvider } from 'react-router-dom';
-import router from './router';
-import { useUserStore } from './store/useUserStore';
-import { useEffect } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import ReactGA from "react-ga4";
+import './lib/i18n'
+import { hydrateRoot } from 'react-dom/client'
+import { createInertiaApp } from '@inertiajs/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import ReactGA from 'react-ga4'
+import MainLayout from './layouts/MainLayout'
+import DashboardLayout from './layouts/DashboardLayout'
 
-// Google Analytics initialization
-const gaId = (import.meta as any).env.VITE_GOOGLE_ANALYTICS;
-if (gaId) {
-    ReactGA.initialize(gaId);
-}
+const gaId = (import.meta as any).env.VITE_GOOGLE_ANALYTICS
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -21,39 +16,28 @@ const queryClient = new QueryClient({
             refetchOnWindowFocus: false,
         },
     },
-});
+})
 
-function App() {
-    const checkAuth = useUserStore(state => state.checkAuth);
+createInertiaApp({
+    progress: {
+        color: '#fff',
+        showSpinner: false,
+    },
+    layout: (name) => {
+        if (name.startsWith('dashboard/')) return DashboardLayout
+        return MainLayout
+    },
+    resolve: name => {
+        const pages = import.meta.glob<{ default: any }>('./pages/**/*.tsx', { eager: true })
+        return pages[`./pages/${name}.tsx`]
+    },
+    setup({ el, App, props }) {
+        if (gaId) ReactGA.initialize(gaId)
 
-    useEffect(() => {
-        checkAuth();
-    }, []);
-
-    useEffect(() => {
-        ReactGA.send({
-            hitType: "pageview",
-            page: location.pathname + location.search
-        });
-    }, [location]);
-
-    return <QueryClientProvider client={queryClient}><RouterProvider router={router} /></QueryClientProvider>;
-}
-
-// Track initial page load
-router.subscribe((state) => {
-    ReactGA.send({
-        hitType: "pageview",
-        page: state.location.pathname + state.location.search
-    });
-});
-
-
-// Render the app
-const container = document.getElementById("app");
-if (container) {
-    const root = createRoot(container);
-    root.render(<App />);
-}
-
-
+        hydrateRoot(el,
+            <QueryClientProvider client={queryClient}>
+                <App {...props} />
+            </QueryClientProvider>
+        )
+    },
+})

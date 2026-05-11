@@ -120,10 +120,11 @@ class MovieService
      *
      * @param int $tmdbId
      * @param string|null $ip
+     * @param bool $import
      * 
      * @return Movie|null
      */
-    public function getOrImport(int $tmdbId, ?string $ip = null): ?Movie
+    public function getOrImport(int $tmdbId, ?string $ip = null, bool $import = true): ?Movie
     {
         $cacheKey = MovieCacheKey::externalTmdbId($tmdbId);
 
@@ -136,6 +137,9 @@ class MovieService
             Cache::put($cacheKey, $movie->toCache(), Carbon::now()->addMinutes(5));
             return $movie;
         }
+
+        // If the movie is not in the database and the import flag is false, return null
+        if(!$import) return null;
 
         // If an IP address is available, a strict limit is applied to the number of requests to the external API
         if ($ip) {

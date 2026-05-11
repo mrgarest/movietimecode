@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "inertiajs/inertia-laravel": "^3.1",
         "laravel-notification-channels/telegram": "^7.0",
         "laravel/framework": "^13.0",
         "laravel/passport": "^13.0",

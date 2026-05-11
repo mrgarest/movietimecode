@@ -72,6 +72,7 @@ Route::prefix('v2')->middleware('throttle:api')->group(function () {
         Route::prefix('{movieId}')->group(function () {
             Route::controller(MovieController::class)->group(function () {
                 Route::get('/', 'details');
+                Route::post('/import', 'import');
                 Route::get('/check', 'check');
             });
 

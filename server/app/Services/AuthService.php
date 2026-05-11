@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Models\UserProvider;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -135,6 +136,7 @@ class AuthService
                         // Server login uses long-lived Access Tokens
                         $token = $user->createToken('Server', [self::TARGET_SERVER])->accessToken;
                         Cookie::queue('uat', $token, 43200, '/', null, false, false);
+                        Auth::login($user, false);
                         break;
                     default:
                         return new CallbackAuthData(

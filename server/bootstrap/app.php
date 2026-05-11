@@ -4,11 +4,13 @@ use App\Exceptions\ApiException;
 use App\Exceptions\ApiExceptionHandler;
 use App\Http\Middleware\CheckDeactivated;
 use App\Http\Middleware\CheckRole;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Resources\ErrorResource;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Inertia\Inertia;
 use Laravel\Passport\Exceptions\AuthenticationException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -25,6 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'not_deactivated' => CheckDeactivated::class,
             'check_role' => CheckRole::class
         ]);
+        $middleware->web(append: [
+            HandleInertiaRequests::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Intercepts validation error to implement custom error response
@@ -35,6 +40,17 @@ return Application::configure(basePath: dirname(__DIR__))
                     status: 400,
                     message: $e->getMessage(),
                 )->toResponse($request);
+            }
+            return null;
+        });
+
+        $exceptions->render(function (Throwable $e, Request $request) {
+            if (!$request->expectsJson() && $request->isMethod('GET')) {
+                if ($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+                    return Inertia::render('not-found')
+                        ->toResponse($request)
+                        ->setStatusCode(404);
+                }
             }
             return null;
         });

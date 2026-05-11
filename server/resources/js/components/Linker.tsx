@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "@inertiajs/react";
 import { HTMLAttributeAnchorTarget, MouseEventHandler, ReactNode } from "react";
 
 export default function Linker({ href, target, children, className, onClick }: {
@@ -17,7 +17,7 @@ export default function Linker({ href, target, children, className, onClick }: {
     }
 
     return (
-        <Link to={href} className={className} onClick={onClick}>
+        <Link href={href} className={className} onClick={onClick}>
             {children}
         </Link>
     );

@@ -4,7 +4,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Spinner, SpinnerFullScreen } from "@/components/ui/spinner";
 import { ErrorCode } from "@/enums/error-code";
 import { PostCommand } from "@/enums/post-command";
-import { useSeo } from "@/hooks/useSeo";
 import { ServerResponse } from "@/types/response";
 import { useUserStore } from "@/store/useUserStore";
 import { ApiError, fetchApi } from "@/utils/fetch";
@@ -15,6 +14,7 @@ import { Ellipsis, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useInView } from "react-intersection-observer";
+import { MetaTag } from "@/components/MetaTag";
 
 interface TimecodeResponse extends ServerResponse {
     timecodes: {
@@ -48,8 +48,6 @@ export default function TimecodePage() {
     const [isExtensionNotReadyDialogOpen, setExtensionNotReadyDialogOpen] = useState<boolean>(false);
     const [deleteData, setDeleteData] = useState<{ id: number, force: boolean } | undefined>(undefined);
     const [sort, setSort] = useState<TSort>('latest');
-    const { setSeo } = useSeo();
-    setSeo({ title: t('timecodes') });
 
     const {
         data,
@@ -142,6 +140,7 @@ export default function TimecodePage() {
 
     return (
         <>
+            <MetaTag title={t('timecodes')} />
             {isSpinnerFullScreen && <SpinnerFullScreen />}
             <div className="flex items-center">
                 <Select

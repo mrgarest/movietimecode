@@ -73,6 +73,28 @@ class MovieController extends Controller
     }
 
     /**
+     * Movie import.
+     */
+    public function import(
+        Request $request,
+        int $movieId,
+        MovieService $movieService,
+    ) {
+        // Get the movie model
+        $movie = $movieService->getOrImport(
+            tmdbId: $movieId,
+            ip: RequestManager::getIp($request)
+        );
+
+        if (!$movie) throw ApiException::notFound();
+
+        return new SuccessResource([
+            'id' => $movie->id,
+            'tmdb_id' => (int) $movieId
+        ]);
+    }
+
+    /**
      * Movie check.
      */
     public function check(
@@ -137,6 +159,7 @@ class MovieController extends Controller
 
     /**
      * Movie Details.
+     * @deprecated
      */
     public function details(
         Request $request,

@@ -46,6 +46,7 @@ export const fetchApi = async <T>(
 
     const headers: Record<string, string> = {
         Accept: "application/json",
+        "X-Requested-With": "XMLHttpRequest",
         ...options.headers,
     };
 
@@ -54,7 +55,6 @@ export const fetchApi = async <T>(
     }
 
     const accessToken = Cookies.get("uat");
-
     if (accessToken) {
         headers["Authorization"] = `Bearer ${accessToken}`;
     }

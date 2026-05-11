@@ -20,12 +20,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
         rel="stylesheet">
     @viteReactRefresh
-    @vite(['resources/css/app.css'])
+    @vite('resources/css/app.css')
     @yield('head')
 </head>
 
 <body>
-    <div id="app"></div>
+    @yield('body')
     @isset($jsonPageData)
         <script id="JSON_PAGE_DATA" type="application/json">{!!json_encode($jsonPageData)!!}</script>
     @endisset

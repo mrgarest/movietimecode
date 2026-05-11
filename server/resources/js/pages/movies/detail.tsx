@@ -1,56 +1,27 @@
 import { ImdbContentRating, MovieCheckCompany, MovieDetailResponse } from "@/types/movie";
 import { cn } from "@/lib/utils";
-import { ApiError, fetchApi } from "@/utils/fetch";
-import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from "react-i18next";
-import { SpinnerFullScreen } from "@/components/ui/spinner";
-import { useLocation, useParams } from "react-router-dom";
 import { ImdbContentRatingId } from "@/enums/imdb";
 import { DateTime } from "luxon";
 import NotFoundPage from "../not-found";
 import MovieTimecode from "@/components/movies/MovieTimecode";
-import { useEffect, useRef } from "react";
-import { event } from "@/utils/event";
-import { EventType } from "@/enums/event";
-import { useSeo } from "@/hooks/useSeo";
+import { MetaTag } from "@/components/MetaTag";
 
-export default function MovieDetailPage() {
-    const { id } = useParams<{ id: string }>();
+interface Props {
+    movie: MovieDetailResponse
+}
+
+export default function MovieDetailPage({ movie }: Props) {
     const { i18n, t } = useTranslation();
-    const { setSeo } = useSeo();
-    const location = useLocation();
-    const hasSentEvent = useRef<boolean>(false);
-    const fromSearch = location.state?.fromSearch;
-
-    // Get info about the movie
-    const { data: movie, isLoading: isMovieLoading } = useQuery<MovieDetailResponse, ApiError>({
-        queryKey: ['movie', id],
-        queryFn: () => fetchApi<MovieDetailResponse>(`/api/v2/movies/${id}`),
-        enabled: !!id
-    });
-
-    useEffect(() => {
-        // If the user came to this page from a search, send an event to the server
-        if (movie && fromSearch && !hasSentEvent.current) {
-            event(EventType.CHECK_MOVIE, movie.id);
-            hasSentEvent.current = true;
-
-            // Clear state
-            window.history.replaceState({}, document.title);
-        }
-    }, [movie, fromSearch]);
-
-    if (isMovieLoading) return <div><SpinnerFullScreen /></div>;
 
     if (!movie) return <NotFoundPage />;
 
-    setSeo({
-        title: `${movie.title ? movie.title : movie.original_title}${movie.release?.release_date ? ` (${DateTime.fromISO(movie.release.release_date).year})` : ''}`,
-        description: t('seoDescription'),
-        image: movie.poster_url || undefined,
-    });
-
     return (<>
+        <MetaTag
+            title={`${movie.title ?? movie.original_title}${movie.release?.release_date ? ` (${DateTime.fromISO(movie.release.release_date).year})` : ''}`}
+            description={t('seoDescription')}
+            image={movie.poster_url || undefined}
+        />
         <div className="space-y-6">
             <div className="w-full max-w-4xl mx-auto px-4">
                 <div className="flex flex-col md:flex-row gap-6">

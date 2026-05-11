@@ -12,12 +12,12 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useInView } from "react-intersection-observer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Link } from "react-router-dom";
 import { SanctionReason, SanctionType } from "@/enums/sanction";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useSeo } from "@/hooks/useSeo";
 import { formatDate } from "@/utils/format";
+import { MetaTag } from "@/components/MetaTag";
+import { Link } from "@inertiajs/react";
 
 interface SanctionResponse extends ServerResponse {
     sanctions: {
@@ -53,7 +53,6 @@ export default function MovieSanctionPage() {
     const { i18n, t } = useTranslation();
     const { ref, inView } = useInView();
     const { logout } = useUserStore();
-    const { setSeo } = useSeo();
     const queryClient = useQueryClient();
     const [isSpinnerFullScreen, setSpinnerFullScreen] = useState<boolean>(false);
     const [isReportsOpenOld, setReportsOpenOld] = useState<boolean>(false);
@@ -62,7 +61,6 @@ export default function MovieSanctionPage() {
     const [isReportDialogOpen, setReportDialogOpen] = useState<boolean>(false);
     const [selectedReports, setSelectedReports] = useState<Reports[]>([]);
     const [filter, setFilter] = useState<TFilter>('all');
-    setSeo({ title: t('sanctions') });
 
     const {
         data,
@@ -70,7 +68,6 @@ export default function MovieSanctionPage() {
         hasNextPage,
         isFetchingNextPage,
         isLoading,
-        isError
     } = useInfiniteQuery({
         queryKey: ['dashboard.movies.sanctions.infinite', filter],
         queryFn: ({ pageParam = 1 }) =>
@@ -217,9 +214,10 @@ export default function MovieSanctionPage() {
 
     return (
         <>
+            <MetaTag title={t('sanctions')} />
             {isSpinnerFullScreen && <SpinnerFullScreen />}
             <div className="flex justify-between items-center">
-                <Link to='/dashboard/movies/sanctions/add'><Button size="sm">{t("add")}</Button></Link>
+                <Link href='/dashboard/movies/sanctions/add'><Button size="sm">{t("add")}</Button></Link>
                 <Select
                     onValueChange={(v) => setFilter(v as TFilter)}
                     defaultValue={filter}>

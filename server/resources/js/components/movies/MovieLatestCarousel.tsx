@@ -4,7 +4,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from 'embla-carousel-autoplay'
 import MovieCardItem from "./MovieCardItem"
 import { ChevronRight } from "lucide-react";
-import { Link, To } from "react-router-dom";
+import { Link } from "@inertiajs/react";
 
 interface RootProps {
     isLoading?: boolean
@@ -12,7 +12,7 @@ interface RootProps {
     autoplay?: boolean
     title: string
     movies: MovieCard[]
-    seeMoreUrl?: To
+    seeMoreUrl?: string
 };
 
 export default function MovieLatestCarousel({ isLoading = false, loop = false, autoplay = false, title, movies, seeMoreUrl = undefined }: RootProps) {
@@ -38,7 +38,7 @@ export default function MovieLatestCarousel({ isLoading = false, loop = false, a
                         {isLoading && Array.from({ length: 10 }).map((_, index) => <MovieCardItem isLoading key={index} className="pl-4" />)}
                         {!isLoading && movies.map((movie, index) => <MovieCardItem key={index} movie={movie} className="pl-4" />)}
                         {(isLoading || movies.length > 0) && seeMoreUrl && <div className="flex-[0_0_200px] min-w-0 pl-4">
-                            <Link to={seeMoreUrl} className="group block space-y-3 cursor-pointer">
+                            <Link href={seeMoreUrl} className="group block space-y-3 cursor-pointer">
                                 <div className="aspect-2/3 w-full rounded-xl bg-input/30 border border-border flex items-center justify-center">
                                     <ChevronRight className="size-32 text-muted-foreground duration-300 group-hover:scale-120 group-hover:text-foreground" />
                                 </div>

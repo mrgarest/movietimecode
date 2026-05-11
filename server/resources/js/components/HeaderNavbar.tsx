@@ -1,13 +1,15 @@
 import { cn } from "@/lib/utils";
-import { Link, useLocation } from "react-router-dom";
+import { Link, usePage } from "@inertiajs/react"; // 👈
 import { useTranslation } from 'react-i18next';
 import { HTMLAttributeAnchorTarget, useEffect, useState } from "react";
 import Linker from "./Linker";
 import { useMobileMenu } from "@/hooks/useMobileMenu";
 import Hamburger from "hamburger-react";
+import { ClientOnly } from "./ClientOnly";
 
 export default function HeaderNavbar() {
-    const { pathname } = useLocation();
+    const { url } = usePage();
+    const pathname = new URL(url, 'http://localhost').pathname;
     const { t } = useTranslation();
     const { isOpen, isVisible, toggleMenu } = useMobileMenu();
     const [isScrolled, setIsScrolled] = useState<boolean>(false);
@@ -44,7 +46,7 @@ export default function HeaderNavbar() {
                 "sm:my-6 flex items-center justify-between sm:justify-center sticky top-0 sm:top-4 left-0 right-0 z-20 px-4 max-sm:h-14 duration-300",
                 isScrolled && "max-sm:backdrop-blur-xl max-sm:bg-black/40 max-sm:border-b max-sm:border-foreground/10"
             )}>
-                <Link to='/' className={cn(
+                <Link href='/' className={cn(
                     "flex items-center gap-2.5 duration-300",
                     !isVisible && !isScrolled && pathname == '/' && " opacity-0"
                 )}>
@@ -54,13 +56,13 @@ export default function HeaderNavbar() {
                     </div>
                     <div className="sm:hidden text-xl font-nunito font-extrabold text-shadow-md/40 text-shadow-white/30">Movie Timecode</div>
                 </Link>
-                <div className="sm:hidden"><Hamburger
+                <div className="sm:hidden"><ClientOnly asChild><Hamburger
                     rounded
                     hideOutline
                     size={24}
                     toggled={isOpen}
                     onToggle={() => toggleMenu()}
-                /></div>
+                /></ClientOnly></div>
 
                 <nav className="bg-[#2e2f33] rounded-full h-11 px-1 hidden sm:flex items-center justify-center border-border border gap-1 shadow-md shadow-black/30">{navItems.map((item, index) => <Linker
                     key={index}
@@ -92,4 +94,20 @@ export default function HeaderNavbar() {
             </>}
         </>
     );
+}
+
+function HamburgerButton({ toggled, onToggle }: { toggled: boolean, onToggle: () => void }) {
+    return (
+        <button
+            onClick={onToggle}
+            className="sm:hidden p-2"
+            aria-label="Menu"
+        >
+            <div className="w-6 h-5 flex flex-col justify-between">
+                <span className={cn("block h-0.5 bg-white transition-all duration-300", toggled && "rotate-45 translate-y-2")} />
+                <span className={cn("block h-0.5 bg-white transition-all duration-300", toggled && "opacity-0")} />
+                <span className={cn("block h-0.5 bg-white transition-all duration-300", toggled && "-rotate-45 -translate-y-2")} />
+            </div>
+        </button>
+    )
 }

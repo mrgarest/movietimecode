@@ -1,18 +1,13 @@
-import { useSeo } from "@/hooks/useSeo";
 import { useTranslation } from "react-i18next";
 import { Accordion, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { FaqSection } from "@/types/faq";
 import { useEffect, useState } from "react";
 import AccordionFaqContent from "@/components/AccordionFaqContent";
+import { MetaTag } from "@/components/MetaTag";
 
 export default function FaqPage() {
     const [openItem, setOpenItem] = useState<string | undefined>(undefined);
     const { t } = useTranslation();
-    const { setSeo } = useSeo();
-    setSeo({
-        title: t('frequentlAskedQuestion'),
-        description: t('seoDescriptionFaq')
-    });
 
     // Adds an anchor to the link
     useEffect(() => {
@@ -122,29 +117,35 @@ export default function FaqPage() {
     };
 
     return (
-        <div className="space-y-4 sm:space-y-6 pt-3 sm:pt-5">
-            {items.map((section, sectionIndex) => <div
-                key={sectionIndex}
-                className="space-y-2">
-                {sectionIndex == 0
-                    ? <h1 className="text-xl sm:text-3xl md:text-4xl font-bold sm:text-center px-4">{section.title}</h1>
-                    : <h2 className="text-lg sm:text-xl font-bold sm:text-center px-4">{section.title}</h2>}
-                <Accordion
-                    type="single"
-                    collapsible
-                    value={openItem}
-                    onValueChange={handleValueChange}
-                    className="w-full max-w-2xl mx-auto">
-                    {section.items.map((item) => <AccordionItem
-                        id={item.value}
-                        key={item.value}
-                        value={item.value}
-                        className="border-b px-4 last:border-b-0">
-                        <AccordionTrigger className="sm:text-base">{item.title}</AccordionTrigger>
-                        <AccordionFaqContent item={item} />
-                    </AccordionItem>)}
-                </Accordion>
-            </div>)}
-        </div>
+        <>
+            <MetaTag
+                title={t('frequentlAskedQuestion')}
+                description={t('seoDescriptionFaq')}
+            />
+            <div className="space-y-4 sm:space-y-6 pt-3 sm:pt-5">
+                {items.map((section, sectionIndex) => <div
+                    key={sectionIndex}
+                    className="space-y-2">
+                    {sectionIndex == 0
+                        ? <h1 className="text-xl sm:text-3xl md:text-4xl font-bold sm:text-center px-4">{section.title}</h1>
+                        : <h2 className="text-lg sm:text-xl font-bold sm:text-center px-4">{section.title}</h2>}
+                    <Accordion
+                        type="single"
+                        collapsible
+                        value={openItem}
+                        onValueChange={handleValueChange}
+                        className="w-full max-w-2xl mx-auto">
+                        {section.items.map((item) => <AccordionItem
+                            id={item.value}
+                            key={item.value}
+                            value={item.value}
+                            className="border-b px-4 last:border-b-0">
+                            <AccordionTrigger className="sm:text-base">{item.title}</AccordionTrigger>
+                            <AccordionFaqContent item={item} />
+                        </AccordionItem>)}
+                    </Accordion>
+                </div>)}
+            </div>
+        </>
     )
 };

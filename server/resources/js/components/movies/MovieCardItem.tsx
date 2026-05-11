@@ -1,7 +1,7 @@
 import { MovieCard } from "@/types/movie";
-import { Link } from "react-router-dom";
 import { Skeleton } from "../ui/skeleton";
 import { cn } from "@/lib/utils";
+import { Link } from "@inertiajs/react";
 
 interface RootProps {
     className?: string;
@@ -13,7 +13,7 @@ export default function MovieCardItem({ className = undefined, isLoading = false
     return (
         <div
             className={cn("flex-[0_0_200px] min-w-0 select-none", isLoading && "space-y-3", className)}>
-            {!isLoading && movie ? <Link to={`/movies/${movie.tmdb_id}`} className="group block space-y-3 cursor-pointer">
+            {!isLoading && movie ? <Link href={`/movies/${movie.tmdb_id}`} className="group block space-y-3 cursor-pointer">
                 <div className="relative aspect-2/3 overflow-hidden rounded-xl border border-border">
                     <img
                         src={movie.poster_url || "/images/not_found_poster.webp"}

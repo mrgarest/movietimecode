@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import { ApiError, fetchApi } from "@/utils/fetch";
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { useDebounce } from 'use-debounce';
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -20,7 +19,6 @@ interface RootProps {
 }
 
 export default function MovieSearch({ withMovieId = false, inputSize = "default", placeholder, className, onSelected }: RootProps) {
-    const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [query, setQuery] = useState<string>('');
     const [debouncedQuery] = useDebounce(query, 1000);
