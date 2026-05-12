@@ -100,7 +100,7 @@ class Movie extends Model
         return $query->where(function (Builder $q) use ($titles) {
             foreach ($titles as $t) {
                 $t = trim($t);
-                $q->orWhere('title', 'ILIKE', "%{$t}%")
+                $q->orWhere('title', 'ILIKE', "{$t}%")
                     ->orWhereHas('translations', fn($tr) => $tr->where('title', 'ILIKE', "%{$t}%"));
             }
         })
