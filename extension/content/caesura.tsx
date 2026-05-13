@@ -14,13 +14,13 @@ import { getUser } from "@/utils/user";
 import { ChatbotCommand } from "@/types/chatbot";
 import { ChatbotAccess, ChatbotAction } from "@/enums/chatbot";
 import { secondsToTime } from "@/utils/format";
-import { isPlayerVisible, playerInvisible, playerMute, playerPause, playerPlay, playerSeek, playerUnmute, playerVisible } from "@/utils/player";
 import { TimecodeSegment } from "@/types/timecode";
 import { isStreamLive, isTwitchTokenExpires, refreshTwitchToken } from "@/utils/twitch";
 import { getSiteDriver } from "./sites/driver";
 import { settings } from "@/utils/settings";
 import { OBSBackground } from "@/lib/obs/background";
 import { OBSType, Scene } from "@/types/obs";
+import { createPlayerController } from "@/utils/player-controller";
 
 let isHotkeyPressed: boolean = false;
 let isCensorshipEnabled: boolean = false;
@@ -39,6 +39,7 @@ let obsCensorScene: Scene | null;
 
 type Thtml = HTMLIFrameElement | undefined;
 let player: Thtml = undefined;
+const playerController = createPlayerController();
 
 let timecodeSegments: TimecodeSegment[] = [];
 
@@ -121,12 +122,12 @@ settings.onChange([
 
     if (!player || !movie?.originalTitle || !containerForControlBar) return;
 
-    // handleSettings(await getSettings());
-
     setHeaderFonts();
 
     const rootControlBar = document.createElement("div");
     containerForControlBar.after(rootControlBar);
+
+    playerController.set(player);
 
     render(<ControlBar
         player={player}
@@ -187,9 +188,8 @@ async function handleChatbot() {
         || (checkStreamLive && hasStreamLive == false)
         || !player
         || isChatConnected
-        || !user
-        || !user.twitch?.accessToken
-        || !user.twitch?.refreshToken
+        || !user?.twitch?.accessToken
+        || !user?.twitch?.refreshToken
     ) return;
 
     // if necessary, we update the token
@@ -266,35 +266,34 @@ async function handleChatbot() {
                 isChatbotCommandStoped = true;
                 return;
             case ChatbotAction.play:
-                playerPlay(player);
+                playerController.play();
                 return;
             case ChatbotAction.pause:
-                playerPause(player);
+                playerController.pause();
                 return;
             case ChatbotAction.mute:
-                playerMute(player);
+                playerController.mute();
                 return;
             case ChatbotAction.unmute:
-                playerUnmute(player);
+                playerController.unmute();
                 return;
             case ChatbotAction.blur:
-                setPlayerBlur(true);
+                playerController.setBlur(true, settings.get("blurPower"));
                 return;
             case ChatbotAction.unblur:
-                setPlayerBlur(false);
+                playerController.setBlur(false, settings.get("blurPower"));
                 return;
             case ChatbotAction.hidePlayer:
-                console.log("hidePlayer");
-                playerInvisible(player);
+                playerController.setVisible(false);
                 return;
             case ChatbotAction.showPlayer:
-                playerVisible(player);
+                playerController.setVisible(true);
                 return;
             case ChatbotAction.fastForwardRewind:
                 const regex = new RegExp(`${command.command}\\s+(-?\\d+)`);
                 const match = message.match(regex);
                 if (!match) return;
-                playerSeek(player, currentMovieTime + (Number(match[1]) || 0));
+                playerController.seek(currentMovieTime + (Number(match[1]) || 0));
                 return;
             case ChatbotAction.currentMovieTime:
                 if (currentMovieTime == 0) return;
@@ -526,22 +525,22 @@ async function setPlayerCensorshipAction({
     switch (action) {
         case TimecodeAction.blur:
             if (playerContentCensorshipEnabled.blur) return;
-            setPlayerBlur(isCensored);
+            playerController.setBlur(isCensored, settings.get("blurPower"));
             break;
         case TimecodeAction.hide:
             if (playerContentCensorshipEnabled.hide) return;
-            isCensored ? playerInvisible(player) : playerVisible(player);
+            playerController.setVisible(!isCensored);
             break;
         case TimecodeAction.mute:
-            isCensored ? playerMute(player) : playerUnmute(player);
+            isCensored ? playerController.mute() : playerController.unmute();
             break;
         case TimecodeAction.pause:
             if (!isCensored) break;
-            playerPause(player);
+            playerController.pause();
             playAlertSound();
             break;
         case TimecodeAction.skip:
-            if (isCensored && segment.end_time) playerSeek(player, segment.end_time + 1);
+            if (isCensored && segment.end_time) playerController.seek(segment.end_time + 1);
             break;
         case TimecodeAction.obsSceneChange:
             if (playerContentCensorshipEnabled.obsSceneChange) return;
@@ -629,28 +628,6 @@ async function setPlayerCensorshipAction({
 };
 
 /**
- * Sets blur on the player
- * @param enabled enable or disable blur
- */
-function setPlayerBlur(
-    enabled: boolean
-) {
-    if (!player) return;
-    const blurPower: BlurPower = settings.get("blurPower");
-
-    const blurClasses: Record<BlurPower, string> = {
-        [BlurPower.light]: "mt-player-blur-light",
-        [BlurPower.strong]: "mt-player-blur-strong",
-        [BlurPower.max]: "mt-player-blur-max",
-        [BlurPower.base]: "mt-player-blur-base",
-    };
-    const cn =
-        blurPower != null ? blurClasses[blurPower] : blurClasses[BlurPower.base];
-
-    player.classList.toggle(cn, enabled);
-};
-
-/**
  * Gets a message from the background.
  */
 chrome.runtime.onMessage.addListener((message) => {
@@ -673,11 +650,11 @@ async function heandleHotkey(command: string) {
                 "max",
                 "base"
             ].some(cls => player!.classList.contains("mt-player-blur-" + cls)) ? false : !playerContentCensorshipEnabled.blur;
-            setPlayerBlur(playerContentCensorshipEnabled.blur);
+            playerController.setBlur(playerContentCensorshipEnabled.blur, settings.get("blurPower"));
             break;
         case TimecodeAction.hide:
-            playerContentCensorshipEnabled.hide = !isPlayerVisible(player) ? false : !playerContentCensorshipEnabled.hide;
-            playerContentCensorshipEnabled.hide ? playerInvisible(player) : playerVisible(player);
+            playerContentCensorshipEnabled.hide = !playerController.isVisible() ? false : !playerContentCensorshipEnabled.hide;
+            playerController.setVisible(!playerContentCensorshipEnabled.hide);
             break;
         case TimecodeAction.obsSceneChange:
             try {
@@ -686,7 +663,7 @@ async function heandleHotkey(command: string) {
                 }
 
                 if (!obsClient || !obsCensorScene) {
-                    playerPause(player);
+                    playerController.pause();
                     playerContentCensorshipEnabled.obsSceneChange = false;
                     break;
                 }
