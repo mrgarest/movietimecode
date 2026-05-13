@@ -2,20 +2,8 @@ import { OBSClient } from "@/lib/obs/client";
 import { OBSRequest, OBSResponse } from "@/types/obs";
 import { settings } from "@/utils/settings";
 
-// Timeout
-const HEARTBEAT_TIMEOUT = 600000;
-
 // Map
-const obsClients = new Map<
-  number,
-  Map<
-    string,
-    {
-      client: OBSClient;
-      lastActivity: number;
-    }
-  >
->();
+const obsClients = new Map<string, { client: OBSClient; tabId: number }>();
 
 /**
  * Sends a message to the tab (content script).
@@ -24,26 +12,10 @@ const sendMessage = (tabId: number, message: OBSResponse) => {
   chrome.tabs.sendMessage(tabId, message).catch(() => {});
 };
 
-// Activity update
-const touchConnection = (tabId: number, connectionId: string) => {
-  const connection = obsClients.get(tabId)?.get(connectionId);
-  if (connection) {
-    connection.lastActivity = Date.now();
-  }
-};
-
 // Get client with timeout check
-const getConnection = (tabId: number, connectionId: string) => {
-  const connection = obsClients.get(tabId)?.get(connectionId);
+const getConnection = (connectionId: string) => {
+  const connection = obsClients.get(connectionId);
   if (!connection) throw new Error("OBSClient not connected");
-
-  if (Date.now() - connection.lastActivity > HEARTBEAT_TIMEOUT) {
-    connection.client.disconnect();
-    obsClients.get(tabId)?.delete(connectionId);
-    throw new Error("Connection timeout - no activity for 10 minutes");
-  }
-
-  connection.lastActivity = Date.now();
   return connection.client;
 };
 
@@ -87,32 +59,23 @@ const getObsClient = (tabId: number, connectionId: string): OBSClient => {
  * Disables a specific OBS connection in the tab.
  * If this is the last connection, it removes the tab from the Map.
  */
-const disconnectConnection = (tabId: number, connectionId: string) => {
-  const tabConnections = obsClients.get(tabId);
-  if (!tabConnections) return;
-
-  const connection = tabConnections.get(connectionId);
-  if (connection) {
-    connection.client.disconnect();
-    tabConnections.delete(connectionId);
-  }
-
-  if (tabConnections.size === 0) {
-    obsClients.delete(tabId);
-  }
+const disconnectConnection = (connectionId: string) => {
+  const connection = obsClients.get(connectionId);
+  if (!connection) return;
+  connection.client.disconnect();
+  obsClients.delete(connectionId);
 };
 
 /**
  * Disables all OBS connections in the tab.
  */
 const disconnectTab = (tabId: number) => {
-  const tabConnections = obsClients.get(tabId);
-  if (!tabConnections) return;
-
-  for (const connection of tabConnections.values()) {
-    connection.client.disconnect();
+  for (const [id, connection] of obsClients) {
+    if (connection.tabId === tabId) {
+      connection.client.disconnect();
+      obsClients.delete(id);
+    }
   }
-  obsClients.delete(tabId);
 };
 
 /**
@@ -133,31 +96,18 @@ export const handleOBSMessage = async (
     case "obs:connect": {
       const connectionId = generateConnectionId();
       const client = getObsClient(tabId, connectionId);
-
-      if (!obsClients.has(tabId)) {
-        obsClients.set(tabId, new Map());
-      }
-      obsClients.get(tabId)!.set(connectionId, {
-        client,
-        lastActivity: Date.now(),
-      });
-
+      obsClients.set(connectionId, { client, tabId });
       const result = await client.connect();
       return { type: "obs:connect", connectionId, result };
     }
 
-    case "obs:ping": {
-      touchConnection(tabId, message.connectionId);
-      return { type: "obs:pong", connectionId: message.connectionId };
-    }
-
     case "obs:disconnect": {
-      disconnectConnection(tabId, message.connectionId);
+      disconnectConnection(message.connectionId);
       return { type: "obs:disconnect", connectionId: message.connectionId };
     }
 
     case "obs:getScene": {
-      const client = getConnection(tabId, message.connectionId);
+      const client = getConnection(message.connectionId);
       if (!client) throw new Error("OBSClient not connected");
       const result = await client.getScene();
       return {
@@ -168,7 +118,7 @@ export const handleOBSMessage = async (
     }
 
     case "obs:getActiveScene": {
-      const client = getConnection(tabId, message.connectionId);
+      const client = getConnection(message.connectionId);
       if (!client) throw new Error("OBSClient not connected");
       const result = await client.getActiveScene();
       return {
@@ -179,7 +129,7 @@ export const handleOBSMessage = async (
     }
 
     case "obs:setActiveScene": {
-      const client = getConnection(tabId, message.connectionId);
+      const client = getConnection(message.connectionId);
       if (!client) throw new Error("OBSClient not connected");
       const result = await client.setActiveScene(message.scene);
       return {
@@ -190,7 +140,7 @@ export const handleOBSMessage = async (
     }
 
     case "obs:findScene": {
-      const client = getConnection(tabId, message.connectionId);
+      const client = getConnection(message.connectionId);
       if (!client) throw new Error("OBSClient not connected");
       const result = await client.findScene(message.name, message.scenes);
       return {
@@ -203,9 +153,7 @@ export const handleOBSMessage = async (
 };
 
 // Automatically disconnects all OBS connections when the tab is closed
-chrome.tabs.onRemoved.addListener((tabId) => {
-  disconnectTab(tabId);
-});
+chrome.tabs.onRemoved.addListener((tabId) => disconnectTab(tabId));
 
 // Automatically disconnects all OBS connections when the URL in the tab changes
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {

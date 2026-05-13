@@ -5,7 +5,6 @@ type CloseListener = (msg: any) => void;
 
 export class OBSBackground {
   private connectionId?: string;
-  private heartbeatInterval?: number;
   private onErrorListener?: ErrorListener;
   private onCloseListener?: CloseListener;
 
@@ -31,29 +30,10 @@ export class OBSBackground {
   async connect(): Promise<boolean> {
     const response = await this.send({ type: "obs:connect" });
     this.connectionId = response.connectionId;
-
-    this.heartbeatInterval = window.setInterval(() => {
-      if (this.connectionId) {
-        this.send({ type: "obs:ping", connectionId: this.connectionId }).catch(
-          () => {
-            this.cleanup();
-          },
-        );
-      }
-    }, 120000);
-
     return response.result;
   }
 
-  private cleanup() {
-    if (this.heartbeatInterval) {
-      clearInterval(this.heartbeatInterval);
-      this.heartbeatInterval = undefined;
-    }
-  }
-
   async disconnect(): Promise<void> {
-    this.cleanup();
     if (!this.connectionId) return Promise.resolve();
     await this.send({
       type: "obs:disconnect",

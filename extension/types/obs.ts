@@ -10,7 +10,6 @@ export interface Scene {
 
 export type OBSRequest =
   | { type: "obs:connect" }
-  | { type: "obs:ping"; connectionId: string }
   | { type: "obs:disconnect"; connectionId: string }
   | { type: "obs:getScene"; connectionId: string }
   | { type: "obs:getActiveScene"; connectionId: string }
@@ -24,7 +23,6 @@ export type OBSRequest =
 
 export type OBSResponse =
   | { type: "obs:connect"; connectionId: string; result: boolean }
-  | { type: "obs:pong"; connectionId: string }
   | { type: "obs:disconnect"; connectionId: string }
   | { type: "obs:getScene"; connectionId: string; result: Scene[] }
   | { type: "obs:getActiveScene"; connectionId: string; result: Scene | null }
