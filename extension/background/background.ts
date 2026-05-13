@@ -52,7 +52,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   handleOBSMessage(message, sender.tab.id)
     .then(sendResponse)
     .catch((error) =>
-      sendResponse({ type: message.type, error: String(error) }),
+      sendResponse({ type: "obs:error", error: String(error) }),
     );
 
   return true;
@@ -70,9 +70,7 @@ const goToTab = (message: any) => {
     url = chrome.runtime.getURL("index.html") + "#" + message.to;
   } else return;
 
-  chrome.tabs.create({
-    url: url,
-  });
+  chrome.tabs.create({ url: url });
 };
 
 /**
