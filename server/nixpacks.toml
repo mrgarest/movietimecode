@@ -19,12 +19,5 @@ cmds = [
 dependsOn = ['install']
 cmds = ['npm run build']
 
-[phases.release]
-dependsOn = ['build']
-cmds = [
-    'php artisan cache:clear',
-    'php artisan storage:link'
-]
-
 [start]
-cmd = 'node /assets/scripts/prestart.mjs /assets/nginx.template.conf /nginx.conf && (php artisan inertia:start-ssr & php artisan sitemap:generate & php-fpm -y /assets/php-fpm.conf & nginx -c /nginx.conf)'
+cmd = 'node /assets/scripts/prestart.mjs /assets/nginx.template.conf /nginx.conf && (php artisan inertia:start-ssr & php artisan sitemap:generate & php artisan cache:clear & php artisan storage:link & php-fpm -y /assets/php-fpm.conf & nginx -c /nginx.conf)'
