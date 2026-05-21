@@ -119,11 +119,11 @@ class RefreshMovieDataService
      */
     private function handleAznude(int $movieId): void
     {
-        $movie = Movie::select('id', 'original_title', 'release_date', 'aznude_is_nude', 'aznude_slug')->find($movieId);
+        $movie = Movie::select('id', 'title', 'release_date', 'aznude_is_nude', 'aznude_slug')->find($movieId);
 
         if (!$movie || !$movie->release_date->year) return;
 
-        $aznude = $this->aznudeService->search($movie->original_title, $movie->release_date->year);
+        $aznude = $this->aznudeService->search($movie->title, $movie->release_date->year);
 
         if (!$aznude) return;
 
