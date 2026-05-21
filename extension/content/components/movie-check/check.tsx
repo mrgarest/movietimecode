@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { DateTime } from "luxon"
 import { Copy } from "lucide-react";
 import { copy } from "@/utils/helpers";
+import { LegalAgeLink } from "../legal-age-link";
 
 interface RootProps {
     movie: MovieSearchItem;
@@ -93,6 +94,15 @@ export default function Check({ movie, onLoading, onError }: RootProps) {
                             ? i18n.t('usersNotedThatTheyNotNeeded')
                             : movieCheck.segments_count
                         }</div>
+                    </>}
+
+                    {movieCheck.aznude?.is_nude && <>
+                        <div>AZNude</div>
+                        <div>
+                            <LegalAgeLink
+                                href={movieCheck.aznude.url}
+                                className="mt-text-yellow mt-aznude-link">{i18n.t('nudityWarning')}</LegalAgeLink>
+                        </div>
                     </>}
                 </div>
 

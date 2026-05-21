@@ -35,6 +35,10 @@ export interface MovieCheckResponse extends ServerResponse {
     id: string;
     content_ratings: ImdbContentRating[] | null;
   } | null;
+  aznude: {
+    is_nude: boolean;
+    url: string;
+  } | null;
 }
 
 export interface MovieCheckCompany {

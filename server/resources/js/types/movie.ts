@@ -41,6 +41,10 @@ export interface MovieDetailResponse extends ServerResponse {
         id: string;
         content_ratings: ImdbContentRating[] | null;
     } | null;
+    aznude: {
+        is_nude: boolean;
+        url: string;
+    } | null;
     poster_url: string | null;
     backdrop_url: string | null;
 }

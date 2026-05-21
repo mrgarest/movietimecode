@@ -1,11 +1,12 @@
 import { ImdbContentRating, MovieCheckCompany, MovieDetailResponse } from "@/types/movie";
 import { cn } from "@/lib/utils";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { ImdbContentRatingId } from "@/enums/imdb";
 import { DateTime } from "luxon";
 import NotFoundPage from "../not-found";
 import MovieTimecode from "@/components/movies/MovieTimecode";
 import { MetaTag } from "@/components/MetaTag";
+import { LegalAgeLink } from "@/components/LegalAgeLink";
 
 interface Props {
     movie: MovieDetailResponse
@@ -75,6 +76,15 @@ export default function MovieDetailPage({ movie }: Props) {
                                 <div>{t('strikeCount')}</div>
                                 <div className="text-destructive font-medium">{movie.sitrike_count}</div>
                             </>}
+
+                            {movie.aznude?.is_nude && <>
+                                <div>AZNude</div>
+                                <div>
+                                    <LegalAgeLink
+                                        href={movie.aznude.url}
+                                        className="text-sm text-yellow-500 duration-300 hover:opacity-60 cursor-pointer">{t('nudityWarning')}</LegalAgeLink>
+                                </div>
+                            </>}
                         </div>
 
                         {movie.recommendation && <>
@@ -112,6 +122,17 @@ export default function MovieDetailPage({ movie }: Props) {
                                 </div>
                             </div>
                         </>}
+
+                        {/* {movie.aznude?.is_nude && <>
+                            <div className="border-t border-border" />
+                            <div className="space-y-1.5">
+                                <p className="text-sm text-yellow-500">За інформацією з <a
+                                    href={movie.aznude.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer nofollow"
+                                    className="underline hover:opacity-60 duration-300">AZNude</a>, у цьому фільмі можуть бути сцени оголеності.</p>
+                            </div>
+                        </>} */}
                     </div>
                 </div>
             </div>
