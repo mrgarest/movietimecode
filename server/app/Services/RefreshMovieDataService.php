@@ -16,7 +16,9 @@ use Illuminate\Support\Facades\Cache;
 class RefreshMovieDataService
 {
     public function __construct(
-        protected ImdbParserService $imdbParserService
+        protected ImdbParserService $imdbParserService,
+        protected ImdbService $imdbService,
+        protected AznudeService $aznudeService,
     ) {}
 
     /**
@@ -39,13 +41,14 @@ class RefreshMovieDataService
     /**
      * The main input method for updating a specific type of movie data.
      * @param int $movieId
-     * @param RefreshMovieDataType $types
+     * @param RefreshMovieDataType $type
      */
     public function refresh(int $movieId, RefreshMovieDataType $type): void
     {
         match ($type) {
             RefreshMovieDataType::IMDB_INFO => $this->handleImdbInfo($movieId),
             RefreshMovieDataType::IMDB_CONTENT_RATINGS => $this->handleImdbContentRatings($movieId),
+            RefreshMovieDataType::AZNUDE => $this->handleAznude($movieId),
             default => throw new \Exception("Unsupported type")
         };
     }
@@ -104,9 +107,29 @@ class RefreshMovieDataService
 
         if (!$movie) return;
 
-        app(ImdbService::class)->updateContentRatings(
+        $this->imdbService->updateContentRatings(
             parserService: $this->imdbParserService,
             movie: $movie
         );
+    }
+
+    /**
+     * Update from aznude.
+     * @param int $movieId
+     */
+    private function handleAznude(int $movieId): void
+    {
+        $movie = Movie::select('id', 'original_title', 'release_date', 'aznude_is_nude', 'aznude_slug')->find($movieId);
+
+        if (!$movie || !$movie->release_date->year) return;
+
+        $aznude = $this->aznudeService->search($movie->original_title, $movie->release_date->year);
+
+        if (!$aznude) return;
+
+        $movie->update([
+            'aznude_is_nude' => $aznude->isNude,
+            'aznude_slug' => $aznude->slug,
+        ]);
     }
 }

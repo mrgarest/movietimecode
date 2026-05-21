@@ -140,6 +140,7 @@ class MovieController extends Controller
         $refreshMovieDataTypes = [];
         if ($contentRatings->isEmpty()) $refreshMovieDataTypes[] = RefreshMovieDataType::IMDB_CONTENT_RATINGS;
         if ($distributors->isEmpty() || !$movie->rating_imdb) $refreshMovieDataTypes[] = RefreshMovieDataType::IMDB_INFO;
+        if ($movie->aznude_slug === null) $refreshMovieDataTypes[] = RefreshMovieDataType::AZNUDE;
         if (!empty($refreshMovieDataTypes)) RefreshMovieDataService::dispatch($movie->id, $refreshMovieDataTypes);
 
         return new MovieCheckResource([
@@ -149,10 +150,7 @@ class MovieController extends Controller
             'distributors' => $distributors,
             'sanctionCounts' => $sanctionCounts,
             'segmentsCount' => $segmentsCount,
-            'imdb' => [
-                'id' => $movie->imdb_id,
-                'content_ratings' => $contentRatings
-            ],
+            'contentRatings' => $contentRatings,
             'recommendation' => $recommendation
         ]);
     }
@@ -202,6 +200,7 @@ class MovieController extends Controller
         $refreshMovieDataTypes = [];
         if ($contentRatings->isEmpty()) $refreshMovieDataTypes[] = RefreshMovieDataType::IMDB_CONTENT_RATINGS;
         if ($distributors->isEmpty() || !$movie->rating_imdb) $refreshMovieDataTypes[] = RefreshMovieDataType::IMDB_INFO;
+        if ($movie->aznude_slug === null) $refreshMovieDataTypes[] = RefreshMovieDataType::AZNUDE;
         if (!empty($refreshMovieDataTypes)) RefreshMovieDataService::dispatch($movie->id, $refreshMovieDataTypes);
 
         return new MovieDetailResource([
@@ -211,10 +210,7 @@ class MovieController extends Controller
             'productions' => $productions,
             'distributors' => $distributors,
             'sanctionCounts' => $sanctionCounts,
-            'imdb' => [
-                'id' => $movie->imdb_id,
-                'content_ratings' => $contentRatings
-            ],
+            'contentRatings' => $contentRatings,
             'recommendation' => $recommendation
         ]);
     }

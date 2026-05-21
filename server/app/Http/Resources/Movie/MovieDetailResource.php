@@ -39,12 +39,16 @@ class MovieDetailResource extends SuccessResource
                 'color' => $recommendation->color,
                 'message' => $recommendation->message
             ]),
-            'imdb' => $this->resource['imdb']['id'] != null ? [
-                'id' => $this->resource['imdb']['id'],
+            'imdb' => $movie->imdb_id != null ? [
+                'id' => $movie->imdb_id,
                 'content_ratings' => $this->formatContentRatings(),
             ] : null,
+            'aznude' => $movie->aznude_slug != null ? [
+                'is_nude' => $movie->aznude_is_nude,
+                'url' => "https://www.aznude.com/view/movie/{$movie->aznude_slug[0]}/{$movie->aznude_slug}.html",
+            ] : null,
             'poster_url' => TmdbClient::getImageUrl('w500', $translation->poster_path ?? $movie->poster_path),
-            'backdrop_url' => TmdbClient::getImageUrl('w500',$translation->backdrop_path ?? $movie->backdrop_path)
+            'backdrop_url' => TmdbClient::getImageUrl('w500', $translation->backdrop_path ?? $movie->backdrop_path)
         ];
     }
 
@@ -61,7 +65,7 @@ class MovieDetailResource extends SuccessResource
 
     private function formatContentRatings(): ?array
     {
-        $contentRatings = $this->resource['imdb']['content_ratings'] ?? collect();
+        $contentRatings = $this->resource['contentRatings'] ?? collect();
 
         if ($contentRatings->isEmpty()) return null;
 

@@ -20,6 +20,8 @@ class Movie extends Model
         'backdrop_path',
         'rating_imdb',
         'release_date',
+        'aznude_is_nude',
+        'aznude_slug',
         'created_at',
         'updated_at',
     ];
@@ -35,6 +37,8 @@ class Movie extends Model
         'backdrop_path' => 'string',
         'release_date' => 'date',
         'rating_imdb' => 'float',
+        'aznude_is_nude' => 'boolean',
+        'aznude_slug' => 'string',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -56,7 +60,7 @@ class Movie extends Model
     {
         return $this->hasMany(ImdbContentRating::class, 'movie_id', 'id');
     }
-    
+
     public function companies()
     {
         return $this->hasMany(MovieCompany::class);

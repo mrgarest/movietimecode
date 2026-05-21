@@ -139,7 +139,7 @@ class MovieService
         }
 
         // If the movie is not in the database and the import flag is false, return null
-        if(!$import) return null;
+        if (!$import) return null;
 
         // If an IP address is available, a strict limit is applied to the number of requests to the external API
         if ($ip) {
@@ -175,6 +175,7 @@ class MovieService
      * @param ImdbService $imdbService
      * @param ImdbParserService $imdbParserService
      * @param CompanyService $companyService
+     * @param AznudeService $aznudeService
      * @param int $tmdbId
      * 
      * @return Movie|null
@@ -184,6 +185,7 @@ class MovieService
         ImdbService $imdbService,
         ImdbParserService $imdbParserService,
         CompanyService $companyService,
+        AznudeService $aznudeService,
         int $tmdbId
     ): ?Movie {
         $movieDetails = $tmdbClient->movieDetails($tmdbId);
@@ -191,7 +193,12 @@ class MovieService
         if (!$movieDetails || !$movieTranslations) return null;
         $infoImdb = $imdbParserService->info($movieDetails['imdb_id']);
 
-        $movie = DB::transaction(function () use ($movieDetails, $movieTranslations, $companyService, $infoImdb) {
+        $aznude = !empty($movieDetails['release_date']) ? $aznudeService->search(
+            $movieDetails['original_title'],
+            Carbon::parse($movieDetails['release_date'])->year
+        ) : null;
+
+        $movie = DB::transaction(function () use ($movieDetails, $movieTranslations, $companyService, $infoImdb, $aznude) {
             // Saving the movie to the database
             $movie = Movie::create([
                 'storage_id' => StorageId::TMDB->value,
@@ -203,7 +210,9 @@ class MovieService
                 'poster_path' => !empty($movieDetails['poster_path']) ? str_replace('/', '', $movieDetails['poster_path']) : null,
                 'backdrop_path' => !empty($movieDetails['backdrop_path']) ? str_replace('/', '', $movieDetails['backdrop_path']) : null,
                 'rating_imdb' => $infoImdb->rating ?? null,
-                'release_date' => $movieDetails['release_date'] ?? null
+                'release_date' => $movieDetails['release_date'] ?? null,
+                'aznude_is_nude' => $aznude?->isNude,
+                'aznude_slug' => $aznude?->slug,
             ]);
 
             $now = Carbon::now();
