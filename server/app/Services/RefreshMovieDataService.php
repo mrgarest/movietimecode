@@ -34,7 +34,7 @@ class RefreshMovieDataService
             $time = Carbon::now()->addSeconds(mt_rand(5, 240));
 
             RefreshMovieDataJob::dispatch($movieId, $type)->delay($time);
-            Cache::put($key, true, $time->addMinutes(10));
+            Cache::put($key, true, $time->addHours(12));
         }
     }
 
@@ -119,7 +119,7 @@ class RefreshMovieDataService
      */
     private function handleAznude(int $movieId): void
     {
-        $movie = Movie::select('id', 'title', 'release_date', 'aznude_is_nude', 'aznude_slug')->find($movieId);
+        $movie = Movie::select('id', 'title', 'release_date', 'aznude_is_nude', 'aznude_slug', 'updated_at')->find($movieId);
 
         if (!$movie || !$movie->release_date->year) return;
 
