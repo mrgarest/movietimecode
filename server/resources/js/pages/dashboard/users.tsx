@@ -1,3 +1,4 @@
+import { MetaTag } from "@/components/MetaTag";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
@@ -58,6 +59,7 @@ export default function UsersPage() {
 
     return (
         <>
+            <MetaTag title={t("users")} />
             <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 <Input
