@@ -136,7 +136,7 @@ class AuthService
                         // Server login uses long-lived Access Tokens
                         $token = $user->createToken('Server', [self::TARGET_SERVER])->accessToken;
                         Cookie::queue('uat', $token, 43200, '/', null, false, false);
-                        Auth::login($user, false);
+                        Auth::login($user, true);
                         break;
                     default:
                         return new CallbackAuthData(
