@@ -156,7 +156,7 @@ const MovieDialog = ({ data, onSelected }: RootProps) => {
                                             ? <CircleCheck size={13} strokeWidth={3} className="mt-text-green" />
                                             : <Circle size={13} strokeWidth={3} className="mt-text-foreground" />
                                         }
-                                        <div className="mt-select-itme-name">{item.user?.username || 'Невідомий'}</div>
+                                        <div className="mt-select-itme-name">{item.user?.username || 'N/A'}</div>
                                     </div>
                                     <div className="mt-flex mt-items-center mt-justify-right mt-gap-1 mt-text-10 mt-font-bold">
                                         <div>{item.timecode.segment_count}</div>
