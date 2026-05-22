@@ -212,16 +212,16 @@ export const ControlBar = ({ player, movie, onTurnOffCensorship, onCensorship }:
 
     const iconSize: number = 48;
     return (
-        <div data-movietimecode="control-bar" className="mt-control-bar">
-            <div className="mt-container">
-                <div className={`mt-status mt-${statusIndicator}`}></div>
+        <div data-movietimecode="control-bar" className="mt-flex mt-font-inter mt-items-center mt-justify-center mt-mt-3">
+            <div className="mt-p-2 mt-rounded-full mt-bg-background mt-border mt-border-border mt-flex mt-items-center mt-gap-2 mt-transition-width mt-duration-300">
+                <div className={cn('mt-status', `mt-${statusIndicator}`)}></div>
                 <div
                     className={cn(
                         "mt-button mt-primary",
                         isSearchButtonDisabled && "mt-disabled"
                     )}
                     onClick={handleClickSearch}>
-                    <searchButton.icon size={iconSize} />
+                    <searchButton.icon strokeWidth={3} size={iconSize} />
                     <span>{searchButton.title}</span>
                 </div>
                 <div

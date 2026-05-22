@@ -32,10 +32,10 @@ const QuestionDialog = ({ title, description = undefined, buttons, sound = false
     }, [])
 
     return (
-        <div className="mt-dialog-container mt-dialog-question">
-            <div className="mt-title">{title}</div>
-            {description && <div className="mt-description">{description}</div>}
-            <div className="mt-buttons">{buttons.map((
+        <div className="mt-m-4 mt-w-full mt-max-w-md mt-h-calc_100vh_2rem mt-rounded-2xl mt-bg-background mt-border mt-border-border mt-overflow-hidden mt-p-6 mt-flex mt-gap-4 mt-flex-col">
+            <div className="mt-text-xl mt-text-foreground mt-font-bold">{title}</div>
+            {description && <div className="mt-text-sm mt-text-muted font-normal mt-leading-normal">{description}</div>}
+            <div className="mt-flex mt-justify-right mt-gap-2">{buttons.map((
                 { style = "primary", text, dismiss = true, onClick = undefined }: QuestionDialogButton,
                 index
             ) => <Button

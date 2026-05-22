@@ -56,18 +56,18 @@ export default function Check({ movie, onLoading, onError }: RootProps) {
 
     return (
         <>
-            <div className="mt-movie-header mt-movie-item">
+            <div className="mt-movie-item mt-relative mt-flex mt-items-center mt-pt-6 mt-pb-4 mt-px-6 ,mt-gap-3 md-rounded-sm mt-gap-4">
                 <img
-                    className="mt-poster"
+                    className="mt-w-16 mt-pointer-none mt-rounded-md"
                     src={movie.poster_url || chrome.runtime.getURL("images/not_found_poster.webp")} />
-                <div className="mt-info">
-                    <span className="mt-title">{movie.title ? movie.title : movie.original_title}</span>
-                    {movie.title != null && <h2 className="mt-sub-title">{movie.original_title}</h2>}
+                <div className="mt-flex mt-flex-col mt-gap-1">
+                    <span className="mt-text-xl mt-text-foreground mt-font-semibold">{movie.title ? movie.title : movie.original_title}</span>
+                    {movie.title != null && <h2 className="mt-text-sm mt-text-muted mt-font-medium">{movie.original_title}</h2>}
                 </div>
-                <Copy onClick={() => copy(`${config.baseUrl}/movies/${movie.tmdb_id}`)} strokeWidth={2.5} className="mt-button-ico" />
+                <Copy onClick={() => copy(`${config.baseUrl}/movies/${movie.tmdb_id}`)} strokeWidth={2.5} className="mt-button-ico mt-absolute mt-right-6 mt-bottom-4" />
             </div>
-            <div className="mt-check mt-scrollbar">
-                <div className="mt-info-grid">
+            <div className="mt-flex mt-flex-col mt-gap-4 mt-pb-6 mt-px-6 mt-overflow-auto">
+                <div className="mt-grid mt-grid mt-grid-cols-auto-1fr mt-gap-x-3 mt-gap-y-2 mt-text-sm mt-text-foreground">
                     <div>{i18n.t("releaseDate")}</div>
                     <div className={cn(movieCheck.release?.hazard == true && "mt-text-destructive")}>{movieCheck.release ?
                         DateTime.fromISO(movieCheck.release.release_date)
@@ -101,22 +101,22 @@ export default function Check({ movie, onLoading, onError }: RootProps) {
                         <div>
                             <LegalAgeLink
                                 href={movieCheck.aznude.url}
-                                className="mt-text-yellow mt-aznude-link">{i18n.t('nudityWarning')}</LegalAgeLink>
+                                className="mt-text-yellow mt-duration-300 mt-cursor-pointer mt-hover:opacity-60 mt-leading-normal">{i18n.t('nudityWarning')}</LegalAgeLink>
                         </div>
                     </>}
                 </div>
 
-                {movieCheck.recommendation && <div className="mt-border-t">
-                    <div className="mt-info-title">{i18n.t('recommendation')}</div>
-                    <div className={cn("mt-text-sm mt-font-medium",
+                {movieCheck.recommendation && <div className="mt-border-t mt-border-border">
+                    <div className="mt-text-base mt-font-bold mt-text-foreground mt-my-3">{i18n.t('recommendation')}</div>
+                    <div className={cn("mt-text-sm mt-leading-normal",
                         movieCheck.recommendation.color == 'red' && "mt-text-destructive",
                         movieCheck.recommendation.color == 'yellow' && "mt-text-yellow",
                     )}>{movieCheck.recommendation.message}</div>
                 </div>}
 
-                {movieCheck.imdb?.content_ratings && <div className="mt-border-t">
-                    <div className="mt-info-title">{i18n.t('imdbContentRating')}</div>
-                    <div className="mt-info-grid">
+                {movieCheck.imdb?.content_ratings && <div className="mt-border-t mt-border-border">
+                    <div className="mt-text-base mt-font-bold mt-text-foreground mt-my-3">{i18n.t('imdbContentRating')}</div>
+                    <div className="mt-grid mt-grid mt-grid-cols-auto-1fr mt-gap-x-3 mt-gap-y-2 mt-text-sm mt-text-foreground">
                         <ContentRating
                             id={movieCheck.imdb.id}
                             contentId={ImdbContentRatingId.nudity}
@@ -156,7 +156,7 @@ const MovieCompany = ({
     return (
         <>
             <div>{text}</div>
-            <div>
+            <div className="mt-leading-normal">
                 {companies != null && companies.length > 0 ? (
                     companies.map((item, index) => {
                         let color: string | undefined;
