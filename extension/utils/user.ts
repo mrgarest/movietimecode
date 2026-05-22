@@ -20,7 +20,7 @@ export const logout = async () => await chrome.storage.local.remove("user");
  * @returns A user object of type User or undefined if the user is not found.
  */
 export const getUser = async (): Promise<User | undefined> => {
-  const user = settings.get("user");
+  const user = await settings.getAsync("user");
 
   if (
     !user ||
@@ -38,7 +38,7 @@ export const getUser = async (): Promise<User | undefined> => {
  * @returns Promise<string> - The device token.
  */
 export const getDeviceToken = async (): Promise<string> => {
-  let deviceToken = settings.get("deviceToken");
+  let deviceToken = await settings.getAsync("deviceToken");
   if (deviceToken) return deviceToken;
 
   deviceToken = CryptoJS.lib.WordArray.random(18).toString();

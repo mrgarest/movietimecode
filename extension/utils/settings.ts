@@ -82,12 +82,13 @@ export const DEFAULT_SETTINGS: Settings = {
  */
 class SettingsManager {
   private cache: Settings = { ...DEFAULT_SETTINGS };
+  private ready: Promise<void>;
   private listeners: Partial<{
     [K in keyof Settings]: ((key: K, newValue: Settings[K]) => void)[];
   }> = {};
 
   constructor() {
-    this.init();
+    this.ready = this.init();
   }
 
   private async init() {
@@ -116,9 +117,25 @@ class SettingsManager {
   }
 
   /**
+   * Waits until settings are loaded from chrome.storage.local.
+   * Call this once at the start of your app before accessing settings.
+   */
+  async waitReady(): Promise<void> {
+    return this.ready;
+  }
+
+  /**
    * Retrieves the current setting value from the cache (synchronously).
    */
   get<K extends keyof Settings>(key: K): Settings[K] {
+    return this.cache[key];
+  }
+
+  /**
+   * Retrieves the current setting value, waiting for the cache to be ready.
+   */
+  async getAsync<K extends keyof Settings>(key: K): Promise<Settings[K]> {
+    await this.ready;
     return this.cache[key];
   }
 

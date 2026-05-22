@@ -10,6 +10,7 @@ import { handleOBSMessage } from "./obs";
  * Ensures a device token is generated when the extension is installed.
  */
 chrome.runtime.onInstalled.addListener(async (details) => {
+  await settings.waitReady();
   await migrateSettings();
   await getDeviceToken();
   const installedAt = settings.get("installedAt");

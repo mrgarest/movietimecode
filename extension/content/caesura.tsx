@@ -98,6 +98,8 @@ settings.onChange([
 
 (async () => {
     await waitForDOMContentLoaded();
+    await settings.waitReady();
+    
     user = await getUser();
     const hostname = window.location.hostname;
     const site = getSiteDriver(hostname);
