@@ -46,7 +46,7 @@ class AznudeClient
             if (!$searchToken) return;
 
             $response = $this->withHeaders($searchToken)->timeout(10)->get(self::API_BASE . '/app/exp/initial-search', [
-                'q' => urlencode($query),
+                'q' => $query,
                 'gender' => 'f',
                 'type' => 'movies',
                 'limit' => 5
