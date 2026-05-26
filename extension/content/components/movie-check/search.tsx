@@ -69,7 +69,7 @@ export default function SearchMovie({ title, year = null, onSelected, onError, o
                     onClick={() => onSelected(item)}
                     className="mt-relative mt-flex mt-items-center mt-gap-3 mt-rounded-md mt-p-2 mt-cursor-pointer mt-select-none mt-hover:bg-secondary mt-duration-300 mt-gap-4">
                     <img
-                        className="mt-w-12 mt-h-16 mt-pointer-none mt-rounded-md"
+                        className="mt-w-12 mt-h-16 mt-pointer-events-none mt-rounded-md"
                         src={item.poster_url || chrome.runtime.getURL("images/not_found_poster.webp")} />
                     <div className="mt-flex mt-flex-col mt-gap-1">
                         <div>

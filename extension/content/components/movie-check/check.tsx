@@ -58,7 +58,7 @@ export default function Check({ movie, onLoading, onError }: RootProps) {
         <>
             <div className="mt-movie-item mt-relative mt-flex mt-items-center mt-pt-6 mt-pb-4 mt-px-6 ,mt-gap-3 md-rounded-sm mt-gap-4">
                 <img
-                    className="mt-w-16 mt-pointer-none mt-rounded-md"
+                    className="mt-w-16 mt-pointer-events-none mt-rounded-md"
                     src={movie.poster_url || chrome.runtime.getURL("images/not_found_poster.webp")} />
                 <div className="mt-flex mt-flex-col mt-gap-1">
                     <span className="mt-text-xl mt-text-foreground mt-font-semibold">{movie.title ? movie.title : movie.original_title}</span>
