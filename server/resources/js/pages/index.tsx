@@ -111,6 +111,7 @@ export default function HomePage() {
 
     return (<>
         <MetaTag
+            noSiteName
             title={t('seoTitle')}
             description={t('seoDescription')} />
         {isSpinner && <SpinnerFullScreen />}

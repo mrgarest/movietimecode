@@ -23,7 +23,7 @@ export default function DashboardPage() {
 
     return (
         <>
-            <MetaTag title={t("home")} />
+            <MetaTag noIndex title={t("home")} />
             <div className="grid grid-cols-2 min-[500px]:grid-cols-3 gap-4">
                 <Tile isSkeleton={isLoading} ico={Film} title={t('movies')} value={stats?.movie_count?.toString() ?? "N/A"} />
                 <Tile isSkeleton={isLoading} ico={ClockFading} title={t('timecodes')} value={stats?.timecode_count?.toString() ?? "N/A"} />

@@ -214,7 +214,7 @@ export default function MovieSanctionPage() {
 
     return (
         <>
-            <MetaTag title={t('sanctions')} />
+            <MetaTag noIndex title={t('sanctions')} />
             {isSpinnerFullScreen && <SpinnerFullScreen />}
             <div className="flex justify-between items-center">
                 <Link href='/dashboard/movies/sanctions/add'><Button size="sm">{t("add")}</Button></Link>

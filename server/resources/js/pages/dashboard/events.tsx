@@ -56,7 +56,7 @@ export default function EventsPage() {
 
     return (
         <>
-            <MetaTag title={t("events")} />
+            <MetaTag noIndex title={t("events")} />
             <div className="flex flex-col gap-0">
                 {data?.pages.map((page) => page.events.map((event) => (
                     <div

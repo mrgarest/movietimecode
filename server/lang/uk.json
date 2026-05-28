@@ -3,6 +3,8 @@
     "seoDescription": "Це зручне браузерне розширення, яке автоматично приховує небажані сцени під час трансляції фільмів на Twitch",
     "seoTitleMoviesWithTimecodes": "Перевірені фільми з таймкодами для Twitch",
     "seoDescriptionMoviesWithTimecodes": "Список перевірених фільмів з таймкодами для перегляду на Twitch",
+    "seoTitleMovie": "Таймкоди до фільму: {{title}}",
+    "seoDescriptionMovie": "Таймкоди та перевірка чутливого контенту у фільмі {{title}} {{year}} року.",
     "seoDescriptionFaq": "Відповіді на поширені запитання про перегляд фільмів на Twitch.",
     "privacyPolicy": "Політика конфіденційності",
     "yes": "Так",

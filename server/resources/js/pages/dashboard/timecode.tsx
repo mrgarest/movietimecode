@@ -140,7 +140,7 @@ export default function TimecodePage() {
 
     return (
         <>
-            <MetaTag title={t('timecodes')} />
+            <MetaTag noIndex title={t('timecodes')} />
             {isSpinnerFullScreen && <SpinnerFullScreen />}
             <div className="flex items-center">
                 <Select

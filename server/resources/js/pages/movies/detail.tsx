@@ -1,6 +1,6 @@
 import { ImdbContentRating, MovieCheckCompany, MovieDetailResponse } from "@/types/movie";
 import { cn } from "@/lib/utils";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { ImdbContentRatingId } from "@/enums/imdb";
 import { DateTime } from "luxon";
 import NotFoundPage from "../not-found";
@@ -19,8 +19,15 @@ export default function MovieDetailPage({ movie }: Props) {
 
     return (<>
         <MetaTag
-            title={`${movie.title ?? movie.original_title}${movie.release?.release_date ? ` (${DateTime.fromISO(movie.release.release_date).year})` : ''}`}
-            description={t('seoDescription')}
+            noSiteName
+            // title={`${movie.title ?? movie.original_title}${movie.release?.release_date ? ` (${DateTime.fromISO(movie.release.release_date).year})` : ''}`}
+            title={t('seoTitleMovie', {
+                title: `${movie.title ?? movie.original_title}${movie.release?.release_date ? ` (${DateTime.fromISO(movie.release.release_date).year})` : ''}`
+            })}
+            description={t('seoDescriptionMovie', {
+                title: movie.title ?? movie.original_title,
+                year: movie.release?.release_date ? DateTime.fromISO(movie.release.release_date).year : 'N/A'
+            })}
             image={movie.poster_url || undefined}
         />
         <div className="space-y-6">
@@ -122,17 +129,6 @@ export default function MovieDetailPage({ movie }: Props) {
                                 </div>
                             </div>
                         </>}
-
-                        {/* {movie.aznude?.is_nude && <>
-                            <div className="border-t border-border" />
-                            <div className="space-y-1.5">
-                                <p className="text-sm text-yellow-500">За інформацією з <a
-                                    href={movie.aznude.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer nofollow"
-                                    className="underline hover:opacity-60 duration-300">AZNude</a>, у цьому фільмі можуть бути сцени оголеності.</p>
-                            </div>
-                        </>} */}
                     </div>
                 </div>
             </div>

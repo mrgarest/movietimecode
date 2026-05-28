@@ -11,7 +11,7 @@ export default function MovieSanctionAddPage() {
 
     return (
         <>
-            <MetaTag title={t('reportSanction')} />
+            <MetaTag noIndex title={t('reportSanction')} />
             <div>
                 <h1 className="text-2xl font-bold mb-6">{t("reportSanction")}</h1>
                 <MovieSanctionAddForm
