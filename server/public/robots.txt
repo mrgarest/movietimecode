@@ -1,17 +1,3 @@
-User-agent: GPTBot
-User-agent: ClaudeBot
-Allow: /
-Disallow: /api/
-Disallow: /images/
-Disallow: /auth/
-Disallow: /login
-Disallow: /logout
-Disallow: /dashboard
-Disallow: /movies/
-Disallow: *?fbclid=
-Disallow: *?ref=
-Disallow: *?from=
-
 User-Agent: *
 Allow: /
 Disallow: /api/
