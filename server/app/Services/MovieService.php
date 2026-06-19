@@ -26,6 +26,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 
 class MovieService
@@ -189,6 +190,8 @@ class MovieService
         int $tmdbId
     ): ?Movie {
         $movieDetails = $tmdbClient->movieDetails($tmdbId);
+        if (empty($movieDetails['release_date'])) throw ApiException::notFound();
+        
         $movieTranslations = $tmdbClient->movieTranslations($tmdbId);
         if (!$movieDetails || !$movieTranslations) return null;
         $infoImdb = $imdbParserService->info($movieDetails['imdb_id']);

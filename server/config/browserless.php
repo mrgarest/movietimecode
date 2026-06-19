@@ -11,7 +11,9 @@ return [
     |
     */
 
+    'enabled' => (bool) env('BROWSERLESS_ENABLED', false),
+
     'url' => env('BROWSERLESS_URL'),
-    
+
     'token' => env('BROWSERLESS_TOKEN')
 ];

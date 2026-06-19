@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Http;
 class ImdbClient
 {
     const API_BASE = "https://www.imdb.com";
-    protected string $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
     /**
      * Refresh cookies from IMDb via browserless to bypass parsing protection.
@@ -20,7 +20,7 @@ class ImdbClient
         $browserless = config('browserless');
 
         $script = "export default async function ({ page }) {
-                await page.setUserAgent('{$this->userAgent}');
+                await page.setUserAgent('" . self::USER_AGENT . "');
                 await page.setRequestInterception(true);
                 page.on('request', (req) => {
                     if (['image', 'font', 'media'].includes(req.resourceType())) {
@@ -72,7 +72,7 @@ class ImdbClient
         $cookie = Cache::get(ImdbCacheKey::cookies());
 
         $header = [
-            'User-Agent' => $this->userAgent,
+            'User-Agent' => self::USER_AGENT,
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
             'Accept-Language' => 'en-US,en;q=0.5',
         ];
@@ -81,7 +81,6 @@ class ImdbClient
 
         /** @var Response $response */
         $response = Http::withHeaders($header)->timeout(10)->get(self::API_BASE . $url);
-
         return $response->successful() ? $response->body() : null;
     }
 

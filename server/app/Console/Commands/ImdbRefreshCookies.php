@@ -26,6 +26,8 @@ class ImdbRefreshCookies extends Command
      */
     public function handle(ImdbClient $client)
     {
+        if (!config('browserless.enabled')) return;
+
         $client->refreshCookies();
     }
 }
