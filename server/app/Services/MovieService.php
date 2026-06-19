@@ -75,8 +75,21 @@ class MovieService
 
         // Creating a collection with movies
         $movies = collect($searchMovies)
-            // Filter movies by language
-            ->filter(fn($value) => isset($value['release_date']) && !$this->isBlacklistLanguage($value['original_language']))
+            // Filter movies by language and release date
+            ->filter(function ($value) {
+                // Checking if a release date exists
+                if (!isset($value['release_date']) || empty($value['release_date'])) {
+                    return false;
+                }
+
+                // Language Check
+                if ($this->isBlacklistLanguage($value['original_language'])) {
+                    return false;
+                }
+
+                // Check if the release date has already arrived
+                return Carbon::parse($value['release_date'])->isPast() || Carbon::parse($value['release_date'])->isToday();
+            })
             ->map(fn($value) => MovieSearchData::fromTmdb($value))
             ->values();
 
@@ -191,11 +204,11 @@ class MovieService
     ): ?Movie {
         $movieDetails = $tmdbClient->movieDetails($tmdbId);
         if (empty($movieDetails['release_date'])) throw ApiException::notFound();
-        
+
         $movieTranslations = $tmdbClient->movieTranslations($tmdbId);
         if (!$movieDetails || !$movieTranslations) return null;
         $infoImdb = $imdbParserService->info($movieDetails['imdb_id']);
-        
+
         $aznude = !empty($movieDetails['release_date']) ? $aznudeService->search(
             $movieDetails['original_title'],
             Carbon::parse($movieDetails['release_date'])->year
