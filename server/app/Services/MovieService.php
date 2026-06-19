@@ -192,7 +192,7 @@ class MovieService
         $movieTranslations = $tmdbClient->movieTranslations($tmdbId);
         if (!$movieDetails || !$movieTranslations) return null;
         $infoImdb = $imdbParserService->info($movieDetails['imdb_id']);
-
+        
         $aznude = !empty($movieDetails['release_date']) ? $aznudeService->search(
             $movieDetails['original_title'],
             Carbon::parse($movieDetails['release_date'])->year
@@ -210,7 +210,7 @@ class MovieService
                 'poster_path' => !empty($movieDetails['poster_path']) ? str_replace('/', '', $movieDetails['poster_path']) : null,
                 'backdrop_path' => !empty($movieDetails['backdrop_path']) ? str_replace('/', '', $movieDetails['backdrop_path']) : null,
                 'rating_imdb' => $infoImdb->rating ?? null,
-                'release_date' => $movieDetails['release_date'] ?? null,
+                'release_date' => !empty($movieDetails['release_date']) ? $movieDetails['release_date'] : null,
                 'aznude_is_nude' => $aznude?->isNude,
                 'aznude_slug' => $aznude?->slug,
             ]);
