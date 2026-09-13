@@ -20,24 +20,41 @@ class ImdbClient
         $browserless = config('browserless');
 
         $script = "export default async function ({ page }) {
-                await page.setUserAgent('" . self::USER_AGENT . "');
-                await page.setRequestInterception(true);
-                page.on('request', (req) => {
-                    if (['image', 'font', 'media'].includes(req.resourceType())) {
-                        req.abort();
-                    } else {
-                        req.continue();
-                    }
-                });
-                try {
-                    await page.goto('" . self::API_BASE . "', { waitUntil: 'networkidle2', timeout: 30000 });
-                    await new Promise(r => setTimeout(r, 3000));
-                    const cookies = await page.cookies();
-                    return { data: JSON.stringify(cookies), type: 'application/json' };
-                } catch (e) {
-                    return { data: 'Error: ' + e.message, type: 'text/plain' };
+            await page.evaluateOnNewDocument(() => {
+                Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+                Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+                Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+                window.chrome = { runtime: {} };
+                const originalQuery = window.navigator.permissions.query;
+                window.navigator.permissions.query = (parameters) => (
+                    parameters.name === 'notifications'
+                        ? Promise.resolve({ state: Notification.permission })
+                        : originalQuery(parameters)
+                );
+            });
+
+            await page.setUserAgent('" . self::USER_AGENT . "');
+            await page.setRequestInterception(true);
+            page.on('request', (req) => {
+                if (['image', 'font', 'media'].includes(req.resourceType())) {
+                    req.abort();
+                } else {
+                    req.continue();
                 }
-            }";
+            });
+            try {
+                await page.goto('" . self::API_BASE . "', { waitUntil: 'networkidle2', timeout: 30000 });
+                await new Promise(r => setTimeout(r, 3000));
+                const html = await page.content();
+                if (html.includes('captcha-container') || html.includes('Human Verification')) {
+                    return { data: 'Error: WAF captcha challenge encountered', type: 'text/plain' };
+                }
+                const cookies = await page.cookies();
+                return { data: JSON.stringify(cookies), type: 'application/json' };
+            } catch (e) {
+                return { data: 'Error: ' + e.message, type: 'text/plain' };
+            }
+        }";
 
         /** @var Response $response */
         $response = Http::withBody($script, 'application/javascript')
@@ -49,6 +66,10 @@ class ImdbClient
             // Json decode
             $cookiesArray = json_decode($responseData['data'] ?? '[]', true);
 
+            if (!is_array($cookiesArray)) {
+                return false;
+            }
+
             // Cookie collection
             $cookieString = collect($cookiesArray)
                 ->map(fn($c) => "{$c['name']}={$c['value']}")
@@ -57,8 +78,8 @@ class ImdbClient
             // Data storage
             if (!empty($cookieString)) {
                 Cache::put(ImdbCacheKey::cookies(), $cookieString, Carbon::now()->addMinutes(5));
+                return true;
             }
-            return true;
         }
 
         return false;
