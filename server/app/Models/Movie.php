@@ -81,11 +81,6 @@ class Movie extends Model
         return $this->hasMany(MovieTranslation::class);
     }
 
-    public static function findByTitle($title)
-    {
-        return self::where('title', 'ILIKE', "%$title%");
-    }
-
     public function scopeTmdbId(Builder $query, int $tmdbId): Builder
     {
         return $query->where('tmdb_id', $tmdbId);
@@ -104,15 +99,14 @@ class Movie extends Model
         return $query->where(function (Builder $q) use ($titles) {
             foreach ($titles as $t) {
                 $t = trim($t);
-                $q->orWhere('title', 'ILIKE', "{$t}%")
-                    ->orWhereHas('translations', fn($tr) => $tr->where('title', 'ILIKE', "%{$t}%"));
+                $q->orWhereRaw('unaccent(title) ILIKE unaccent(?)', ["{$t}%"])
+                    ->orWhereHas('translations', fn($tr) => $tr->whereRaw('unaccent(title) ILIKE unaccent(?)', ["%{$t}%"]));
             }
-        })
-            ->when($year, function (Builder $q, $year) {
-                $q->whereBetween('release_date', [
-                    ($year - 1) . "-01-01",
-                    ($year + 1) . "-12-31"
-                ]);
-            });
+        })->when($year, function (Builder $q, $year) {
+            $q->whereBetween('release_date', [
+                ($year - 1) . "-01-01",
+                ($year + 1) . "-12-31"
+            ]);
+        });
     }
 }
