@@ -20,23 +20,20 @@ class AznudeService
 
         $collection = collect($movies);
 
-        // Exact match search
         $movie = $collection->first(function ($movie) use ($query, $year) {
-            if ($year && $movie['date'] != $year) {
-                return false;
+            if ($year) {
+                $dates = array_map('trim', explode('-', (string) $movie['date']));
+
+                $from = (int) $dates[0];
+                $to = isset($dates[1]) ? (int) $dates[1] : $from;
+
+                if ($year < $from || $year > $to) {
+                    return false;
+                }
             }
+
             return Str::lower($movie['text']) === Str::lower($query);
         });
-
-        // if ($movie) return AznudeSearchData::fromAznude($movie);
-
-        // // Search by approximate match
-        // $movie = $collection->first(function ($movie) use ($query, $year) {
-        //     if ($year && $movie['date'] != $year) {
-        //         return false;
-        //     }
-        //     return Str::contains(Str::lower($movie['text']), Str::lower($query));
-        // });
 
         return $movie ? AznudeSearchData::fromAznude($movie) : null;
     }

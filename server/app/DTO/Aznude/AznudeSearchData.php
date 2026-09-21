@@ -9,7 +9,7 @@ class AznudeSearchData
     public function __construct(
         public int $id,
         public bool $isNude,
-        public int $releaseYear,
+        public ?int $releaseYear = null,
         public string $title,
         public string $slug,
         public string $url
@@ -22,10 +22,13 @@ class AznudeSearchData
             $isNude = true;
         }
 
+        $from = trim(explode('-', $data['date'] ?? '')[0]);
+        $releaseYear = is_numeric($from) ? (int) $from : null;
+
         return new self(
             id: $data['movie_id'],
             isNude: $isNude,
-            releaseYear: $data['date'],
+            releaseYear: $releaseYear,
             title: $data['text'],
             slug: Str::of($data['url'] ?? '')->beforeLast('.html')->afterLast('/'),
             url: 'https://www.aznude.com' . $data['url']
@@ -37,7 +40,7 @@ class AznudeSearchData
         return new self(
             id: $data['id'],
             isNude: $data['is_nude'],
-            releaseYear: $data['release_year'],
+            releaseYear: $data['release_year'] ?? null,
             title: $data['title'],
             slug: $data['slug'],
             url: $data['url']
