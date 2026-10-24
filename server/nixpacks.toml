@@ -1,7 +1,7 @@
 [phases.setup]
 nixPkgs = [
-    'php84',
-    'php84Packages.composer',
+    'php85',
+    'php85Packages.composer',
     'nginx',
     'libmysqlclient',
     'nodejs_22'
