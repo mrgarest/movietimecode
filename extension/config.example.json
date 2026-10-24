@@ -1,9 +1,9 @@
 {
     "debug": true,
     "version": "1.0.0",
-    "homepageUrl": "https://movietimecode.mrgarest.com",
+    "homepageUrl": "https://movietimecode.garest.net",
     "baseUrl": "http://localhost",
-    "privacyPolicyUrl": "https://movietimecode.mrgarest.com/privacy",
+    "privacyPolicyUrl": "https://movietimecode.garest.net/privacy",
     "telegramChannelUrl": "https://t.me/+B-6MNbF-t6cyZDVi",
     "hostPermissions": {
         "caesura": [

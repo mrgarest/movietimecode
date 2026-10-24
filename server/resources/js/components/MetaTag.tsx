@@ -15,7 +15,7 @@ export function MetaTag({ title, description = undefined, noIndex = false, noSit
 
     const fullTitle = noSiteName ? title : `${title} | Movie Timecode`;
 
-    const baseUrl = 'https://movietimecode.mrgarest.com';
+    const baseUrl = 'https://movietimecode.garest.net';
     canonicalUrl = canonicalUrl ? canonicalUrl : `${baseUrl}${pathname}`;
     const fullImageUrl = image.startsWith('http') ? image : `${baseUrl}${image}`;
 

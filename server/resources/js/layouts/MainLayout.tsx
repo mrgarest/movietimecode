@@ -3,6 +3,7 @@ import HeaderNavbar from "../components/HeaderNavbar";
 import Footer from "@/components/Footer";
 import BackgroundGradient from "@/components/BackgroundGradient";
 import { Toaster } from 'react-hot-toast';
+import DomainMigration from "@/components/DomainMigration";
 
 export default function MainLayout({ children }: PropsWithChildren) {
     return (
@@ -17,6 +18,7 @@ export default function MainLayout({ children }: PropsWithChildren) {
                 position="top-right"
                 reverseOrder={true}
             />
+            <DomainMigration />
         </>
     );
 }

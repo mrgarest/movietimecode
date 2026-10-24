@@ -22,5 +22,5 @@ Disallow: *?fbclid=
 Disallow: *?ref=
 Disallow: *?from=
 
-Host: https://movietimecode.mrgarest.com
-Sitemap: https://movietimecode.mrgarest.com/sitemap.xml
+Host: https://movietimecode.garest.net
+Sitemap: https://movietimecode.garest.net/sitemap.xml

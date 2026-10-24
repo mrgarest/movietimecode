@@ -22,6 +22,6 @@
 ## Корисні посилання
 
 - Розширення в [Chrome Web Store](https://chromewebstore.google.com/detail/movie-timecode/oicfghfgplgplodmidellkbfoachacjb).
-- [Сайт](https://movietimecode.mrgarest.com).
+- [Сайт](https://movietimecode.garest.net).
 - [Telegram канал з таймкодами](https://t.me/+B-6MNbF-t6cyZDVi).
-- [Політика конфіденційності](https://movietimecode.mrgarest.com/privacy).
+- [Політика конфіденційності](https://movietimecode.garest.net/privacy).
