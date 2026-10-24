@@ -26,6 +26,7 @@ return [
         'chrome-extension://oicfghfgplgplodmidellkbfoachacjb', // webstore
         'chrome-extension://lgoiicjgacajkkihololmgnofomnimoi', // dev
         'https://*.mrgarest.com',
+        'https://*.garest.com',
         'http://localhost:3000'
     ],
 
