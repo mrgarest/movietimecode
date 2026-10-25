@@ -7,9 +7,9 @@ Disallow: /login
 Disallow: /logout
 Disallow: /dashboard
 Disallow: /movies/
-Disallow: *?fbclid=
-Disallow: *?ref=
-Disallow: *?from=
+Disallow: *fbclid=
+Disallow: *ref=
+Disallow: *from=
 
 User-Agent: *
 Allow: /
@@ -18,9 +18,9 @@ Disallow: /auth/
 Disallow: /login
 Disallow: /logout
 Disallow: /dashboard
-Disallow: *?fbclid=
-Disallow: *?ref=
-Disallow: *?from=
+Disallow: *fbclid=
+Disallow: *ref=
+Disallow: *from=
 
 Host: https://movietimecode.garest.net
 Sitemap: https://movietimecode.garest.net/sitemap.xml
