@@ -5,6 +5,7 @@ use App\Exceptions\ApiExceptionHandler;
 use App\Http\Middleware\CheckDeactivated;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RedirectToNewDomain;
 use App\Http\Resources\ErrorResource;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->prepend(RedirectToNewDomain::class);
         $middleware->trustProxies(at: '*');
         $middleware->encryptCookies(except: ['uat']);
         $middleware->alias([
