@@ -64,15 +64,11 @@ class ImdbParserService
      */
     private function getDistributors(string $data): ?array
     {
-        // Pull out the distribution section
-        if (!preg_match('@"sub-section-distribution".+?><ul.+?>(.+?)</ul></div></section>@s', $data, $section)) {
-            return null;
-        }
+        // Pull out the distribution category
+        $categories = data_get($this->getNextData($data), 'props.pageProps.mainColumnData.companyCreditCategories') ?? [];
+        $credits = collect($categories)->firstWhere('category.id', 'distribution')['companyCredits']['edges'] ?? [];
 
-        // Extract all elements of the list
-        preg_match_all('@<li.+?class="ipc-metadata-list-item__label.+?>(.+?)</a>.+?div.+?ipc-metadata-list-item__content-container">(.+?)</div>@s', $section[1], $matches);
-
-        if (empty($matches[1])) {
+        if (empty($credits)) {
             return null;
         }
 
@@ -112,20 +108,19 @@ class ImdbParserService
             'United Arab Emirates'
         ];
 
-        return collect($matches[1])
-            ->map(function ($name, $index) use ($matches, $allowedRegions, $mapping) {
-                $metadata = $matches[2][$index] ?? '';
-
-                // Clean metadata from HTML for correct region verification
-                $cleanMetadata = strip_tags(html_entity_decode($metadata));
+        return collect($credits)
+            ->map(function ($credit) use ($allowedRegions, $mapping) {
+                $node = $credit['node'] ?? [];
+                $countries = collect($node['countries'] ?? [])->pluck('text')->all();
+                $attributes = collect($node['attributes'] ?? [])->pluck('text')->implode(', ');
 
                 // Filter by rental type and region
-                if (!Str::contains($cleanMetadata, 'theatrical') || !Str::contains($cleanMetadata, $allowedRegions)) {
+                if (!Str::contains($attributes, 'theatrical') || !array_intersect($countries, $allowedRegions)) {
                     return null;
                 }
 
-                // Clean up the name: remove tags, decode entities
-                $cleanName = strip_tags($name);
+                // Clean up the name: decode entities
+                $cleanName = data_get($node, 'displayableProperty.value.plainText') ?? '';
                 $cleanName = html_entity_decode($cleanName, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
                 // Remove non-breaking spaces (\xA0) and regular extra spaces
@@ -154,45 +149,30 @@ class ImdbParserService
         $data = $this->client->contentInfo($id);
         if (!$data) return null;
 
-        // Mapping IMDb text tags to keys in our array
+        // Mapping IMDb category IDs to keys in our array
         $ratingMap = [
-            'Sex &amp; Nudity' => 'nudity',
-            'Violence &amp; Gore' => 'violence',
-            'Profanity' => 'profanity',
-            'Alcohol, Drugs &amp; Smoking' => 'alcohol',
-            'Frightening &amp; Intense Scenes' => 'frightening',
+            'NUDITY' => 'nudity',
+            'VIOLENCE' => 'violence',
+            'PROFANITY' => 'profanity',
+            'ALCOHOL' => 'alcohol',
+            'FRIGHTENING' => 'frightening',
         ];
 
         $contentRating = array_fill_keys(array_values($ratingMap), null);
-
-        // Parsing rating levels (Mild, Moderate, etc.)
-        preg_match_all('@data-testid="rating-item"(.+?)</li>@s', $data, $matches);
-
-        foreach ($matches[1] ?? [] as $itemHtml) {
-            foreach ($ratingMap as $label => $key) {
-                if (str_contains($itemHtml, $label)) {
-                    $contentRating[$key] = $this->convertContentRating($itemHtml);
-                    break;
-                }
-            }
-        }
-
-        // Parsing detailed descriptions (guides)
         $guides = [];
-        foreach ($ratingMap as $label => $key) {
-            $sectionId = "sub-section-{$key}";
 
-            // Find the section block
-            if (preg_match('@data-testid="' . $sectionId . '".+?>(.+?)</section>@s', $data, $section)) {
-                // Extract all text descriptions in this section
-                preg_match_all('@class="ipc-html-content-inner-div".+?>(.+?)</div>@s', $section[1], $guideMatches);
+        // Parsing rating levels (Mild, Moderate, etc.) and detailed descriptions (guides)
+        foreach ($this->getParentsGuideCategories($data) as $category) {
+            $key = $ratingMap[$category['id'] ?? ''] ?? null;
+            if (!$key) continue;
 
-                $guides[$key] = collect($guideMatches[1] ?? [])
-                    ->map(fn($text) => trim(html_entity_decode($text)))
-                    ->filter(fn($text) => $text !== '' && $text !== '(none)')
-                    ->values()
-                    ->toArray();
-            }
+            $contentRating[$key] = $this->convertContentRating($category['severitySummary']['text'] ?? '');
+
+            $guides[$key] = collect($category['items'] ?? [])
+                ->map(fn($item) => trim(html_entity_decode($item['text'] ?? '')))
+                ->filter(fn($text) => $text !== '' && $text !== '(none)')
+                ->values()
+                ->toArray();
         }
 
         return [
@@ -201,7 +181,37 @@ class ImdbParserService
         ];
     }
 
-    private function convertContentRating(string $html): ?int
+    /**
+     * Get parents guide categories from the page's __NEXT_DATA__ JSON.
+     *
+     * @param string $data Response data from the client
+     *
+     * @return array
+     */
+    private function getParentsGuideCategories(string $data): array
+    {
+        return data_get($this->getNextData($data), 'props.pageProps.contentData.categories') ?? [];
+    }
+
+    /**
+     * Get the __NEXT_DATA__ JSON embedded in the page.
+     *
+     * A lazy ".+?" is not used here: on large pages it exceeds pcre.backtrack_limit and preg_match fails.
+     *
+     * @param string $data Response data from the client
+     *
+     * @return array
+     */
+    private function getNextData(string $data): array
+    {
+        if (!preg_match('@<script id="__NEXT_DATA__"[^>]*>([^<]+)</script>@', $data, $matches)) {
+            return [];
+        }
+
+        return json_decode($matches[1], true) ?? [];
+    }
+
+    private function convertContentRating(string $severity): ?int
     {
         $levels = [
             'None' => 0,
@@ -210,10 +220,6 @@ class ImdbParserService
             'Severe' => 3,
         ];
 
-        foreach ($levels as $name => $value) {
-            if (str_contains($html, $name)) return $value;
-        }
-
-        return null;
+        return $levels[$severity] ?? null;
     }
 }
