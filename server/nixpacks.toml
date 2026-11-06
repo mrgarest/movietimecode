@@ -20,4 +20,4 @@ dependsOn = ['install']
 cmds = ['npm run build']
 
 [start]
-cmd = 'node /assets/scripts/prestart.mjs /assets/nginx.template.conf /nginx.conf && (php artisan inertia:start-ssr & php artisan sitemap:generate & php artisan cache:clear & php artisan storage:link & php-fpm -y /assets/php-fpm.conf & nginx -c /nginx.conf)'
+cmd = 'node /assets/scripts/prestart.mjs /assets/nginx.template.conf /nginx.conf && (php artisan inertia:start-ssr & php artisan sitemap:generate & php artisan storage:link & php-fpm -y /assets/php-fpm.conf & nginx -c /nginx.conf)'
