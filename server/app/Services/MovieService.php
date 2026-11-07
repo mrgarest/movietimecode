@@ -235,30 +235,31 @@ class MovieService
 
             // Original-language translation (always inserted regardless of blacklist)
             $originalTranslation = [
-                'movie_id'     => $movie->id,
-                'lang_code'    => $originalLangCode,
-                'title'        => $movieDetails['original_title'],
-                'overview'     => !empty($movieDetails['overview']) ? $movieDetails['overview'] : null,
-                'poster_path'  => !empty($movieDetails['poster_path']) ? str_replace('/', '', $movieDetails['poster_path']) : null,
+                'movie_id' => $movie->id,
+                'lang_code' => $originalLangCode,
+                'title' => $movieDetails['original_title'],
+                'overview' => !empty($movieDetails['overview']) ? $movieDetails['overview'] : null,
+                'poster_path' => !empty($movieDetails['poster_path']) ? str_replace('/', '', $movieDetails['poster_path']) : null,
                 'backdrop_path' => !empty($movieDetails['backdrop_path']) ? str_replace('/', '', $movieDetails['backdrop_path']) : null,
-                'created_at'   => $now,
-                'updated_at'   => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
 
             // Translation processing
             $insertData = collect($movieTranslations['translations'])
                 ->map(fn($t) => [
                     'lang_code' => strtolower($t['iso_639_1']),
-                    'title'     => $t['data']['title'] ?? null,
-                    'overview'  => !empty($t['data']['overview']) ? $t['data']['overview'] : null,
-                    'poster_path' => !empty($t['poster_path']) ? str_replace('/', '', $t['poster_path']) : null,
+                    'title' => $t['data']['title'] ?? null,
+                    'overview' => !empty($t['data']['overview']) ? $t['data']['overview'] : null,
+                    'poster_path' => null,
+                    'backdrop_path' => null,
                 ])
                 ->filter(fn($t) => !$this->isBlacklistLanguage($t['lang_code']) && !empty($t['title']))
                 ->unique('lang_code')
                 // Skip the original lang here — it is added separately above
                 ->reject(fn($t) => $t['lang_code'] === $originalLangCode)
                 ->map(fn($t) => array_merge($t, [
-                    'movie_id'   => $movie->id,
+                    'movie_id' => $movie->id,
                     'created_at' => $now,
                     'updated_at' => $now
                 ]))->toArray();
