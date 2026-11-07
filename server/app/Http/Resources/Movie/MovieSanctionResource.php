@@ -20,7 +20,8 @@ class MovieSanctionResource extends JsonResource
     public function toArray(Request $request): array
     {
         $translation = $this->movie->translations->first();
-        $posterPath = $translation->poster_path ?? $this->movie->poster_path;
+        $original = $this->movie->originalTranslation;
+        $posterPath = $translation?->poster_path ?? $original?->poster_path;
         $approvedUser = $this->approvedUser;
 
         return [
@@ -36,7 +37,7 @@ class MovieSanctionResource extends JsonResource
             'movie' => [
                 'id' => $this->movie->id,
                 'release_year' => Carbon::parse($this->movie->release_date)->year,
-                'title' => $translation->title ?? $this->movie->title,
+                'title' => $translation?->title ?? $original?->title,
                 'poster_url' => $posterPath ? TmdbClient::getImageUrl('w200', str_replace('/', '', $posterPath)) : null,
             ],
             'approved_by' => $this->approved_by ? [

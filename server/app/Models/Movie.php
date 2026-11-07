@@ -14,10 +14,7 @@ class Movie extends Model
         'tmdb_id',
         'imdb_id',
         'lang_code',
-        'title',
         'duration',
-        'poster_path',
-        'backdrop_path',
         'rating_imdb',
         'release_date',
         'aznude_is_nude',
@@ -32,9 +29,6 @@ class Movie extends Model
         'imdb_id' => 'string',
         'duration' => 'int',
         'lang_code' => 'string',
-        'title' => 'string',
-        'poster_path' => 'string',
-        'backdrop_path' => 'string',
         'release_date' => 'date',
         'rating_imdb' => 'float',
         'aznude_is_nude' => 'boolean',
@@ -81,6 +75,12 @@ class Movie extends Model
         return $this->hasMany(MovieTranslation::class);
     }
 
+    public function originalTranslation()
+    {
+        return $this->hasOne(MovieTranslation::class)
+            ->whereRaw('movie_translations.lang_code = (SELECT lang_code FROM movies WHERE id = movie_translations.movie_id LIMIT 1)');
+    }
+
     public function scopeTmdbId(Builder $query, int $tmdbId): Builder
     {
         return $query->where('tmdb_id', $tmdbId);
@@ -99,8 +99,7 @@ class Movie extends Model
         return $query->where(function (Builder $q) use ($titles) {
             foreach ($titles as $t) {
                 $t = trim($t);
-                $q->orWhereRaw('unaccent(title) ILIKE unaccent(?)', ["{$t}%"])
-                    ->orWhereHas('translations', fn($tr) => $tr->whereRaw('unaccent(title) ILIKE unaccent(?)', ["%{$t}%"]));
+                $q->orWhereHas('translations', fn($tr) => $tr->whereRaw('unaccent(title) ILIKE unaccent(?)', ["%{$t}%"]));
             }
         })->when($year, function (Builder $q, $year) {
             $q->whereBetween('release_date', [

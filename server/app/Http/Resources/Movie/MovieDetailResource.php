@@ -19,14 +19,15 @@ class MovieDetailResource extends SuccessResource
     {
         $movie = $this->resource['movie'];
         $translation = $this->resource['translation'];
+        $original = $this->resource['originalTranslation'] ?? null;
         $recommendation = $this->resource['recommendation'] ?? null;
 
         return [
             'id' => $movie->id,
             'tmdb_id' => $this->resource['tmdb_id'],
             'rating_imdb' => $movie->rating_imdb,
-            'title' => $translation->title ?? $movie->title,
-            'original_title' => $movie->title,
+            'title' => $translation?->title ?? $original?->title,
+            'original_title' => $original?->title,
             'release' => $movie->release_date != null ? [
                 'hazard' => $movie->release_date->greaterThan(Carbon::now()->subYears(4)),
                 'release_date' => $movie->release_date->toDateString(),
@@ -47,8 +48,8 @@ class MovieDetailResource extends SuccessResource
                 'is_nude' => $movie->aznude_is_nude,
                 'url' => "https://www.aznude.com/view/movie/{$movie->aznude_slug[0]}/{$movie->aznude_slug}.html",
             ] : null,
-            'poster_url' => TmdbClient::getImageUrl('w500', $translation->poster_path ?? $movie->poster_path),
-            'backdrop_url' => TmdbClient::getImageUrl('w500', $translation->backdrop_path ?? $movie->backdrop_path)
+            'poster_url' => TmdbClient::getImageUrl('w500', $translation?->poster_path ?? $original?->poster_path),
+            'backdrop_url' => TmdbClient::getImageUrl('w500', $translation?->backdrop_path ?? $original?->backdrop_path)
         ];
     }
 

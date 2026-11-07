@@ -176,6 +176,7 @@ class MovieController extends Controller
         if (!$movie) throw ApiException::notFound();
 
         $translation = $movieService->getTranslation($movie);
+        $originalTranslation = $movieService->getOriginalTranslation($movie);
 
         // Get the count of bans/strikes
         $sanctionCounts = $sanctionService->getCounts($movie->id);
@@ -207,6 +208,7 @@ class MovieController extends Controller
             'tmdb_id' => (int) $movieId,
             'movie' => $movie,
             'translation' => $translation,
+            'originalTranslation' => $originalTranslation,
             'productions' => $productions,
             'distributors' => $distributors,
             'sanctionCounts' => $sanctionCounts,

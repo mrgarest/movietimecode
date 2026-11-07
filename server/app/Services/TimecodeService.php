@@ -307,7 +307,8 @@ class TimecodeService
             'twitchContentClassification',
             'movie.translations' => function ($q) use ($langCode) {
                 $q->whereIn('lang_code', [$langCode, 'en']);
-            }
+            },
+            'movie.originalTranslation',
         ])->find($timecodeId);
 
         if (!$timecode) return null;
@@ -319,15 +320,16 @@ class TimecodeService
         // Determine translation (Current language -> English)
         $translation = $movie->translations->firstWhere('lang_code', $langCode) ?? $movie->translations->firstWhere('lang_code', 'en');
 
-        $posterPath = $translation?->poster_path ?? $movie->poster_path;
+        $original = $movie->originalTranslation;
+        $posterPath = $translation?->poster_path ?? $original?->poster_path;
 
         return new TimecodeEditorData(
             id: $timecode->id,
             movieId: $timecode->movie_id,
             duration: $timecode->duration,
             releaseYear: $movie->release_date?->year,
-            title: $translation?->title ?? $movie->title,
-            originalTitle: $movie->title,
+            title: $translation?->title ?? $original?->title,
+            originalTitle: $original?->title,
             posterUrl: $posterPath ? TmdbClient::getImageUrl('w200', str_replace('/', '', $posterPath)) : null,
             contentClassifications: $timecode->twitchContentClassification->pluck('value')->toArray(),
             segments: $timecode->segments->map(fn($s) => TimecodeSegmentData::fromModel($s))

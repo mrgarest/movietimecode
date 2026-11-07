@@ -216,15 +216,14 @@ class MovieService
 
         $movie = DB::transaction(function () use ($movieDetails, $movieTranslations, $companyService, $infoImdb, $aznude) {
             // Saving the movie to the database
+            $originalLangCode = strtolower($movieDetails['original_language']);
+
             $movie = Movie::create([
                 'storage_id' => StorageId::TMDB->value,
                 'tmdb_id' => $movieDetails['id'],
                 'imdb_id' => $movieDetails['imdb_id'] ?? null,
-                'lang_code' => strtolower($movieDetails['original_language']),
-                'title' => $movieDetails['original_title'],
+                'lang_code' => $originalLangCode,
                 'duration' => $movieDetails['runtime'] * 60,
-                'poster_path' => !empty($movieDetails['poster_path']) ? str_replace('/', '', $movieDetails['poster_path']) : null,
-                'backdrop_path' => !empty($movieDetails['backdrop_path']) ? str_replace('/', '', $movieDetails['backdrop_path']) : null,
                 'rating_imdb' => $infoImdb->rating ?? null,
                 'release_date' => !empty($movieDetails['release_date']) ? $movieDetails['release_date'] : null,
                 'aznude_is_nude' => $aznude?->isNude,
@@ -232,6 +231,17 @@ class MovieService
             ]);
 
             $now = Carbon::now();
+
+            // Original-language translation (always inserted regardless of blacklist)
+            $originalTranslation = [
+                'movie_id'     => $movie->id,
+                'lang_code'    => $originalLangCode,
+                'title'        => $movieDetails['original_title'],
+                'poster_path'  => !empty($movieDetails['poster_path']) ? str_replace('/', '', $movieDetails['poster_path']) : null,
+                'backdrop_path' => !empty($movieDetails['backdrop_path']) ? str_replace('/', '', $movieDetails['backdrop_path']) : null,
+                'created_at'   => $now,
+                'updated_at'   => $now,
+            ];
 
             // Translation processing
             $insertData = collect($movieTranslations['translations'])
@@ -242,13 +252,15 @@ class MovieService
                 ])
                 ->filter(fn($t) => !$this->isBlacklistLanguage($t['lang_code']) && !empty($t['title']))
                 ->unique('lang_code')
+                // Skip the original lang here — it is added separately above
+                ->reject(fn($t) => $t['lang_code'] === $originalLangCode)
                 ->map(fn($t) => array_merge($t, [
                     'movie_id'   => $movie->id,
                     'created_at' => $now,
                     'updated_at' => $now
                 ]))->toArray();
 
-            if ($insertData) MovieTranslation::insert($insertData);
+            MovieTranslation::insert(array_merge([$originalTranslation], $insertData));
             $insertData = [];
 
             // Production processing with TMDB
@@ -316,6 +328,19 @@ class MovieService
             ?? $translations->firstWhere('lang_code', 'en');
     }
 
+    public function getOriginalTranslation(Movie $movie): ?MovieTranslation
+    {
+        $data = Cache::remember(MovieCacheKey::translation($movie->id, $movie->lang_code), Carbon::now()->addMinutes(5), function () use ($movie) {
+            $movie->loadMissing(['translations' => function ($q) use ($movie) {
+                $q->where('lang_code', $movie->lang_code);
+            }]);
+
+            return $movie->translations->where('lang_code', $movie->lang_code)->map(fn($t) => $t->getRawOriginal())->toArray();
+        });
+
+        return MovieTranslation::hydrate($data)->first();
+    }
+
     /**
      * Gives info about the movie if timecodes exist for the specified movie.
      * 
@@ -343,12 +368,14 @@ class MovieService
 
         if (!$translation) return null;
 
+        $originalTranslation = $this->getOriginalTranslation($movie);
+
         return new MoviePreviewData(
             id: $movie->id,
             releaseYear: $movie->release_date?->year,
-            title: $translation->title,
-            originalTitle: $movie->title,
-            posterPath: $translation->poster_path ?? $movie->poster_path,
+            title: $translation->title ?? $originalTranslation?->title,
+            originalTitle: $originalTranslation?->title,
+            posterPath: $translation->poster_path ?? $originalTranslation?->poster_path,
         );
     }
 
@@ -435,7 +462,8 @@ class MovieService
                 ->with([
                     'movie.translations' => function ($q) use ($langCode) {
                         $q->whereIn('lang_code', [$langCode, 'en']);
-                    }
+                    },
+                    'movie.originalTranslation',
                 ])
                 ->orderByDesc('created_at')
                 ->limit($limit + 2)
@@ -449,16 +477,17 @@ class MovieService
                 ->map(function (Movie $movie) use ($langCode) {
                     $translation = $movie->translations->firstWhere('lang_code', $langCode)
                         ?? $movie->translations->firstWhere('lang_code', 'en');
+                    $original = $movie->originalTranslation;
 
-                    $posterPath = !empty($translation->poster_path) ? $translation->poster_path : $movie->poster_path;
+                    $posterPath = $translation?->poster_path ?? $original?->poster_path;
 
                     return (new MovieSearchData(
                         id: $movie->id,
                         tmdbId: $movie->tmdb_id,
                         ratingImdb: $movie->rating_imdb,
                         releaseYear: $movie->release_date?->year,
-                        title: $translation->title ?? $movie->title,
-                        originalTitle: $movie->title,
+                        title: $translation?->title ?? $original?->title,
+                        originalTitle: $original?->title,
                         posterUrl: $posterPath ? TmdbClient::getImageUrl('w200', str_replace('/', '', $posterPath)) : null
                     ))->toArray();
                 })
@@ -485,7 +514,8 @@ class MovieService
                 ->withMax('timecodes as latest_timecode_at', 'created_at')
                 ->orderByDesc('latest_timecode_at')
                 ->with([
-                    'translations' => fn($q) => $q->whereIn('lang_code', [$langCode, 'en'])
+                    'translations' => fn($q) => $q->whereIn('lang_code', [$langCode, 'en']),
+                    'originalTranslation',
                 ])
                 ->paginate($limit, ['*'], 'page', $page);
 
@@ -496,15 +526,16 @@ class MovieService
                 'items' => $paginator->getCollection()->map(function (Movie $movie) use ($langCode) {
                     $translation = $movie->translations->firstWhere('lang_code', $langCode)
                         ?? $movie->translations->firstWhere('lang_code', 'en');
+                    $original = $movie->originalTranslation;
 
-                    $posterPath = !empty($translation->poster_path) ? $translation->poster_path : $movie->poster_path;
+                    $posterPath = $translation?->poster_path ?? $original?->poster_path;
 
                     return (new MovieSearchData(
                         tmdbId: $movie->tmdb_id,
                         ratingImdb: $movie->rating_imdb,
                         releaseYear: $movie->release_date->year,
-                        title: $translation->title ?? $movie->title,
-                        originalTitle: $movie->original_title ?? $movie->title,
+                        title: $translation?->title ?? $original?->title,
+                        originalTitle: $original?->title,
                         posterUrl: $posterPath ? TmdbClient::getImageUrl('w200', str_replace('/', '', $posterPath)) : null,
                     ))->toArray();
                 })->all()

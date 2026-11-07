@@ -27,11 +27,13 @@ class TelegramNotificationService
      */
     public function newTimecodesAdded(User $user, Movie $movie, int $segments)
     {
+        $movie->loadMissing('originalTranslation');
+
         Notification::route('telegram', $this->telegram['chat_id'])->notify(new AddedTimecodeNotifi(
             $user->id,
             $user->username,
             $movie->id,
-            $movie->title ?? 'N/A',
+            $movie->originalTranslation?->title ?? 'N/A',
             $segments,
             Carbon::now()
         ));

@@ -34,8 +34,8 @@ class MovieController extends Controller
 
         if (!$movie) throw new NotFoundHttpException();
 
-        // Get the count of bans/strikes
         $translation = $movieService->getTranslation($movie);
+        $originalTranslation = $movieService->getOriginalTranslation($movie);
 
         // Maximum count of added segments
         $sanctionCounts = $sanctionService->getCounts($movie->id);
@@ -68,6 +68,7 @@ class MovieController extends Controller
                 'tmdb_id' => (int) $movieId,
                 'movie' => $movie,
                 'translation' => $translation,
+                'originalTranslation' => $originalTranslation,
                 'productions' => $productions,
                 'distributors' => $distributors,
                 'sanctionCounts' => $sanctionCounts,

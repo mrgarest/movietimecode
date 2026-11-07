@@ -11,8 +11,10 @@ class MovieTranslation extends Model
         'storage_id',
         'lang_code',
         'title',
+        'overview',
         'poster_path',
         'backdrop_path',
+        'trailer',
         'created_at',
         'updated_at',
     ];
@@ -22,8 +24,10 @@ class MovieTranslation extends Model
         'storage_id' => 'int',
         'lang_code' => 'string',
         'title' => 'string',
+        'overview' => 'string',
         'poster_path' => 'string',
         'backdrop_path' => 'string',
+        'trailer' => 'string',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
