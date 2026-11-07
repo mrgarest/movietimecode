@@ -15,6 +15,7 @@ use App\Enums\StorageId;
 use App\Exceptions\ApiException;
 use App\Helpers\MovieHelper;
 use App\Jobs\AddImagesToMovie;
+use App\Jobs\AddVideosToMovie;
 use App\Models\Event;
 use App\Models\Movie;
 use App\Models\MovieCompany;
@@ -237,6 +238,7 @@ class MovieService
                 'movie_id'     => $movie->id,
                 'lang_code'    => $originalLangCode,
                 'title'        => $movieDetails['original_title'],
+                'overview'     => !empty($movieDetails['overview']) ? $movieDetails['overview'] : null,
                 'poster_path'  => !empty($movieDetails['poster_path']) ? str_replace('/', '', $movieDetails['poster_path']) : null,
                 'backdrop_path' => !empty($movieDetails['backdrop_path']) ? str_replace('/', '', $movieDetails['backdrop_path']) : null,
                 'created_at'   => $now,
@@ -247,7 +249,8 @@ class MovieService
             $insertData = collect($movieTranslations['translations'])
                 ->map(fn($t) => [
                     'lang_code' => strtolower($t['iso_639_1']),
-                    'title' => $t['data']['title'] ?? null,
+                    'title'     => $t['data']['title'] ?? null,
+                    'overview'  => !empty($t['data']['overview']) ? $t['data']['overview'] : null,
                     'poster_path' => !empty($t['poster_path']) ? str_replace('/', '', $t['poster_path']) : null,
                 ])
                 ->filter(fn($t) => !$this->isBlacklistLanguage($t['lang_code']) && !empty($t['title']))
@@ -292,12 +295,18 @@ class MovieService
             movie: $movie
         );
 
-        // Asynchronous addition of localized images to a movie
+        // Asynchronous addition of localized images and videos to a movie
         AddImagesToMovie::dispatch($movie->id, $movieDetails['id'])->delay(Carbon::now()->addSeconds(mt_rand(2, 120)));
+        AddVideosToMovie::dispatch($movie->id, $movieDetails['id'])->delay(Carbon::now()->addSeconds(mt_rand(2, 120)));
 
         // Time lock for updating data if it is missing
-        foreach ([RefreshMovieDataType::IMDB_INFO, RefreshMovieDataType::IMDB_CONTENT_RATINGS] as $type) {
-            Cache::put(MovieCacheKey::refreshData($movie->id, $type), true, Carbon::now()->addMinute(20));
+        foreach (
+            [
+                RefreshMovieDataType::IMDB_INFO,
+                RefreshMovieDataType::IMDB_CONTENT_RATINGS
+            ] as $type
+        ) {
+            Cache::put(MovieCacheKey::refreshData($movie->id, $type), true, Carbon::now()->addMinutes(20));
         }
 
         return $movie;

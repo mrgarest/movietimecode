@@ -55,6 +55,11 @@ class TmdbClient
         return $this->get(self::API_BASE . "/movie/$id/images");
     }
 
+    public function movieVideos($id, string $language = 'en-US')
+    {
+        return $this->get(self::API_BASE . "/movie/$id/videos", ['language' => $language]);
+    }
+
     public function movieExternalIds($id)
     {
         return $this->get(self::API_BASE . "/movie/$id/external_ids");
