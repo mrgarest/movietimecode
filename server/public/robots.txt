@@ -1,5 +1,6 @@
 User-agent: GPTBot
 User-agent: ClaudeBot
+User-agent: meta-externalagent
 Allow: /
 Disallow: /api/
 Disallow: /auth/
