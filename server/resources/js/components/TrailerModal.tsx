@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
@@ -22,9 +23,9 @@ export function TrailerModal({ youtubeId, open, onClose }: Props) {
         }
     }, [open]);
 
-    if (!open) return null;
+    if (!open || typeof document === "undefined") return null;
 
-    return (
+    return createPortal(
         <div
             className={cn(
                 "fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 select-none backdrop-blur-sm transition-opacity duration-250",
@@ -51,7 +52,8 @@ export function TrailerModal({ youtubeId, open, onClose }: Props) {
                     onClick={onClose}
                 />
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 
