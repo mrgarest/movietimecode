@@ -151,7 +151,10 @@ class MovieSanctionService
             ])
             ->with([
                 'approvedUser:id,username',
-                'movie.translations' => fn($q) => $q->where('lang_code', $langCode),
+                'movie.translations' => fn($q) => $q
+                    ->whereIn('lang_code', [$langCode, 'en'])
+                    ->orderByRaw('lang_code = ? DESC', [$langCode]),
+                'movie.originalTranslation',
             ]);
 
         $query->when($filter === 'approved', fn($q) => $q->whereNotNull('approved_at'));
@@ -161,11 +164,18 @@ class MovieSanctionService
             ->orderByDesc('last_report_at')
             ->paginate(20, ['*'], 'page', $page);
 
-        $paginator->getCollection()->each(function ($group) {
-            $group->setRelation('reports', MovieSanction::where('movie_id', $group->movie_id)
-                ->where('username', $group->username)
-                ->orderByDesc('created_at')
-                ->get());
+        $groups = $paginator->getCollection();
+        if ($groups->isEmpty()) return $paginator;
+
+        $reports = MovieSanction::query()
+            ->whereIn('movie_id', $groups->pluck('movie_id')->unique())
+            ->whereIn('username', $groups->pluck('username')->unique())
+            ->orderByDesc('created_at')
+            ->get()
+            ->groupBy(fn($report) => $report->movie_id . '|' . $report->username);
+
+        $groups->each(function ($group) use ($reports) {
+            $group->setRelation('reports', $reports->get($group->movie_id . '|' . $group->username, collect()));
         });
 
         return $paginator;

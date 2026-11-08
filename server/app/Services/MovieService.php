@@ -236,12 +236,18 @@ class MovieService
 
             $now = Carbon::now();
 
-            // Original-language translation (always inserted regardless of blacklist)
+            // Overview in the original language (movie details are in English)
+            $originalOverview = collect($movieTranslations['translations'])
+                ->first(fn($t) => strtolower($t['iso_639_1']) === $originalLangCode && !empty($t['data']['overview']))['data']['overview']
+                ?? $movieDetails['overview']
+                ?? null;
+
+            // Original-language translation (always inserted, regardless of content languages)
             $originalTranslation = [
                 'movie_id' => $movie->id,
                 'lang_code' => $originalLangCode,
                 'title' => $movieDetails['original_title'],
-                'overview' => !empty($movieDetails['overview']) ? $movieDetails['overview'] : null,
+                'overview' => !empty($originalOverview) ? $originalOverview : null,
                 'poster_path' => !empty($movieDetails['poster_path']) ? str_replace('/', '', $movieDetails['poster_path']) : null,
                 'backdrop_path' => !empty($movieDetails['backdrop_path']) ? str_replace('/', '', $movieDetails['backdrop_path']) : null,
                 'created_at' => $now,
@@ -320,6 +326,26 @@ class MovieService
     }
 
     /**
+     * Get all translations of the movie (content languages and the original language).
+     * There are only a few of them, so they are loaded with one query and cached together.
+     *
+     * @param Movie $movie
+     *
+     * @return Collection<int, MovieTranslation>
+     */
+    private function getTranslations(Movie $movie): Collection
+    {
+        $data = Cache::remember(MovieCacheKey::translations($movie->id), Carbon::now()->addMinutes(5), function () use ($movie) {
+            return $movie->translations()
+                ->get()
+                ->map(fn($t) => $t->getRawOriginal())
+                ->toArray();
+        });
+
+        return MovieTranslation::hydrate($data);
+    }
+
+    /**
      * Get a translation for a movie.
      * 
      * @param Movie $movie
@@ -329,32 +355,23 @@ class MovieService
      */
     public function getTranslation(Movie $movie, string $langCode = 'uk'): ?MovieTranslation
     {
-        $data = Cache::remember(MovieCacheKey::translation($movie->id, $langCode), Carbon::now()->addMinutes(5), function () use ($movie, $langCode) {
-            $movie->loadMissing(['translations' => function ($q) use ($langCode) {
-                $q->whereIn('lang_code', [$langCode, 'en']);
-            }]);
-
-            return $movie->translations->map(fn($t) => $t->getRawOriginal())->toArray();
-        });
-
-        $translations = MovieTranslation::hydrate($data);
+        $translations = $this->getTranslations($movie);
 
         // First, select your preferred language. if it is not available, select English.
         return $translations->firstWhere('lang_code', $langCode)
             ?? $translations->firstWhere('lang_code', 'en');
     }
 
+    /**
+     * Get the movie translation in its original language (movies.lang_code).
+     *
+     * @param Movie $movie
+     *
+     * @return MovieTranslation|null
+     */
     public function getOriginalTranslation(Movie $movie): ?MovieTranslation
     {
-        $data = Cache::remember(MovieCacheKey::translation($movie->id, $movie->lang_code), Carbon::now()->addMinutes(5), function () use ($movie) {
-            $movie->loadMissing(['translations' => function ($q) use ($movie) {
-                $q->where('lang_code', $movie->lang_code);
-            }]);
-
-            return $movie->translations->where('lang_code', $movie->lang_code)->map(fn($t) => $t->getRawOriginal())->toArray();
-        });
-
-        return MovieTranslation::hydrate($data)->first();
+        return $this->getTranslations($movie)->firstWhere('lang_code', $movie->lang_code);
     }
 
     /**

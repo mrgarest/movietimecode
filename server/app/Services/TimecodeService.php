@@ -386,9 +386,12 @@ class TimecodeService
             ->with([
                 'user:id,username',
                 'movie' => function ($query) use ($langCode) {
-                    $query->with(['translations' => function ($q) use ($langCode) {
-                        $q->where('lang_code', $langCode);
-                    }]);
+                    $query->with([
+                        'translations' => fn($q) => $q
+                            ->whereIn('lang_code', [$langCode, 'en'])
+                            ->orderByRaw('lang_code = ? DESC', [$langCode]),
+                        'originalTranslation',
+                    ]);
                 },
             ])
             ->when($user, function ($query, $user) {

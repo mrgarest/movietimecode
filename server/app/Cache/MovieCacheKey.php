@@ -28,9 +28,9 @@ class MovieCacheKey
         return  self::ROT . 'id.' . $id;
     }
 
-    public static function translation(int $id, string $langCode): string
+    public static function translations(int $id): string
     {
-        return  self::ROT . 'translation.' . $id . '.' . $langCode;
+        return  self::ROT . 'translations.' . $id;
     }
 
     public static function latestChecked(string $langCode): string
