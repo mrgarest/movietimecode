@@ -9,9 +9,13 @@ interface Metadata {
     canonicalUrl?: string
 }
 
+const truncate = (text: string, max = 155) =>
+    text.length > max ? text.slice(0, max).trimEnd() + '…' : text;
+
 export function MetaTag({ title, description = undefined, noIndex = false, noSiteName = false, image = '/images/b35hj3.jpg', canonicalUrl = undefined }: Metadata) {
     const { url } = usePage()
     const pathname = new URL(url, 'http://localhost').pathname
+    const truncatedDescription = description ? truncate(description) : undefined;
 
     const fullTitle = noSiteName ? title : `${title} | Movie Timecode`;
 
@@ -26,14 +30,14 @@ export function MetaTag({ title, description = undefined, noIndex = false, noSit
             <link rel="canonical" href={canonicalUrl} />
 
             {/* Basic SEO */}
-            {description && <meta name="description" content={description} />}
+            {truncatedDescription && <meta name="description" content={truncatedDescription} />}
             <meta name="robots" content={noIndex ? "noindex, nofollow" : "index, follow"} />
 
             {/* Open Graph */}
             <meta property="og:type" content="website" />
             <meta property="og:url" content={canonicalUrl} />
             <meta property="og:title" content={fullTitle} />
-            {description && <meta property="og:description" content={description} />}
+            {truncatedDescription && <meta property="og:description" content={truncatedDescription} />}
             <meta property="og:image" content={fullImageUrl} />
             <meta property="og:site_name" content="Movie Timecode" />
             <meta property="og:locale" content="uk_UA" />
@@ -42,7 +46,7 @@ export function MetaTag({ title, description = undefined, noIndex = false, noSit
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:url" content={canonicalUrl} />
             <meta name="twitter:title" content={fullTitle} />
-            {description && <meta name="twitter:description" content={description} />}
+            {truncatedDescription && <meta name="twitter:description" content={truncatedDescription} />}
             <meta name="twitter:image" content={fullImageUrl} />
         </Head>
     )

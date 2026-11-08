@@ -1,13 +1,14 @@
 import { useState, useCallback } from 'react';
+import { useBodyScrollLock } from './useBodyScrollLock';
 
 export function useMobileMenu() {
     const [isOpen, setOpen] = useState<boolean>(false);
     const [isVisible, setVisible] = useState<boolean>(false);
 
+    useBodyScrollLock(isOpen);
+
     const toggleMenu = useCallback((targetState?: boolean) => {
         const nextState = targetState !== undefined ? targetState : !isOpen;
-
-        document.body.style.overflow = nextState ? "hidden" : "";
 
         if (nextState) {
             setOpen(true);

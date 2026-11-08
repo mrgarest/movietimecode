@@ -67,6 +67,6 @@ class TmdbClient
 
     public static function getImageUrl(string $size, $path)
     {
-        return $path ? "https://image.tmdb.org/t/p/$size/$path" : null;
+        return $path ? "https://image.tmdb.org/t/p/$size/" . ltrim($path, '/') : null;
     }
 }

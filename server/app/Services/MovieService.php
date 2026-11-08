@@ -498,7 +498,8 @@ class MovieService
                         releaseYear: $movie->release_date?->year,
                         title: $translation?->title ?? $original?->title,
                         originalTitle: $original?->title,
-                        posterUrl: $posterPath ? TmdbClient::getImageUrl('w200', str_replace('/', '', $posterPath)) : null
+                        posterUrl: $posterPath ? TmdbClient::getImageUrl('w200', str_replace('/', '', $posterPath)) : null,
+                        trailer: $translation?->trailer ?? $original?->trailer,
                     ))->toArray();
                 })
                 ->values()
@@ -547,6 +548,7 @@ class MovieService
                         title: $translation?->title ?? $original?->title,
                         originalTitle: $original?->title,
                         posterUrl: $posterPath ? TmdbClient::getImageUrl('w200', str_replace('/', '', $posterPath)) : null,
+                        trailer: $translation?->trailer ?? $original?->trailer,
                     ))->toArray();
                 })->all()
             ];

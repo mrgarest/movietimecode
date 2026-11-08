@@ -22,7 +22,8 @@ class MovieCardResource extends JsonResource
             'rating_imdb' => $this->ratingImdb,
             'release_year' => $this->releaseYear,
             'title' => $this->title ?? $this->originalTitle,
-            'poster_url' => $this->posterUrl
+            'poster_url' => $this->posterUrl,
+            'trailer' => $this->trailer
         ];
     }
 }

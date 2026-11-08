@@ -43,7 +43,6 @@ export default function MovieTimecode({ movieId }: RootProps) {
     const segments = timecodeData?.segments ?? [];
 
     return (<>
-        <div className="md:hidden border-t border-border" />
         <div className="space-y-2">
             <div className="flex items-center justify-between">
                 <div className="text-lg md:text-xl text-foreground font-bold">{t('timecodes')}</div>

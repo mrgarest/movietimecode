@@ -16,6 +16,7 @@ class MovieSearchData
         public ?int $id = null,
         public ?int $timecodeId = null,
         public ?float $ratingImdb = null,
+        public ?string $trailer = null,
     ) {}
 
     public static function fromTmdb(array $data): self
@@ -42,7 +43,8 @@ class MovieSearchData
             releaseYear: $data['release_year'],
             title: $data['title'],
             originalTitle: $data['original_title'],
-            posterUrl: $data['poster_url'] ?? null
+            posterUrl: $data['poster_url'] ?? null,
+            trailer: $data['trailer'] ?? null,
         );
     }
 
@@ -57,6 +59,7 @@ class MovieSearchData
             'title' => $this->title,
             'original_title' => $this->originalTitle,
             'poster_url' => $this->posterUrl,
+            'trailer' => $this->trailer,
         ];
     }
 }

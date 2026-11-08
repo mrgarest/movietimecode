@@ -28,6 +28,7 @@ class MovieDetailResource extends SuccessResource
             'rating_imdb' => $movie->rating_imdb,
             'title' => $translation?->title ?? $original?->title,
             'original_title' => $original?->title,
+            'overview' => $translation?->overview ?? $original?->overview,
             'release' => $movie->release_date != null ? [
                 'hazard' => $movie->release_date->greaterThan(Carbon::now()->subYears(4)),
                 'release_date' => $movie->release_date->toDateString(),
@@ -49,7 +50,8 @@ class MovieDetailResource extends SuccessResource
                 'url' => "https://www.aznude.com/view/movie/{$movie->aznude_slug[0]}/{$movie->aznude_slug}.html",
             ] : null,
             'poster_url' => TmdbClient::getImageUrl('w500', $translation?->poster_path ?? $original?->poster_path),
-            'backdrop_url' => TmdbClient::getImageUrl('w500', $translation?->backdrop_path ?? $original?->backdrop_path)
+            'backdrop_url' => TmdbClient::getImageUrl('w500', $translation?->backdrop_path ?? $original?->backdrop_path),
+            'trailer' => $translation?->trailer ?? $original?->trailer
         ];
     }
 

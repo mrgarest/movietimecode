@@ -7,6 +7,8 @@ import NotFoundPage from "../not-found";
 import MovieTimecode from "@/components/movies/MovieTimecode";
 import { MetaTag } from "@/components/MetaTag";
 import { LegalAgeLink } from "@/components/LegalAgeLink";
+import { TrailerModal, useTrailerModal } from "@/components/TrailerModal";
+import { PlayButton } from "@/components/PlayButton";
 
 interface Props {
     movie: MovieDetailResponse
@@ -14,17 +16,17 @@ interface Props {
 
 export default function MovieDetailPage({ movie }: Props) {
     const { i18n, t } = useTranslation();
+    const { open: trailerOpen, openTrailer, closeTrailer } = useTrailerModal();
 
     if (!movie) return <NotFoundPage />;
 
     return (<>
         <MetaTag
             noSiteName
-            // title={`${movie.title ?? movie.original_title}${movie.release?.release_date ? ` (${DateTime.fromISO(movie.release.release_date).year})` : ''}`}
             title={t('seoTitleMovie', {
                 title: `${movie.title ?? movie.original_title}${movie.release?.release_date ? ` (${DateTime.fromISO(movie.release.release_date).year})` : ''}`
             })}
-            description={t('seoDescriptionMovie', {
+            description={movie.overview ?? t('seoDescriptionMovie', {
                 title: movie.title ?? movie.original_title,
                 year: movie.release?.release_date ? DateTime.fromISO(movie.release.release_date).year : 'N/A'
             })}
@@ -33,11 +35,14 @@ export default function MovieDetailPage({ movie }: Props) {
         <div className="space-y-6">
             <div className="w-full max-w-4xl mx-auto px-4">
                 <div className="flex flex-col md:flex-row gap-6">
-                    <img
-                        className="max-md:hidden max-w-76 min-w-76 object-cover rounded-xl border border-border/50 bg-secondary"
-                        src={movie.poster_url || "/images/not_found_poster.webp"}
-                        alt={movie.title || "poster"}
-                    />
+                    <div className="max-md:hidden relative max-w-76 min-w-76 rounded-xl border border-border/50 bg-secondary overflow-hidden">
+                        <img
+                            className="w-full h-full object-cover"
+                            src={movie.poster_url || "/images/not_found_poster.webp"}
+                            alt={movie.title || "poster"}
+                        />
+                        {movie.trailer && <PlayButton className="absolute bottom-3 right-3" onClick={openTrailer} />}
+                    </div>
                     <div className="md:hidden relative rounded-xl border border-border/50 overflow-hidden">
                         <img
                             className="w-full h-44 sm:h-64 object-cover"
@@ -45,9 +50,12 @@ export default function MovieDetailPage({ movie }: Props) {
                             alt={movie.title || "poster"}
                         />
                         <div className="absolute top-0 left-0 right-0 bottom-0 bg-black/60 z-1" />
-                        <div className="absolute left-0 right-0 bottom-0 p-4 z-2">
-                            <h1 className="text-lg sm:text-2xl text-white font-bold leading-snug">{movie.title ? movie.title : movie.original_title}</h1>
-                            {movie.title != null && <h2 className="text-xs sm:text-sm text-white/70 font-bold leading-snug">{movie.original_title}</h2>}
+                        <div className="absolute left-0 right-0 bottom-0 p-4 z-2 flex items-end justify-between">
+                            <div>
+                                <h1 className="text-lg sm:text-2xl text-white font-bold leading-snug">{movie.title ? movie.title : movie.original_title}</h1>
+                                {movie.title != null && <h2 className="text-xs sm:text-sm text-white/70 font-bold leading-snug">{movie.original_title}</h2>}
+                            </div>
+                            {movie.trailer && <PlayButton className="shrink-0 ml-3" onClick={openTrailer} />}
                         </div>
                     </div>
                     <div className="space-y-4">
@@ -98,7 +106,7 @@ export default function MovieDetailPage({ movie }: Props) {
                             <div className="border-t border-border" />
                             <div className="space-y-1.5">
                                 <div className="text-lg font-bold">{t('recommendation')}</div>
-                                <div className={cn("text-sm",
+                                <div className={cn("text-sm leading-normal",
                                     movie.recommendation.color == 'red' && "text-destructive",
                                     movie.recommendation.color == 'yellow' && "text-yellow-500",
                                 )}>{movie.recommendation.message}</div>
@@ -133,9 +141,20 @@ export default function MovieDetailPage({ movie }: Props) {
                 </div>
             </div>
             <div className="w-full md:max-w-2xl mx-auto px-4 space-y-4">
+                <div className="md:hidden border-t border-border" />
                 <MovieTimecode movieId={movie.id} />
+                {movie.overview && <div className="space-y-2 border-t border-border pt-4">
+                    <div className="text-lg md:text-xl text-foreground font-bold">{t('description')}</div>
+                    <p className="text-sm text-foreground leading-relaxed">{movie.overview}</p>
+                </div>}
             </div>
         </div>
+
+        {movie.trailer && <TrailerModal
+            youtubeId={movie.trailer}
+            open={trailerOpen}
+            onClose={closeTrailer}
+        />}
     </>);
 };
 

@@ -25,6 +25,7 @@ export interface MovieDetailResponse extends ServerResponse {
     rating_imdb: string | null;
     title: string | null;
     original_title: string;
+    overview: string | null;
     release: {
         hazard: boolean;
         release_date: string;
@@ -47,6 +48,7 @@ export interface MovieDetailResponse extends ServerResponse {
     } | null;
     poster_url: string | null;
     backdrop_url: string | null;
+    trailer: string | null;
 }
 
 export interface MovieCheckCompany {
@@ -79,6 +81,7 @@ export interface MovieCard {
     release_year: number | null;
     title: string;
     poster_url: string | null;
+    trailer: string | null;
 }
 
 export interface MovieListResponse extends ServerResponse {
