@@ -16,12 +16,6 @@ class AddVideosToMovie implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    // lang_code => TMDB language parameter
-    const TRAILER_LANGUAGES = [
-        'en' => 'en-US',
-        'uk' => 'uk-UA',
-    ];
-
     public function __construct(
         public int $movieId,
         public int $tmdbId
@@ -31,7 +25,7 @@ class AddVideosToMovie implements ShouldQueue
     {
         $updated = false;
 
-        foreach (self::TRAILER_LANGUAGES as $langCode => $tmdbLang) {
+        foreach (config('app.content_languages') as $langCode => $tmdbLang) {
             $translation = MovieTranslation::where('movie_id', $this->movieId)
                 ->where('lang_code', $langCode)
                 ->first();

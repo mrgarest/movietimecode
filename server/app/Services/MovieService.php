@@ -27,7 +27,6 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 
 class MovieService
@@ -49,9 +48,8 @@ class MovieService
      * @param string $title
      * @param int $page
      * @param int|null $year
-     * @param User|null $user
      * @param array $with
-     * @return array|null
+     * @return Collection
      */
     public function searchTmdb(string $title, int $page = 1, ?int $year = null, $with = []): Collection
     {
@@ -191,6 +189,7 @@ class MovieService
      * @param ImdbParserService $imdbParserService
      * @param CompanyService $companyService
      * @param AznudeService $aznudeService
+     * @param GenreService $genreService
      * @param int $tmdbId
      * 
      * @return Movie|null
@@ -201,6 +200,7 @@ class MovieService
         ImdbParserService $imdbParserService,
         CompanyService $companyService,
         AznudeService $aznudeService,
+        GenreService $genreService,
         int $tmdbId
     ): ?Movie {
         $movieDetails = $tmdbClient->movieDetails($tmdbId);
@@ -215,7 +215,10 @@ class MovieService
             Carbon::parse($movieDetails['release_date'])->year
         ) : null;
 
-        $movie = DB::transaction(function () use ($movieDetails, $movieTranslations, $companyService, $infoImdb, $aznude) {
+        // Get the movie genres, creating the missing ones
+        $genres = $genreService->getOrCreateFromTmdb($movieDetails['genres'] ?? []);
+
+        $movie = DB::transaction(function () use ($movieDetails, $movieTranslations, $companyService, $infoImdb, $aznude, $genres) {
             // Saving the movie to the database
             $originalLangCode = strtolower($movieDetails['original_language']);
 
@@ -254,7 +257,7 @@ class MovieService
                     'poster_path' => null,
                     'backdrop_path' => null,
                 ])
-                ->filter(fn($t) => !$this->isBlacklistLanguage($t['lang_code']) && !empty($t['title']))
+                ->filter(fn($t) => array_key_exists($t['lang_code'], config('app.content_languages')) && !empty($t['title']))
                 ->unique('lang_code')
                 // Skip the original lang here — it is added separately above
                 ->reject(fn($t) => $t['lang_code'] === $originalLangCode)
@@ -286,6 +289,9 @@ class MovieService
             }
             if (!empty($insertData)) MovieCompany::insert($insertData);
             $insertData = [];
+
+            // Linking genres to the movie
+            if ($genres->isNotEmpty()) $movie->genres()->attach($genres->pluck('id'));
 
             return $movie;
         });

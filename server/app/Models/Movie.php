@@ -75,6 +75,11 @@ class Movie extends Model
         return $this->hasMany(MovieTranslation::class);
     }
 
+    public function genres()
+    {
+        return $this->belongsToMany(Genre::class);
+    }
+
     public function originalTranslation()
     {
         return $this->hasOne(MovieTranslation::class)
