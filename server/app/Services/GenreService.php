@@ -2,8 +2,13 @@
 
 namespace App\Services;
 
+use App\Cache\GenreCacheKey;
+use App\DTO\Movie\MovieGenreData;
 use App\Models\Genre;
+use App\Models\Movie;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -38,5 +43,28 @@ class GenreService
         }
 
         return $genres->values();
+    }
+
+    /**
+     * Get the movie genres with names in the language (falls back to English).
+     *
+     * @param Movie $movie
+     * @param string $langCode
+     * @return Collection<int, MovieGenreData>
+     */
+    public function getForMovie(Movie $movie, string $langCode = 'uk'): Collection
+    {
+        $data = Cache::remember(GenreCacheKey::forMovie($movie->id, $langCode), Carbon::now()->addMinutes(5), function () use ($movie, $langCode) {
+            return $movie->genres()
+                ->with(['translations' => fn($q) => $q->whereIn('lang_code', [$langCode, 'en'])])
+                ->get()
+                ->map(fn(Genre $genre) => MovieGenreData::fromModel($genre, $langCode))
+                ->sortBy('name')
+                ->map->toArray()
+                ->values()
+                ->all();
+        });
+
+        return collect($data)->map(fn(array $item) => MovieGenreData::fromArray($item));
     }
 }

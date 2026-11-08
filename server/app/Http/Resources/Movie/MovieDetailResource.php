@@ -35,6 +35,7 @@ class MovieDetailResource extends SuccessResource
             ] : null,
             'productions' => $this->formatCompanies($this->resource['productions']),
             'distributors' => $this->formatCompanies($this->resource['distributors']),
+            'genres' => $this->formatGenres(),
             'ban_count' => $this->resource['sanctionCounts']->bans,
             'sitrike_count' => $this->resource['sanctionCounts']->strikes,
             'recommendation' => $this->when($recommendation, [
@@ -63,6 +64,18 @@ class MovieDetailResource extends SuccessResource
             'id' => $company->id,
             'hazard_level' => $company->hazardLevel,
             'name' => $company->name
+        ])->all();
+    }
+
+    private function formatGenres(): ?array
+    {
+        $genres = $this->resource['genres'] ?? collect();
+
+        if ($genres->isEmpty()) return null;
+
+        return $genres->map(fn($genre) => [
+            'slug' => $genre->slug,
+            'name' => $genre->name
         ])->all();
     }
 

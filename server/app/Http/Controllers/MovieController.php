@@ -8,6 +8,7 @@ use App\Helpers\RequestManager;
 use App\Http\Resources\Movie\MovieCardResource;
 use App\Http\Resources\Movie\MovieDetailResource;
 use App\Services\CompanyService;
+use App\Services\GenreService;
 use App\Services\IMDB\ImdbService;
 use App\Services\MovieSanctionService;
 use App\Services\MovieService;
@@ -24,6 +25,7 @@ class MovieController extends Controller
         MovieService $movieService,
         MovieSanctionService $sanctionService,
         CompanyService $companyService,
+        GenreService $genreService,
         ImdbService $imdbService
     ) {
         $movie = $movieService->getOrImport(
@@ -44,6 +46,9 @@ class MovieController extends Controller
         $companies = $companyService->getForMovie($movie);
         $productions = $companies->where('role', MovieCompanyRole::PRODUCTION)->values();
         $distributors = $companies->where('role', MovieCompanyRole::DISTRIBUTOR)->values();
+
+        // Get genres for the movie
+        $genres = $genreService->getForMovie($movie);
 
         // Get content ratings
         $contentRatings = $imdbService->getContentRatings($movie);
@@ -71,6 +76,7 @@ class MovieController extends Controller
                 'originalTranslation' => $originalTranslation,
                 'productions' => $productions,
                 'distributors' => $distributors,
+                'genres' => $genres,
                 'sanctionCounts' => $sanctionCounts,
                 'contentRatings' => $contentRatings,
                 'recommendation' => $recommendation

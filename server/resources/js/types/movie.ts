@@ -32,6 +32,7 @@ export interface MovieDetailResponse extends ServerResponse {
     } | null;
     productions: MovieCheckCompany[] | null;
     distributors: MovieCheckCompany[] | null;
+    genres: MovieGenre[] | null;
     ban_count: number | null;
     sitrike_count: number | null;
     recommendation: {
@@ -49,6 +50,11 @@ export interface MovieDetailResponse extends ServerResponse {
     poster_url: string | null;
     backdrop_url: string | null;
     trailer: string | null;
+}
+
+export interface MovieGenre {
+    slug: string;
+    name: string;
 }
 
 export interface MovieCheckCompany {
