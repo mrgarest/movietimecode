@@ -2,6 +2,7 @@
 
 use App\Exceptions\ApiException;
 use App\Exceptions\ApiExceptionHandler;
+use App\Http\Middleware\BlockUserAgents;
 use App\Http\Middleware\CheckDeactivated;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -27,7 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['uat']);
         $middleware->alias([
             'not_deactivated' => CheckDeactivated::class,
-            'check_role' => CheckRole::class
+            'check_role' => CheckRole::class,
+            'block_user_agents' => BlockUserAgents::class,
         ]);
         $middleware->web(append: [
             HandleInertiaRequests::class,

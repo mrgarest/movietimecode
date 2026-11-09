@@ -18,7 +18,7 @@ Route::get('/faq', fn() => Inertia::render('faq'));
 Route::get('/privacy', fn() => Inertia::render('privacy'));
 Route::prefix('movies')->controller(MovieController::class)->group(function () {
     Route::get('/timecodes', 'withTimecodes');
-    Route::get('/{id}', 'detail');
+    Route::middleware(['block_user_agents'])->get('/{id}', 'detail');
 });
 
 // Dashboard routes (protected)

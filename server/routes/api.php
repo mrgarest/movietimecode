@@ -86,7 +86,7 @@ Route::prefix('v2')->middleware('throttle:api')->group(function () {
     });
 
     Route::prefix('timecodes/{timecodeId}')->controller(TimecodeController::class)->group(function () {
-        Route::get('/', 'timecodes');
+        Route::middleware(['block_user_agents'])->get('/', 'timecodes');
         Route::middleware(['auth:api', 'not_deactivated'])->group(function () {
             Route::prefix('editor')->middleware([CheckToken::using('extension')])->group(function () {
                 Route::get('/', 'editor');
