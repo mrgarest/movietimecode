@@ -13,6 +13,7 @@ export default function getManifest() {
     author: "Garest",
     version: config.version,
     manifest_version: 3,
+    minimum_chrome_version: "116",
     default_locale: "uk",
     homepage_url: config.homepageUrl,
     commands: {

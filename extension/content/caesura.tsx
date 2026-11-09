@@ -34,6 +34,7 @@ let movie: {
 } | undefined = undefined;
 
 let obsClient: OBSBackground | null = null;
+let obsConnecting: Promise<boolean> | null = null;
 let mainSceneOBS: Scene | null;
 let obsCensorScene: Scene | null;
 
@@ -84,8 +85,7 @@ settings.onChange([
     "chatbotEnabled",
 ], (key, newValue) => {
     if (!neededOBSClient() && obsClient) {
-        obsClient.disconnect();
-        obsClient = null;
+        disconnectOBS();
     } else if (isCensorshipEnabled && neededOBSClient() && !obsClient) {
         connectOBS();
     }
@@ -177,7 +177,7 @@ function handleTurnOffCensorship() {
     isCensorshipEnabled = false;
     timecodeSegments = [];
 
-    obsClient?.disconnect();
+    disconnectOBS();
 }
 
 /**
@@ -432,11 +432,30 @@ const getActionForTag = (tag: TimecodeTag): TimecodeAction | null => {
 };
 
 /**
- * Establishes a connection to the OBS client, if possible
+ * Establishes a connection to the OBS client, if possible.
+ * Concurrent calls share one connection attempt.
+ *
+ * @param showError Show the connection error dialog on failure.
+ * @returns true if connected and the censor scene was found.
  */
-async function connectOBS() {
+function connectOBS(showError: boolean = true): Promise<boolean> {
+    if (!obsConnecting) {
+        obsConnecting = establishOBSConnection().finally(() => {
+            obsConnecting = null;
+        });
+    }
+    return obsConnecting.then((connected) => {
+        if (!connected && showError) handleObsClientError();
+        return connected;
+    });
+}
+
+async function establishOBSConnection(): Promise<boolean> {
     const obsClientSettings: SettingsOBSClientNull = settings.get("obsClient");
     const obsCensorSceneName: string | null = settings.get("obsCensorScene");
+
+    disconnectOBS();
+    const client = new OBSBackground();
 
     try {
         if (!obsCensorSceneName) {
@@ -450,27 +469,67 @@ async function connectOBS() {
             throw new Error("Missing connection data");
         }
 
-        obsClient?.disconnect();
-        obsClient = new OBSBackground();
-        const isConnectedObsClient = await obsClient.connect();
+        const isConnectedObsClient = await client.connect();
         if (!isConnectedObsClient) {
             throw new Error("Failed to connect to OBS Client");
         }
-        const scene = await obsClient.findScene(obsCensorSceneName);
+        const scene = await client.findScene(obsCensorSceneName);
         if (!scene) {
             throw new Error("Could not find the scene");
         }
+
+        // Connection lost (OBS closed, network error): forget the client so the next censorship action reconnects instead of failing.
+        const dropClient = () => {
+            if (obsClient !== client) return;
+            if (config.debug) console.warn("[OBS] connection lost");
+            disconnectOBS();
+        };
+        client.onClose(dropClient);
+        client.onError(dropClient);
+
+        obsClient = client;
         obsCensorScene = scene;
+        return true;
     } catch (e) {
-        obsClient?.disconnect();
-        obsClient = null;
-        obsCensorScene = null;
-        handleObsClientError();
+        client.disconnect();
         if (config.debug) {
             console.error(e);
         }
+        return false;
     }
 };
+
+/**
+ * Closes the OBS connection and forgets the client.
+ */
+function disconnectOBS() {
+    obsClient?.disconnect();
+    obsClient = null;
+    obsCensorScene = null;
+}
+
+/**
+ * Runs OBS requests, connecting first if needed. If the connection turns out to be lost, reconnects once and retries.
+ *
+ * @param fn Requests to run with a connected client and the censor scene.
+ */
+async function withOBS<T>(fn: (client: OBSBackground, censorScene: Scene) => Promise<T>): Promise<T> {
+    if (!obsClient || !obsCensorScene) await connectOBS(false);
+    if (!obsClient || !obsCensorScene) throw new Error("OBS is not connected");
+
+    try {
+        return await fn(obsClient, obsCensorScene);
+    } catch (error) {
+        // A timeout means OBS got the request but answered too slowly; repeating a scene switch could toggle it twice, so only retry lost connections.
+        if (error instanceof Error && /timed out/.test(error.message)) throw error;
+        if (config.debug) console.warn("[OBS] request failed, reconnecting", error);
+
+        disconnectOBS();
+        await connectOBS(false);
+        if (!obsClient || !obsCensorScene) throw error;
+        return await fn(obsClient, obsCensorScene);
+    }
+}
 
 /**
  * Handles OBS client connection errors by displaying a dialog.
@@ -547,74 +606,44 @@ async function setPlayerCensorshipAction({
         case TimecodeAction.obsSceneChange:
             if (playerContentCensorshipEnabled.obsSceneChange) return;
             try {
-                if (obsClient && isCensored) {
-                    mainSceneOBS = await obsClient.getActiveScene();
-                }
-
-                if (
-                    !obsClient ||
-                    !obsCensorScene ||
-                    (!isCensored && !mainSceneOBS?.id)
-                ) {
-                    censorshipActionLog({
-                        error: true,
-                        isCensored,
-                        time,
-                        segment,
-                        action,
-                    });
-                    setPlayerCensorshipAction({
-                        isCensored: isCensored,
-                        time: time,
-                        action: TimecodeAction.pause,
-                        segment: segment,
-                    });
-                    handleObsClientError();
-                    return;
-                }
-
-                let isSetScene = await obsClient.setActiveScene(
-                    isCensored ? obsCensorScene : mainSceneOBS!
-                );
+                const isSetScene = await withOBS(async (client, censorScene) => {
+                    if (isCensored) {
+                        const activeScene = await client.getActiveScene();
+                        // Keep the remembered main scene if the censor scene is already active
+                        if (activeScene && activeScene.id !== censorScene.id) {
+                            mainSceneOBS = activeScene;
+                        }
+                        return client.setActiveScene(censorScene);
+                    }
+                    if (!mainSceneOBS?.id) throw new Error("Main scene is unknown");
+                    return client.setActiveScene(mainSceneOBS);
+                });
 
                 if (isCensored && !isSetScene) {
-                    censorshipActionLog({
-                        error: true,
-                        isCensored,
-                        time,
-                        segment,
-                        action,
-                    });
-                    setPlayerCensorshipAction({
-                        isCensored: isCensored,
-                        time: time,
-                        action: TimecodeAction.pause,
-                        segment: segment,
-                    });
-                    handleObsClientError();
-                    return;
+                    throw new Error("Failed to switch to the censor scene");
                 }
             } catch (error) {
                 if (config.debug) {
                     console.error(`catch ${action}: `, error);
                 }
-                handleObsClientError();
+                censorshipActionLog({
+                    error: true,
+                    isCensored,
+                    time,
+                    segment,
+                    action,
+                });
                 if (isCensored) {
-                    censorshipActionLog({
-                        error: true,
-                        isCensored,
-                        time,
-                        segment,
-                        action,
-                    });
+                    // Fallback: the scene could not be switched, so stop the movie
                     setPlayerCensorshipAction({
                         isCensored: isCensored,
                         time: time,
                         action: TimecodeAction.pause,
                         segment: segment,
                     });
-                    return;
                 }
+                handleObsClientError();
+                return;
             }
             break;
         default:
@@ -660,38 +689,32 @@ async function heandleHotkey(command: string) {
             break;
         case TimecodeAction.obsSceneChange:
             try {
-                if (!obsClient) {
-                    await connectOBS();
-                }
+                await withOBS(async (client, censorScene) => {
+                    const scene = await client.getActiveScene();
+                    if (!scene) {
+                        playerContentCensorshipEnabled.obsSceneChange = false;
+                        return;
+                    }
 
-                if (!obsClient || !obsCensorScene) {
-                    playerController.pause();
-                    playerContentCensorshipEnabled.obsSceneChange = false;
-                    break;
-                }
+                    if (scene.id !== censorScene.id) {
+                        mainSceneOBS = scene;
+                        playerContentCensorshipEnabled.obsSceneChange = true;
+                        await client.setActiveScene(censorScene);
+                        return;
+                    }
 
-                const scene = await obsClient.getActiveScene();
-                if (!scene) {
-                    playerContentCensorshipEnabled.obsSceneChange = false;
-                    break;
-                }
-
-                if (scene.id !== obsCensorScene.id) {
-                    mainSceneOBS = scene;
-                    playerContentCensorshipEnabled.obsSceneChange = true;
-                    await obsClient.setActiveScene(obsCensorScene);
-                    break;
-                }
-
-                if (mainSceneOBS && mainSceneOBS.id !== obsCensorScene.id) {
-                    await obsClient.setActiveScene(mainSceneOBS);
-                    playerContentCensorshipEnabled.obsSceneChange = false;
-                    break;
-                }
+                    if (mainSceneOBS && mainSceneOBS.id !== censorScene.id) {
+                        await client.setActiveScene(mainSceneOBS);
+                        playerContentCensorshipEnabled.obsSceneChange = false;
+                    }
+                });
             } catch (error) {
                 if (config.debug) {
                     console.error("Hotkey obs error:", error);
                 }
+                playerController.pause();
+                playerContentCensorshipEnabled.obsSceneChange = false;
+                handleObsClientError();
             }
             break;
         default:

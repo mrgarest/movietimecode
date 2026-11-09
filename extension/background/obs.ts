@@ -48,9 +48,11 @@ const getObsClient = (tabId: number, connectionId: string): OBSClient => {
       error: String(error),
     }),
   );
-  client.onClose(() =>
-    sendMessage(tabId, { type: "obs:onClose", connectionId }),
-  );
+  client.onClose(() => {
+    // Drop the dead connection so later requests fail fast and the tab reconnects
+    obsClients.delete(connectionId);
+    sendMessage(tabId, { type: "obs:onClose", connectionId });
+  });
 
   return client;
 };
@@ -98,6 +100,7 @@ export const handleOBSMessage = async (
       const client = getObsClient(tabId, connectionId);
       obsClients.set(connectionId, { client, tabId });
       const result = await client.connect();
+      if (!result) disconnectConnection(connectionId);
       return { type: "obs:connect", connectionId, result };
     }
 
@@ -108,7 +111,6 @@ export const handleOBSMessage = async (
 
     case "obs:getScene": {
       const client = getConnection(message.connectionId);
-      if (!client) throw new Error("OBSClient not connected");
       const result = await client.getScene();
       return {
         type: "obs:getScene",
@@ -119,7 +121,6 @@ export const handleOBSMessage = async (
 
     case "obs:getActiveScene": {
       const client = getConnection(message.connectionId);
-      if (!client) throw new Error("OBSClient not connected");
       const result = await client.getActiveScene();
       return {
         type: "obs:getActiveScene",
@@ -130,7 +131,6 @@ export const handleOBSMessage = async (
 
     case "obs:setActiveScene": {
       const client = getConnection(message.connectionId);
-      if (!client) throw new Error("OBSClient not connected");
       const result = await client.setActiveScene(message.scene);
       return {
         type: "obs:setActiveScene",
@@ -141,7 +141,6 @@ export const handleOBSMessage = async (
 
     case "obs:findScene": {
       const client = getConnection(message.connectionId);
-      if (!client) throw new Error("OBSClient not connected");
       const result = await client.findScene(message.name, message.scenes);
       return {
         type: "obs:findScene",

@@ -10,37 +10,31 @@ interface Options {
   auth?: string | null;
 }
 
+type RequestKind = "getScene" | "getActiveScene" | "setActiveScene" | "ping";
+
+interface PendingRequest {
+  kind: RequestKind;
+  resolve: (value: any) => void;
+  reject: (reason?: any) => void;
+  timer: ReturnType<typeof setTimeout>;
+}
+
 export class OBSClient {
   private options: Options;
   private ws: WebSocket | null = null;
-  private timeout:number = 5000;
+  private timeout: number = 5000;
+  private requestTimeout: number = 3000;
+  private keepAliveInterval: number = 20000;
+  private keepAliveTimer: ReturnType<typeof setInterval> | null = null;
   private isConnected: boolean = false;
-  private ids: { [key: string]: number } = {
-    connect: 100,
-    getScene: 200,
-    getActiveScene: 300,
-    setActiveScene: 400,
-  };
+  private nextId: number = 1;
+  private connectId: number = 0;
+  private pending = new Map<number, PendingRequest>();
 
   private onErrorListener?: (msg: any) => void;
   private onCloseListener?: (msg: any) => void;
 
   private connectPromise?: {
-    resolve: (value: boolean) => void;
-    reject: (reason?: any) => void;
-  };
-
-  private getScenePromise?: {
-    resolve: (scenes: Scene[]) => void;
-    reject: (reason?: any) => void;
-  };
-
-  private getActiveScenePromise?: {
-    resolve: (scenes: Scene | null) => void;
-    reject: (reason?: any) => void;
-  };
-
-  private setActiveScenePromise?: {
     resolve: (value: boolean) => void;
     reject: (reason?: any) => void;
   };
@@ -70,15 +64,21 @@ export class OBSClient {
     }
 
     return new Promise((resolve, reject) => {
-      this.connectPromise = { resolve, reject };
-
-      setTimeout(() => {
+      const connectTimer = setTimeout(() => {
         if (this.isConnected) return;
         this.isConnected = false;
         if (this.onErrorListener != null) this.onErrorListener("timeout");
         this.connectPromise?.resolve(false);
         this.disconnect();
       }, this.timeout);
+      this.connectPromise = {
+        resolve: (value: boolean) => {
+          clearTimeout(connectTimer);
+          if (value) this.startKeepAlive();
+          resolve(value);
+        },
+        reject,
+      };
 
       this.ws = new WebSocket(`ws://${host}:${this.options.port}${path}`);
 
@@ -94,6 +94,8 @@ export class OBSClient {
 
       this.ws.onclose = (event) => {
         this.isConnected = false;
+        this.cleanup("WebSocket closed");
+        this.connectPromise?.resolve(false);
         if (config.debug) console.log("[OBSClient] WebSocket Close");
         if (this.onCloseListener != null) this.onCloseListener(event);
       };
@@ -102,8 +104,9 @@ export class OBSClient {
       this.ws!.onopen = () => {
         if (config.debug) console.log("[OBSClient] WebSocket Open");
         if (OBSType.streamlabs == this.options.type) {
+          this.connectId = this.nextId++;
           this.send({
-            id: this.createId("connect"),
+            id: this.connectId,
             jsonrpc: "2.0",
             method: "auth",
             params: {
@@ -120,10 +123,115 @@ export class OBSClient {
    * Disconnects from OBS by closing the WebSocket connection.
    */
   disconnect() {
+    this.cleanup("Disconnected");
     if (this.ws) {
       this.isConnected = false;
+      this.ws.onclose = null;
+      this.ws.onerror = null;
       this.ws.close();
       this.ws = null;
+    }
+  }
+
+  /**
+   * Stops the keepalive and rejects all requests still waiting for a response.
+   * @param reason Rejection reason for pending requests.
+   */
+  private cleanup(reason: string) {
+    if (this.keepAliveTimer) {
+      clearInterval(this.keepAliveTimer);
+      this.keepAliveTimer = null;
+    }
+    this.pending.forEach((request) => {
+      clearTimeout(request.timer);
+      request.reject(new Error(reason));
+    });
+    this.pending.clear();
+  }
+
+  /**
+   * Periodically sends a cheap request so the connection (and the service worker that owns it) is not considered idle between censorship segments.
+   */
+  private startKeepAlive() {
+    if (this.keepAliveTimer) clearInterval(this.keepAliveTimer);
+    this.keepAliveTimer = setInterval(() => {
+      if (!this.isConnected) return;
+      this.request("ping").catch((error) => {
+        if (config.debug) console.warn("[OBSClient] keepalive failed", error);
+      });
+    }, this.keepAliveInterval);
+  }
+
+  /**
+   * Sends a request and waits for its response, matched by request id.
+   * Rejects if OBS does not answer within `requestTimeout`.
+   * @param kind Request kind.
+   * @param scene Scene for `setActiveScene`.
+   */
+  private request<T>(kind: RequestKind, scene?: Scene): Promise<T> {
+    if (!this.ws || !this.isConnected) {
+      return Promise.reject(new Error("WebSocket is not connected"));
+    }
+
+    const requestId = this.nextId++;
+    const promise = new Promise<T>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(requestId);
+        reject(new Error(`OBS request "${kind}" timed out`));
+      }, this.requestTimeout);
+      this.pending.set(requestId, { kind, resolve, reject, timer });
+    });
+
+    if (this.options.type === OBSType.streamlabs) {
+      const methods: Record<RequestKind, { method: string; args?: any[] }> = {
+        getScene: { method: "getScenes" },
+        getActiveScene: { method: "activeScene" },
+        setActiveScene: { method: "makeSceneActive", args: [scene?.id] },
+        ping: { method: "activeScene" },
+      };
+      const { method, args } = methods[kind];
+      this.send({
+        id: requestId,
+        jsonrpc: "2.0",
+        method,
+        params: { resource: "ScenesService", ...(args ? { args } : {}) },
+      });
+    } else {
+      const requestTypes: Record<RequestKind, string> = {
+        getScene: "GetSceneList",
+        getActiveScene: "GetCurrentProgramScene",
+        setActiveScene: "SetCurrentProgramScene",
+        ping: "GetVersion",
+      };
+      this.send({
+        op: 6,
+        d: {
+          requestId: String(requestId),
+          requestType: requestTypes[kind],
+          ...(kind === "setActiveScene"
+            ? { requestData: { sceneName: scene?.name } }
+            : {}),
+        },
+      });
+    }
+
+    return promise;
+  }
+
+  /**
+   * Resolves a pending request with the parsed response.
+   * @param requestId Request id from the response.
+   * @param parse Converts the raw response to the result for the request kind.
+   */
+  private settle(requestId: number, parse: (kind: RequestKind) => any) {
+    const request = this.pending.get(requestId);
+    if (!request) return;
+    clearTimeout(request.timer);
+    this.pending.delete(requestId);
+    try {
+      request.resolve(parse(request.kind));
+    } catch (error) {
+      request.reject(error);
     }
   }
 
@@ -156,49 +264,38 @@ export class OBSClient {
     } catch {
       return;
     }
-    switch (data.id) {
-      case this.ids.connect:
-        if (data.result === true) {
-          this.isConnected = true;
-          this.connectPromise?.resolve(true);
-          break;
-        }
-        this.disconnect();
-        if (this.onErrorListener) {
-          this.onErrorListener("Connection to OBS could not be established");
-        }
-        this.isConnected = false;
-        this.connectPromise?.resolve(false);
-        break;
-      case this.ids.getScene:
-        if (data.result !== null) {
-          this.getScenePromise?.resolve(
-            data.result.map((e: any) => ({
-              id: e.id,
-              name: e.name,
-            }))
-          );
-          break;
-        }
-        this.getScenePromise?.resolve([]);
-        break;
-      case this.ids.getActiveScene:
-        if (data.result !== null) {
-          this.getActiveScenePromise?.resolve({
-            id: data.result.id,
-            name: data.result.name,
-          });
-          break;
-        }
-        this.getActiveScenePromise?.resolve(null);
-        break;
-      case this.ids.setActiveScene:
-        this.setActiveScenePromise?.resolve(data.result == true);
-        break;
 
-      default:
-        break;
+    if (data.id === this.connectId && !this.isConnected) {
+      if (data.result === true) {
+        this.isConnected = true;
+        this.connectPromise?.resolve(true);
+        return;
+      }
+      this.disconnect();
+      if (this.onErrorListener) {
+        this.onErrorListener("Connection to OBS could not be established");
+      }
+      this.isConnected = false;
+      this.connectPromise?.resolve(false);
+      return;
     }
+
+    this.settle(data.id, (kind) => {
+      if (data.error) throw new Error(data.error.message ?? "OBS request failed");
+      const result = data.result;
+      switch (kind) {
+        case "getScene":
+          return Array.isArray(result)
+            ? result.map((e: any) => ({ id: e.id, name: e.name }))
+            : [];
+        case "getActiveScene":
+          return result ? { id: result.id, name: result.name } : null;
+        case "setActiveScene":
+          return result == true;
+        default:
+          return result;
+      }
+    });
   }
 
   /**
@@ -206,17 +303,22 @@ export class OBSClient {
    * @param event WebSocket event.
    */
   protected obsstudioMessage(event: any) {
-    const data = JSON.parse(event.data);
+    let data: any;
+    try {
+      data = JSON.parse(event.data);
+    } catch {
+      return;
+    }
 
     switch (data.op) {
-      case 0:
+      case 0: {
         if (!data.d.authentication) {
           if (this.onErrorListener) {
             this.onErrorListener("Connection to OBS could not be established");
           }
           this.isConnected = false;
           this.connectPromise?.resolve(false);
-          break;
+          return;
         }
         const hash = Base64.stringify(
           sha256(this.options.auth + data.d.authentication.salt)
@@ -231,43 +333,38 @@ export class OBSClient {
             ),
           },
         });
-        break;
+        return;
+      }
       case 2:
         this.isConnected = true;
         this.connectPromise?.resolve(true);
-        break;
-    }
-
-    switch (data.d.requestId) {
-      case this.ids.getScene:
-        if (data.result !== null) {
-          this.getScenePromise?.resolve(
-            data.d.responseData.scenes.map((e: any) => ({
-              id: e.sceneUuid,
-              name: e.sceneName,
-            }))
-          );
-          break;
-        }
-        this.getScenePromise?.resolve([]);
-        break;
-      case this.ids.getActiveScene:
-        if (data.d.responseData?.currentProgramSceneName !== null) {
-          this.getActiveScenePromise?.resolve({
-            id: data.d.responseData.currentProgramSceneUuid,
-            name: data.d.responseData.currentProgramSceneName,
-          });
-          break;
-        }
-        this.getActiveScenePromise?.resolve(null);
-        break;
-      case this.ids.setActiveScene:
-        this.setActiveScenePromise?.resolve(
-          data.d.requestStatus.result == true
-        );
-        break;
-      default:
-        break;
+        return;
+      case 7:
+        this.settle(Number(data.d.requestId), (kind) => {
+          const status = data.d.requestStatus;
+          const response = data.d.responseData;
+          if (kind === "setActiveScene") return status?.result == true;
+          if (!status?.result) {
+            throw new Error(status?.comment ?? "OBS request failed");
+          }
+          switch (kind) {
+            case "getScene":
+              return (response?.scenes ?? []).map((e: any) => ({
+                id: e.sceneUuid,
+                name: e.sceneName,
+              }));
+            case "getActiveScene":
+              return response?.currentProgramSceneName != null
+                ? {
+                    id: response.currentProgramSceneUuid,
+                    name: response.currentProgramSceneName,
+                  }
+                : null;
+            default:
+              return response;
+          }
+        });
+        return;
     }
   }
 
@@ -276,33 +373,7 @@ export class OBSClient {
    * @returns Returns an array of scenes (Scene[]).
    */
   public getScene(): Promise<Scene[]> {
-    return new Promise((resolve, reject) => {
-      this.getScenePromise = { resolve, reject };
-      const requestId = this.createId("getScene");
-      switch (this.options.type) {
-        case OBSType.streamlabs:
-          this.send({
-            id: requestId,
-            jsonrpc: "2.0",
-            method: "getScenes",
-            params: { resource: "ScenesService" },
-          });
-          break;
-        case OBSType.obsstudio:
-          this.send({
-            op: 6,
-            d: {
-              requestId: requestId,
-              requestType: "GetSceneList",
-            },
-          });
-          break;
-
-        default:
-          reject([]);
-          break;
-      }
-    });
+    return this.request<Scene[]>("getScene");
   }
 
   /**
@@ -324,33 +395,7 @@ export class OBSClient {
    * @returns Returns the currently active scene (Scene) or null.
    */
   public getActiveScene(): Promise<Scene | null> {
-    return new Promise((resolve, reject) => {
-      this.getActiveScenePromise = { resolve, reject };
-      const requestId = this.createId("getActiveScene");
-      switch (this.options.type) {
-        case OBSType.streamlabs:
-          this.send({
-            id: requestId,
-            jsonrpc: "2.0",
-            method: "activeScene",
-            params: { resource: "ScenesService" },
-          });
-          break;
-        case OBSType.obsstudio:
-          this.send({
-            op: 6,
-            d: {
-              requestId: requestId,
-              requestType: "GetCurrentProgramScene",
-            },
-          });
-          break;
-
-        default:
-          reject([]);
-          break;
-      }
-    });
+    return this.request<Scene | null>("getActiveScene");
   }
 
   /**
@@ -359,36 +404,7 @@ export class OBSClient {
    * @returns Returns true if the scene is successfully installed, or false if it fails.
    */
   public setActiveScene(scene: Scene): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      this.setActiveScenePromise = { resolve, reject };
-      const requestId = this.createId("setActiveScene");
-      switch (this.options.type) {
-        case OBSType.streamlabs:
-          this.send({
-            id: requestId,
-            jsonrpc: "2.0",
-            method: "makeSceneActive",
-            params: { resource: "ScenesService", args: [scene.id] },
-          });
-          break;
-        case OBSType.obsstudio:
-          this.send({
-            op: 6,
-            d: {
-              requestId: requestId,
-              requestType: "SetCurrentProgramScene",
-              requestData: {
-                sceneName: scene.name,
-              },
-            },
-          });
-          break;
-
-        default:
-          reject([]);
-          break;
-      }
-    });
+    return this.request<boolean>("setActiveScene", scene);
   }
 
   /**
@@ -428,16 +444,5 @@ export class OBSClient {
    */
   public onError(onErrorListener: (msg: any) => void) {
     this.onErrorListener = onErrorListener;
-  }
-
-  /**
-   * Generates a unique identifier for OBS requests.
-   * @param id Base identifier.
-   * @returns Generated numeric identifier.
-   */
-  protected createId(id: string): number {
-    const randomPart = Math.floor(Math.random() * 1000);
-    this.ids[id] = (this.ids[id] || 0) + randomPart;
-    return this.ids[id];
   }
 }
