@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\Language;
 use App\Cache\GenreCacheKey;
 use App\DTO\Movie\MovieGenreData;
 use App\Models\Genre;
@@ -35,7 +36,8 @@ class GenreService
             $genre = Genre::createOrFirst(['slug' => $slug]);
 
             if ($genre->wasRecentlyCreated) {
-                $genre->translations()->create(['lang_code' => 'en', 'name' => $name]);
+                // TMDB movie details are requested in the fallback language
+                $genre->translations()->create(['lang_code' => Language::fallback(), 'name' => $name]);
                 Log::warning("New TMDB genre created without translations: {$slug}");
             }
 
@@ -52,11 +54,61 @@ class GenreService
      * @param string $langCode
      * @return Collection<int, MovieGenreData>
      */
-    public function getForMovie(Movie $movie, string $langCode = 'uk'): Collection
+    public function getForMovie(Movie $movie, ?string $langCode = null): Collection
     {
+        $langCode ??= Language::default();
+
         $data = Cache::remember(GenreCacheKey::forMovie($movie->id, $langCode), Carbon::now()->addMinutes(5), function () use ($movie, $langCode) {
             return $movie->genres()
-                ->with(['translations' => fn($q) => $q->whereIn('lang_code', [$langCode, 'en'])])
+                ->with(['translations' => fn($q) => $q->whereIn('lang_code', Language::withFallback($langCode))])
+                ->get()
+                ->map(fn(Genre $genre) => MovieGenreData::fromModel($genre, $langCode))
+                ->sortBy('name')
+                ->map->toArray()
+                ->values()
+                ->all();
+        });
+
+        return collect($data)->map(fn(array $item) => MovieGenreData::fromArray($item));
+    }
+
+    /**
+     * Get the genre by slug with the name in the language (falls back to English).
+     *
+     * @param string $slug
+     * @param string $langCode
+     * @return MovieGenreData|null
+     */
+    public function getBySlug(string $slug, ?string $langCode = null): ?MovieGenreData
+    {
+        $langCode ??= Language::default();
+
+        $data = Cache::remember(GenreCacheKey::bySlug($slug, $langCode), Carbon::now()->addHour(), function () use ($slug, $langCode) {
+            $genre = Genre::query()
+                ->where('slug', $slug)
+                ->with(['translations' => fn($q) => $q->whereIn('lang_code', Language::withFallback($langCode))])
+                ->first();
+
+            return $genre ? MovieGenreData::fromModel($genre, $langCode)->toArray() : false;
+        });
+
+        return $data ? MovieGenreData::fromArray($data) : null;
+    }
+
+    /**
+     * Get the genres that have movies with timecodes, with names in the language.
+     *
+     * @param string $langCode
+     * @return Collection<int, MovieGenreData>
+     */
+    public function getWithTimecodes(?string $langCode = null): Collection
+    {
+        $langCode ??= Language::default();
+
+        $data = Cache::remember(GenreCacheKey::withTimecodes($langCode), Carbon::now()->addHour(), function () use ($langCode) {
+            return Genre::query()
+                ->whereHas('movies', fn($q) => $q->whereHas('timecodes'))
+                ->with(['translations' => fn($q) => $q->whereIn('lang_code', Language::withFallback($langCode))])
                 ->get()
                 ->map(fn(Genre $genre) => MovieGenreData::fromModel($genre, $langCode))
                 ->sortBy('name')

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\MovieCompanyRole;
 use App\Enums\RefreshMovieDataType;
+use App\DTO\Movie\MovieListFilterData;
 use App\Helpers\RequestManager;
 use App\Http\Resources\Movie\MovieCardResource;
 use App\Http\Resources\Movie\MovieDetailResource;
@@ -84,11 +85,27 @@ class MovieController extends Controller
         ]);
     }
 
-    public function withTimecodes(MovieService $movieService)
+    public function withTimecodes(Request $request, MovieService $movieService, GenreService $genreService)
     {
-        $data = $movieService->latestWithTimecodes(page: 1);
+        $filters = MovieListFilterData::fromQuery($request->query());
+
+        // Unknown genres are ignored
+        $selectedGenres = collect($filters->genres)
+            ->map(fn(string $slug) => $genreService->getBySlug($slug))
+            ->filter()
+            ->values();
+        $filters->genres = $selectedGenres->pluck('slug')->all();
+
+        $data = $movieService->latestWithTimecodes(page: 1, filters: $filters);
 
         return Inertia::render('movies/with-timecodes', [
+            'filters' => $filters->toArray(),
+            'selectedGenres' => $selectedGenres->map->toArray()->all(),
+            'genres' => $genreService->getWithTimecodes()->map->toArray()->all(),
+            'yearRange' => [
+                'min' => config('movie.list_filters.min_year'),
+                'max' => config('movie.list_filters.max_year'),
+            ],
             'movies' => [
                 'current_page' => $data['current_page'],
                 'last_page' => $data['last_page'],

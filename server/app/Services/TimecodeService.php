@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\Language;
 use App\Cache\TimecodeCacheKey;
 use App\Clients\TmdbClient;
 use App\DTO\Timecode\Editor\TimecodeEditData;
@@ -298,15 +299,17 @@ class TimecodeService
      * @param string $langCode
      * @return TimecodeEditorData|null
      */
-    public function editor(User $user, int $timecodeId, string $langCode = 'uk'): ?TimecodeEditorData
+    public function editor(User $user, int $timecodeId, ?string $langCode = null): ?TimecodeEditorData
     {
+        $langCode ??= Language::default();
+
         $timecode = MovieTimecode::when($user->isAdmin(), function ($query) {
             return $query->withTrashed();
         })->with([
             'segments' => fn($q) => $q->orderBy('start_time'),
             'twitchContentClassification',
             'movie.translations' => function ($q) use ($langCode) {
-                $q->whereIn('lang_code', [$langCode, 'en']);
+                $q->whereIn('lang_code', Language::withFallback($langCode));
             },
             'movie.originalTranslation',
         ])->find($timecodeId);
@@ -318,7 +321,7 @@ class TimecodeService
         $movie = $timecode->movie;
 
         // Determine translation (Current language -> English)
-        $translation = $movie->translations->firstWhere('lang_code', $langCode) ?? $movie->translations->firstWhere('lang_code', 'en');
+        $translation = $movie->translations->firstWhere('lang_code', $langCode) ?? $movie->translations->firstWhere('lang_code', Language::fallback());
 
         $original = $movie->originalTranslation;
         $posterPath = $translation?->poster_path ?? $original?->poster_path;
@@ -376,8 +379,10 @@ class TimecodeService
      * @param bool $canSeeTrashed
      * @return LengthAwarePaginator
      */
-    public function getLatestPaginated(int $page = 1, string $langCode = 'uk', ?User $user = null, string $sortBy = 'latest', bool $canSeeTrashed = false): LengthAwarePaginator
+    public function getLatestPaginated(int $page = 1, ?string $langCode = null, ?User $user = null, string $sortBy = 'latest', bool $canSeeTrashed = false): LengthAwarePaginator
     {
+        $langCode ??= Language::default();
+
         return MovieTimecode::query()
             ->withCount('segments')
             ->when($canSeeTrashed, function ($query) {
@@ -388,7 +393,7 @@ class TimecodeService
                 'movie' => function ($query) use ($langCode) {
                     $query->with([
                         'translations' => fn($q) => $q
-                            ->whereIn('lang_code', [$langCode, 'en'])
+                            ->whereIn('lang_code', Language::withFallback($langCode))
                             ->orderByRaw('lang_code = ? DESC', [$langCode]),
                         'originalTranslation',
                     ]);

@@ -57,6 +57,30 @@ export interface MovieGenre {
     name: string;
 }
 
+export type MovieRecommendationColor = 'green' | 'yellow' | 'red';
+
+/**
+ * Allowed release years in the filters (config movie.list_filters on the server).
+ */
+export interface MovieYearRange {
+    min: number;
+    max: number;
+}
+
+export type MovieListSort = 'added' | 'release_desc' | 'release_asc';
+
+/**
+ * Filters of the movie list with timecodes (the same as MovieListFilterData on the server).
+ */
+export interface MovieListFilters {
+    genres: string[];
+    recommendations: MovieRecommendationColor[];
+    year_from: number | null;
+    year_to: number | null;
+    rating: number | null;
+    sort: MovieListSort;
+}
+
 export interface MovieCheckCompany {
     id: number;
     hazard_level: number;

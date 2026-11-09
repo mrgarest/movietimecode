@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\Language;
 use App\Cache\EventCacheKey;
 use App\DTO\EventLogData;
 use App\Enums\EventPlatform;
@@ -59,12 +60,14 @@ class EventService
      */
     public function getLatestPaginated(
         int $page = 1,
-        string $langCode = 'uk',
+        ?string $langCode = null,
     ): LengthAwarePaginator {
+        $langCode ??= Language::default();
+
         return Event::query()
             ->with([
-                'movie.translations' => fn($q) => $q->whereIn('lang_code', [$langCode, 'en']),
-                'timecode.movie.translations' => fn($q) => $q->whereIn('lang_code', [$langCode, 'en']),
+                'movie.translations' => fn($q) => $q->whereIn('lang_code', Language::withFallback($langCode)),
+                'timecode.movie.translations' => fn($q) => $q->whereIn('lang_code', Language::withFallback($langCode)),
             ])
             ->orderByDesc('created_at')
             ->paginate(20, ['*'], 'page', $page)

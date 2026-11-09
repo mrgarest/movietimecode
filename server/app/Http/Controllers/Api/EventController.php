@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\Language;
 use App\Enums\EventPlatform;
 use App\Enums\EventType;
 use App\Http\Controllers\Controller;
@@ -43,7 +44,7 @@ class EventController extends Controller
 
         $events = $this->eventService->getLatestPaginated(
             page: $validated['page'] ?? 1,
-            langCode: 'uk'
+            langCode: Language::default()
         );
 
         return new SuccessResource([

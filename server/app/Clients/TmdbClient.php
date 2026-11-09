@@ -2,6 +2,7 @@
 
 namespace App\Clients;
 
+use App\Helpers\Language;
 use Illuminate\Support\Facades\Http;
 
 class TmdbClient
@@ -28,8 +29,10 @@ class TmdbClient
         return $response->successful() ? $response->json() : null;
     }
 
-    public function searchMovie($query, $language = 'en-US', $page = 1, int|null $year = null)
+    public function searchMovie($query, ?string $language = null, $page = 1, int|null $year = null)
     {
+        $language ??= Language::tmdbLocale(Language::fallback());
+
         $queryParams = [
             'query' => $query,
             'include_adult' => 'false',
@@ -40,8 +43,10 @@ class TmdbClient
         return $this->get(self::API_BASE . '/search/movie', $queryParams);
     }
 
-    public function movieDetails($id, $language = 'en-US')
+    public function movieDetails($id, ?string $language = null)
     {
+        $language ??= Language::tmdbLocale(Language::fallback());
+
         return $this->get(self::API_BASE . "/movie/$id?language=$language");
     }
 
@@ -55,8 +60,10 @@ class TmdbClient
         return $this->get(self::API_BASE . "/movie/$id/images");
     }
 
-    public function movieVideos($id, string $language = 'en-US')
+    public function movieVideos($id, ?string $language = null)
     {
+        $language ??= Language::tmdbLocale(Language::fallback());
+
         return $this->get(self::API_BASE . "/movie/$id/videos", ['language' => $language]);
     }
 

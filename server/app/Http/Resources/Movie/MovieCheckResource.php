@@ -2,8 +2,8 @@
 
 namespace App\Http\Resources\Movie;
 
+use App\Helpers\MovieHelper;
 use App\Http\Resources\SuccessResource;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -23,7 +23,7 @@ class MovieCheckResource extends SuccessResource
             'id' => $movie->id,
             'tmdb_id' => $this->resource['tmdb_id'],
             'release' => $movie->release_date != null ? [
-                'hazard' => $movie->release_date->greaterThan(Carbon::now()->subYears(4)),
+                'hazard' => MovieHelper::isNew($movie->release_date),
                 'release_date' => $movie->release_date->toDateString(),
             ] : null,
             'productions' => $this->formatCompanies($this->resource['productions']),

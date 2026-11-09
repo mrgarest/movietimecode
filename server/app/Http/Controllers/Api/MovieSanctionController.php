@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\Language;
 use App\Enums\SanctionReason;
 use App\Enums\SanctionType;
 use App\Exceptions\ApiException;
@@ -82,7 +83,7 @@ class MovieSanctionController extends Controller
         return new SuccessResource([
             'sanctions' => MovieSanctionResource::collection($this->sanctionService->getLatestPaginated(
                 page: $validated['page'] ?? 1,
-                langCode: 'uk',
+                langCode: Language::default(),
                 filter: $validated['filter'] ?? 'unapproved'
             )),
         ]);

@@ -2,6 +2,7 @@
 
 namespace App\DTO\Movie;
 
+use App\Helpers\Language;
 use App\Models\Genre;
 
 class MovieGenreData
@@ -14,10 +15,12 @@ class MovieGenreData
     /**
      * Create from a genre with loaded translations (the language, falling back to English).
      */
-    public static function fromModel(Genre $genre, string $langCode = 'uk'): self
+    public static function fromModel(Genre $genre, ?string $langCode = null): self
     {
+        $langCode ??= Language::default();
+
         $translation = $genre->translations->firstWhere('lang_code', $langCode)
-            ?? $genre->translations->firstWhere('lang_code', 'en');
+            ?? $genre->translations->firstWhere('lang_code', Language::fallback());
 
         return new self(
             slug: $genre->slug,

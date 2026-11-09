@@ -2,6 +2,7 @@
 
 namespace App\DTO;
 
+use App\Helpers\Language;
 use App\Enums\EventPlatform;
 use App\Enums\EventType;
 use App\Models\Event;
@@ -59,6 +60,6 @@ readonly class EventLogData
             return null;
         }
 
-        return $translations->firstWhere('lang_code', $langCode)?->title ?? $translations->firstWhere('lang_code', 'en')?->title;
+        return $translations->firstWhere('lang_code', $langCode)?->title ?? $translations->firstWhere('lang_code', Language::fallback())?->title;
     }
 }

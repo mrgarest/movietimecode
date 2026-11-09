@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\Language;
 use App\Cache\MovieSanctionCacheKey;
 use App\DTO\Movie\MovieSanctionCountData;
 use App\Enums\SanctionReason;
@@ -138,9 +139,11 @@ class MovieSanctionService
      */
     public function getLatestPaginated(
         int $page = 1,
-        string $langCode = 'uk',
+        ?string $langCode = null,
         ?string $filter = 'unapproved'
     ): LengthAwarePaginator {
+        $langCode ??= Language::default();
+
         $query = MovieSanction::query()
             ->select([
                 'movie_id',
@@ -152,7 +155,7 @@ class MovieSanctionService
             ->with([
                 'approvedUser:id,username',
                 'movie.translations' => fn($q) => $q
-                    ->whereIn('lang_code', [$langCode, 'en'])
+                    ->whereIn('lang_code', Language::withFallback($langCode))
                     ->orderByRaw('lang_code = ? DESC', [$langCode]),
                 'movie.originalTranslation',
             ]);

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\MovieCompanyRole;
+use App\Enums\MovieSort;
 use App\Enums\RefreshMovieDataType;
+use App\DTO\Movie\MovieListFilterData;
 use App\Exceptions\ApiException;
 use App\Helpers\RequestManager;
 use App\Http\Controllers\Controller;
@@ -20,6 +22,7 @@ use App\Services\MovieService;
 use App\Services\RefreshMovieDataService;
 use App\Services\TimecodeService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class MovieController extends Controller
 {
@@ -233,11 +236,25 @@ class MovieController extends Controller
      */
     public function withTimecodes(Request $request, MovieService $movieService)
     {
+        $yearRule = 'nullable|integer|min:' . config('movie.list_filters.min_year') . '|max:' . config('movie.list_filters.max_year');
+
         $validated = $request->validate([
-            'page' => 'nullable|integer'
+            'page' => 'nullable|integer|min:1',
+            'genre' => 'nullable|string|max:700',
+            'recommendation' => 'nullable|string|max:20',
+            'year_from' => $yearRule,
+            'year_to' => $yearRule,
+            'rating' => 'nullable|numeric|min:0|max:10',
+            'sort' => 'nullable|string|in:' . implode(',', array_column(MovieSort::cases(), 'value')),
         ]);
 
-        $data = $movieService->latestWithTimecodes(page: $validated['page'] ?? 1);
+        $filters = MovieListFilterData::fromQuery($validated);
+        Validator::make(['genre' => $filters->genres], ['genre.*' => 'exists:genres,slug'])->validate();
+
+        $data = $movieService->latestWithTimecodes(
+            page: $validated['page'] ?? 1,
+            filters: $filters
+        );
 
         return new SuccessResource([
             'current_page' => $data['current_page'],

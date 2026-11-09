@@ -9,6 +9,7 @@ import { MetaTag } from "@/components/MetaTag";
 import { LegalAgeLink } from "@/components/LegalAgeLink";
 import { TrailerModal, useTrailerModal } from "@/components/TrailerModal";
 import { PlayButton } from "@/components/PlayButton";
+import { Link } from "@inertiajs/react";
 
 interface Props {
     movie: MovieDetailResponse
@@ -147,10 +148,11 @@ export default function MovieDetailPage({ movie }: Props) {
                     <div className="text-lg md:text-xl text-foreground font-bold">{t('description')}</div>
                     {movie.overview && <p className="text-sm text-foreground leading-relaxed">{movie.overview}</p>}
                     {movie.genres && <div className="flex flex-wrap gap-2 pt-1">
-                        {movie.genres.map(genre => <span
+                        {movie.genres.map(genre => <Link
                             key={genre.slug}
-                            className="rounded-full border border-border bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground select-none"
-                        >{genre.name}</span>)}
+                            href={`/movies/timecodes?genre=${encodeURIComponent(genre.slug)}`}
+                            className="rounded-full border border-border bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground select-none duration-300 hover:opacity-60"
+                        >{genre.name}</Link>)}
                     </div>}
                 </div>}
             </div>

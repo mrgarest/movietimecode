@@ -10,4 +10,14 @@ class GenreCacheKey
     {
         return self::ROT . 'forMovie.' . $movieId . '.' . $langCode;
     }
+
+    public static function bySlug(string $slug, string $langCode): string
+    {
+        return self::ROT . 'bySlug.' . $slug . '.' . $langCode;
+    }
+
+    public static function withTimecodes(string $langCode): string
+    {
+        return self::ROT . 'withTimecodes.' . $langCode;
+    }
 }

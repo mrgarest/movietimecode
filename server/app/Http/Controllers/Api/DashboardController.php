@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\Language;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SuccessResource;
 use App\Http\Resources\Timecode\UserTimecodeResource;
@@ -32,7 +33,7 @@ class DashboardController extends Controller
         return new SuccessResource([
             'timecodes' => UserTimecodeResource::collection($service->getLatestPaginated(
                 page: $validated['page'] ?? 1,
-                langCode: 'uk',
+                langCode: Language::default(),
                 user: null,
                 sortBy: $validated['sort'] ?? 'latest',
                 canSeeTrashed: true

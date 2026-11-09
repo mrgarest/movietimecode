@@ -3,8 +3,8 @@
 namespace App\Http\Resources\Movie;
 
 use App\Clients\TmdbClient;
+use App\Helpers\MovieHelper;
 use App\Http\Resources\SuccessResource;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -30,7 +30,7 @@ class MovieDetailResource extends SuccessResource
             'original_title' => $original?->title,
             'overview' => $translation?->overview ?? $original?->overview,
             'release' => $movie->release_date != null ? [
-                'hazard' => $movie->release_date->greaterThan(Carbon::now()->subYears(4)),
+                'hazard' => MovieHelper::isNew($movie->release_date),
                 'release_date' => $movie->release_date->toDateString(),
             ] : null,
             'productions' => $this->formatCompanies($this->resource['productions']),

@@ -84,12 +84,6 @@ return [
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
-    // Languages in which content (movie translations, trailers, genres) is stored.
-    'content_languages' => [
-        'uk' => 'uk-UA',
-        'en' => 'en-US',
-    ],
-
     /*
     |--------------------------------------------------------------------------
     | Encryption Key

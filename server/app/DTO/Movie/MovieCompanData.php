@@ -8,6 +8,12 @@ use Illuminate\Support\Str;
 
 class MovieCompanData
 {
+    // Moderate risk
+    public const HAZARD_MODERATE = 3;
+
+    // High risk
+    public const HAZARD_HIGH = 2;
+
     public function __construct(
         public int $id,
         public string $name,
@@ -18,11 +24,7 @@ class MovieCompanData
     public static function fromModel(MovieCompany $movieCompany): self
     {
         $nameLower = mb_strtolower($movieCompany->company->name);
-        $hazardLevel = match (true) {
-            Str::contains($nameLower, ['marvel']) => 3,
-            Str::contains($nameLower, ['warner', 'disney', 'lucasfilm', 'netflix', 'apple', 'hbo', 'amazon', 'crunchyroll']) => 2,
-            default => 0,
-        };
+        $hazardLevel = self::getHazardLevel($nameLower);
 
         return new self(
             id: $movieCompany->company_id,
@@ -50,5 +52,37 @@ class MovieCompanData
             'hazard_level' => $this->hazardLevel,
             'role_id' => $this->role->value,
         ];
+    }
+
+    /**
+     * Hazard level of the company by its lowercase name.
+     */
+    public static function getHazardLevel(string $nameLower): int
+    {
+        foreach (self::hazardKeywordsByLevel() as $level => $keywords) {
+            if (Str::contains($nameLower, $keywords)) return $level;
+        }
+
+        return 0;
+    }
+
+    /**
+     * Keywords of hazardous companies by hazard level (the order matters).
+     *
+     * @return array<int, string[]>
+     */
+    public static function hazardKeywordsByLevel(): array
+    {
+        return config('movie.hazard_companies');
+    }
+
+    /**
+     * All keywords of hazardous companies.
+     *
+     * @return string[]
+     */
+    public static function hazardKeywords(): array
+    {
+        return array_merge(...array_values(self::hazardKeywordsByLevel()));
     }
 }

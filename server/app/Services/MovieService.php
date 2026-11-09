@@ -2,14 +2,20 @@
 
 namespace App\Services;
 
+use App\Helpers\Language;
 use App\Cache\MovieCacheKey;
 use App\Clients\TmdbClient;
+use App\DTO\Movie\MovieCompanData;
+use App\DTO\Movie\MovieListFilterData;
 use App\DTO\Movie\MoviePreviewData;
 use App\DTO\Movie\MovieSearchData;
 use App\DTO\Movie\MovieCheckRecommendationData;
 use App\DTO\Movie\MovieSanctionCountData;
 use App\Enums\EventType;
 use App\Enums\MovieCompanyRole;
+use App\Enums\MovieRecommendation;
+use App\Enums\MovieSort;
+use App\Enums\SanctionType;
 use App\Enums\RefreshMovieDataType;
 use App\Enums\StorageId;
 use App\Exceptions\ApiException;
@@ -20,10 +26,10 @@ use App\Models\Event;
 use App\Models\Movie;
 use App\Models\MovieCompany;
 use App\Models\MovieTranslation;
-use App\Models\User;
 use App\Services\IMDB\ImdbService;
 use App\Services\IMDB\ImdbParserService;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -60,7 +66,7 @@ class MovieService
         // Get info about the movie from the client.
         $searchMovies = Cache::remember(MovieCacheKey::searchTmdb($title, $page, $year), Carbon::now()->addMinutes(10), function () use ($client, $titles, $page, $year) {
             foreach ($titles as $t) {
-                $result = $client->searchMovie($t, 'uk-UA', $page, $year);
+                $result = $client->searchMovie($t, Language::tmdbLocale(Language::default()), $page, $year);
 
                 if (!empty($result['results'])) {
                     return $result['results'];
@@ -263,7 +269,7 @@ class MovieService
                     'poster_path' => null,
                     'backdrop_path' => null,
                 ])
-                ->filter(fn($t) => array_key_exists($t['lang_code'], config('app.content_languages')) && !empty($t['title']))
+                ->filter(fn($t) => array_key_exists($t['lang_code'], Language::content()) && !empty($t['title']))
                 ->unique('lang_code')
                 // Skip the original lang here — it is added separately above
                 ->reject(fn($t) => $t['lang_code'] === $originalLangCode)
@@ -353,13 +359,15 @@ class MovieService
      * 
      * @return MovieTranslation|null
      */
-    public function getTranslation(Movie $movie, string $langCode = 'uk'): ?MovieTranslation
+    public function getTranslation(Movie $movie, ?string $langCode = null): ?MovieTranslation
     {
+        $langCode ??= Language::default();
+
         $translations = $this->getTranslations($movie);
 
         // First, select your preferred language. if it is not available, select English.
         return $translations->firstWhere('lang_code', $langCode)
-            ?? $translations->firstWhere('lang_code', 'en');
+            ?? $translations->firstWhere('lang_code', Language::fallback());
     }
 
     /**
@@ -382,8 +390,10 @@ class MovieService
      * @param string $langCode
      * @return MoviePreviewData|null
      */
-    public function searchTimecodes(string $title, ?int $year = null, string $langCode = 'uk'): ?MoviePreviewData
+    public function searchTimecodes(string $title, ?int $year = null, ?string $langCode = null): ?MoviePreviewData
     {
+        $langCode ??= Language::default();
+
         $movie = Cache::remember(MovieCacheKey::preview($title, $year), Carbon::now()->addMinutes(5), function () use ($title, $year) {
             $movie = Movie::findByTitlesYear(MovieHelper::getTitles($title)->all(), $year)
                 ->whereHas('timecodes', function ($q) {
@@ -426,10 +436,12 @@ class MovieService
         Collection $productions,
         Collection $distributors,
         MovieSanctionCountData $sanctionCounts,
-        string $langCode = 'uk'
+        ?string $langCode = null
     ): MovieCheckRecommendationData {
+        $langCode ??= Language::default();
+
         // Checking the age of a movie
-        $isNew = $movie->release_date->gt(Carbon::now()->subYears(4));
+        $isNew = MovieHelper::isNew($movie->release_date);
 
         // Productions hazard
         if ($productions->isEmpty()) return MovieCheckRecommendationData::fromLang(
@@ -438,8 +450,8 @@ class MovieService
             langCode: $langCode
         );
 
-        $prodHazard = $productions->max('hazardLevel') ?? 0;
-        if ($prodHazard > 0) return MovieCheckRecommendationData::fromLang(
+        $prodHazardHigh = $productions->contains('hazardLevel', MovieCompanData::HAZARD_HIGH);
+        if ($prodHazardHigh) return MovieCheckRecommendationData::fromLang(
             color: 'red',
             key: $isNew ? 'ProductionYear' : 'Production',
             langCode: $langCode
@@ -466,6 +478,14 @@ class MovieService
             langCode: $langCode
         );
 
+        // Productions with moderate hazard (together with a new movie it is red)
+        $prodHazardModerate = $productions->contains('hazardLevel', MovieCompanData::HAZARD_MODERATE);
+        if ($prodHazardModerate) return MovieCheckRecommendationData::fromLang(
+            color: $isNew ? 'red' : 'yellow',
+            key: $isNew ? 'ProductionModerateYear' : 'ProductionModerate',
+            langCode: $langCode
+        );
+
         // Year
         if ($isNew) return MovieCheckRecommendationData::fromLang(
             color: 'yellow',
@@ -487,14 +507,16 @@ class MovieService
      * @param int $limit
      * @return Collection
      */
-    public function latestChecked(int $limit = 20, string $langCode = 'uk'): Collection
+    public function latestChecked(int $limit = 20, ?string $langCode = null): Collection
     {
+        $langCode ??= Language::default();
+
         $data = Cache::remember(MovieCacheKey::latestChecked($langCode), Carbon::now()->addMinutes(5), function () use ($langCode, $limit) {
             $events = Event::query()
                 ->type(EventType::CHECK_MOVIE)
                 ->with([
                     'movie.translations' => function ($q) use ($langCode) {
-                        $q->whereIn('lang_code', [$langCode, 'en']);
+                        $q->whereIn('lang_code', Language::withFallback($langCode));
                     },
                     'movie.originalTranslation',
                 ])
@@ -509,7 +531,7 @@ class MovieService
                 ->take($limit)
                 ->map(function (Movie $movie) use ($langCode) {
                     $translation = $movie->translations->firstWhere('lang_code', $langCode)
-                        ?? $movie->translations->firstWhere('lang_code', 'en');
+                        ?? $movie->translations->firstWhere('lang_code', Language::fallback());
                     $original = $movie->originalTranslation;
 
                     $posterPath = $translation?->poster_path ?? $original?->poster_path;
@@ -538,17 +560,32 @@ class MovieService
      * @param int $page
      * @param int $limit
      * @param string $langCode
+     * @param MovieListFilterData|null $filters
      * @return array
      */
-    public function latestWithTimecodes(int $page = 1, int $limit = 20, string $langCode = 'uk'): array
+    public function latestWithTimecodes(int $page = 1, int $limit = 20, ?string $langCode = null, ?MovieListFilterData $filters = null): array
     {
-        $data = Cache::remember(MovieCacheKey::latestWithTimecodes($page, $limit, $langCode), Carbon::now()->addMinutes(2), function () use ($langCode, $page, $limit) {
-            $paginator = Movie::query()
+        $langCode ??= Language::default();
+
+        $filters ??= new MovieListFilterData();
+
+        $data = Cache::remember(MovieCacheKey::latestWithTimecodes($page, $limit, $langCode, $filters->cacheKey()), Carbon::now()->addMinutes(2), function () use ($langCode, $page, $limit, $filters) {
+            $query = Movie::query()
                 ->whereHas('timecodes')
-                ->withMax('timecodes as latest_timecode_at', 'created_at')
-                ->orderByDesc('latest_timecode_at')
+                ->withMax('timecodes as latest_timecode_at', 'created_at');
+
+            $this->applyListFilters($query, $filters);
+
+            match ($filters->sort) {
+                MovieSort::ADDED => $query->orderByDesc('latest_timecode_at'),
+                MovieSort::RELEASE_DESC => $query->orderByDesc('release_date')->orderByDesc('latest_timecode_at'),
+                MovieSort::RELEASE_ASC => $query->orderBy('release_date')->orderByDesc('latest_timecode_at'),
+            };
+
+            $paginator = $query
+                ->orderByDesc('id')
                 ->with([
-                    'translations' => fn($q) => $q->whereIn('lang_code', [$langCode, 'en']),
+                    'translations' => fn($q) => $q->whereIn('lang_code', Language::withFallback($langCode)),
                     'originalTranslation',
                 ])
                 ->paginate($limit, ['*'], 'page', $page);
@@ -559,7 +596,7 @@ class MovieService
                 'last_page' => $paginator->lastPage(),
                 'items' => $paginator->getCollection()->map(function (Movie $movie) use ($langCode) {
                     $translation = $movie->translations->firstWhere('lang_code', $langCode)
-                        ?? $movie->translations->firstWhere('lang_code', 'en');
+                        ?? $movie->translations->firstWhere('lang_code', Language::fallback());
                     $original = $movie->originalTranslation;
 
                     $posterPath = $translation?->poster_path ?? $original?->poster_path;
@@ -583,5 +620,126 @@ class MovieService
             'last_page' => $data['last_page'],
             'items' => collect($data['items'])->map(fn(array $item) => MovieSearchData::fromArray($item))
         ];
+    }
+
+    /**
+     * Apply the list filters to the movie query.
+     */
+    private function applyListFilters(Builder $query, MovieListFilterData $filters): void
+    {
+        // The movie must have all the genres
+        foreach ($filters->genres as $genre) {
+            $query->whereHas('genres', fn($q) => $q->where('slug', $genre));
+        }
+
+        if ($filters->yearFrom !== null) $query->where('release_date', '>=', Carbon::create($filters->yearFrom)->startOfYear());
+        if ($filters->yearTo !== null) $query->where('release_date', '<=', Carbon::create($filters->yearTo)->endOfYear());
+        if ($filters->rating !== null) $query->where('rating_imdb', '>=', $filters->rating);
+
+        // The movie must have one of the recommendations
+        if (!empty($filters->recommendations)) {
+            $query->where(function (Builder $q) use ($filters) {
+                foreach ($filters->recommendations as $recommendation) {
+                    $q->orWhere(fn(Builder $q) => $this->whereRecommendation($q, $recommendation));
+                }
+            });
+        }
+    }
+
+    /**
+     * SQL version of checkRecommendation(), the conditions must match it.
+     */
+    private function whereRecommendation(Builder $query, MovieRecommendation $recommendation): void
+    {
+        $newSince = MovieHelper::newSince();
+
+        $production = fn(Builder $q) => $q->where('role_id', MovieCompanyRole::PRODUCTION->value);
+        $highHazardProduction = fn(Builder $q) => $this->whereHazardCompany($production($q), MovieCompanData::HAZARD_HIGH);
+        $moderateHazardProduction = fn(Builder $q) => $this->whereHazardCompany($production($q), MovieCompanData::HAZARD_MODERATE);
+        $distributor = fn(Builder $q) => $q->where('role_id', MovieCompanyRole::DISTRIBUTOR->value);
+        $hazardDistributor = fn(Builder $q) => $this->whereHazardCompany($distributor($q));
+        $sanction = fn(Builder $q) => $this->whereBlockingSanction($q);
+
+        // Productions are known and without high hazard, no bans/strikes
+        $baseSafe = fn(Builder $q) => $q
+            ->whereHas('companies', $production)
+            ->whereDoesntHave('companies', $highHazardProduction)
+            ->whereDoesntHave('sanctions', $sanction);
+
+        $distributorSafe = fn(Builder $q) => $q
+            ->whereHas('companies', $distributor)
+            ->whereDoesntHave('companies', $hazardDistributor);
+
+        $distributorUnsafe = fn(Builder $q) => $q->where(fn(Builder $q) => $q
+            ->whereDoesntHave('companies', $distributor)
+            ->orWhereHas('companies', $hazardDistributor));
+
+        match ($recommendation) {
+            MovieRecommendation::GREEN => $baseSafe($query)
+                ->where('release_date', '<=', $newSince)
+                ->whereDoesntHave('companies', $moderateHazardProduction)
+                ->where(fn(Builder $q) => $distributorSafe($q)),
+
+            // Old with unsafe distributors, or safe distributors and (new or old with moderate hazard production)
+            MovieRecommendation::YELLOW => $baseSafe($query)->where(fn(Builder $q) => $q
+                ->where(fn(Builder $q) => $distributorUnsafe($q->where('release_date', '<=', $newSince)))
+                ->orWhere(fn(Builder $q) => $distributorSafe($q)->where(fn(Builder $q) => $q
+                    ->where(fn(Builder $q) => $q
+                        ->where('release_date', '>', $newSince)
+                        ->whereDoesntHave('companies', $moderateHazardProduction))
+                    ->orWhere(fn(Builder $q) => $q
+                        ->where('release_date', '<=', $newSince)
+                        ->whereHas('companies', $moderateHazardProduction))))),
+
+            MovieRecommendation::RED => $query->where(fn(Builder $q) => $q
+                ->whereDoesntHave('companies', $production)
+                ->orWhereHas('companies', $highHazardProduction)
+                ->orWhereHas('sanctions', $sanction)
+                ->orWhere(fn(Builder $q) => $distributorUnsafe($q->where('release_date', '>', $newSince)))
+                ->orWhere(fn(Builder $q) => $q
+                    ->where('release_date', '>', $newSince)
+                    ->whereHas('companies', $moderateHazardProduction))),
+        };
+    }
+
+    /**
+     * Movie companies with the hazard level (any hazard if null),
+     * the same as MovieCompanData::getHazardLevel().
+     */
+    private function whereHazardCompany(Builder $query, ?int $level = null): Builder
+    {
+        $matchAny = fn(Builder $q, array $keywords) => $q->where(function (Builder $q) use ($keywords) {
+            foreach ($keywords as $keyword) {
+                $q->orWhereRaw('LOWER(name) LIKE ?', ['%' . $keyword . '%']);
+            }
+        });
+
+        return $query->whereHas('company', function (Builder $q) use ($level, $matchAny) {
+            if ($level === null) {
+                $matchAny($q, MovieCompanData::hazardKeywords());
+                return;
+            }
+
+            // Keywords of the level, but not of the levels checked before it
+            $before = [];
+            $keywordsByLevel = MovieCompanData::hazardKeywordsByLevel();
+            foreach ($keywordsByLevel as $itemLevel => $keywords) {
+                if ($itemLevel === $level) break;
+                $before = array_merge($before, $keywords);
+            }
+
+            $matchAny($q, $keywordsByLevel[$level] ?? []);
+            if (!empty($before)) $q->whereNot(fn(Builder $q) => $matchAny($q, $before));
+        });
+    }
+
+    /**
+     * Approved bans and strikes (the same as MovieSanctionService::getCounts()).
+     */
+    private function whereBlockingSanction(Builder $query): Builder
+    {
+        return $query
+            ->whereNotNull('approved_at')
+            ->whereIn('type', [SanctionType::BANNED->value, SanctionType::STRIKE->value]);
     }
 }

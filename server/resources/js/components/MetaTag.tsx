@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react'
 
 interface Metadata {
     noIndex?: boolean
+    noFollow?: boolean
     noSiteName?: boolean
     title?: string
     description?: string
@@ -12,7 +13,7 @@ interface Metadata {
 const truncate = (text: string, max = 155) =>
     text.length > max ? text.slice(0, max).trimEnd() + '…' : text;
 
-export function MetaTag({ title, description = undefined, noIndex = false, noSiteName = false, image = '/images/b35hj3.jpg', canonicalUrl = undefined }: Metadata) {
+export function MetaTag({ title, description = undefined, noIndex = false, noFollow = noIndex, noSiteName = false, image = '/images/b35hj3.jpg', canonicalUrl = undefined }: Metadata) {
     const { url } = usePage()
     const pathname = new URL(url, 'http://localhost').pathname
     const truncatedDescription = description ? truncate(description) : undefined;
@@ -31,7 +32,7 @@ export function MetaTag({ title, description = undefined, noIndex = false, noSit
 
             {/* Basic SEO */}
             {truncatedDescription && <meta name="description" content={truncatedDescription} />}
-            <meta name="robots" content={noIndex ? "noindex, nofollow" : "index, follow"} />
+            <meta name="robots" content={`${noIndex ? 'noindex' : 'index'}, ${noFollow ? 'nofollow' : 'follow'}`} />
 
             {/* Open Graph */}
             <meta property="og:type" content="website" />

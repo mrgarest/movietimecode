@@ -38,9 +38,9 @@ class MovieCacheKey
         return  self::ROT . 'latest.checked.' . $langCode;
     }
 
-    public static function latestWithTimecodes(int $page, int $limit = 20, string $langCode): string
+    public static function latestWithTimecodes(int $page, int $limit, string $langCode, string $filtersKey): string
     {
-        return  self::ROT . 'latest.checked.' . $page . '.' . $limit . '.' . $langCode;
+        return  self::ROT . 'latest.timecodes.' . $page . '.' . $limit . '.' . $langCode . '.' . $filtersKey;
     }
 
     public static function refreshData(int $movieId, RefreshMovieDataType $type): string

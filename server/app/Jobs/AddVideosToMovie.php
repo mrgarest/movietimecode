@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Helpers\Language;
 use App\Cache\SeoCacheKey;
 use App\Clients\TmdbClient;
 use App\Models\MovieTranslation;
@@ -25,7 +26,7 @@ class AddVideosToMovie implements ShouldQueue
     {
         $updated = false;
 
-        foreach (config('app.content_languages') as $langCode => $tmdbLang) {
+        foreach (Language::content() as $langCode => $tmdbLang) {
             $translation = MovieTranslation::where('movie_id', $this->movieId)
                 ->where('lang_code', $langCode)
                 ->first();
