@@ -94,7 +94,7 @@ export default function MovieWithTimecodesPage({ movies, filters, selectedGenres
                         selectedGenres={selectedGenres}
                         onChange={changeFilters}
                     />
-                    <div className="flex shrink-0 items-center gap-2 ml-auto">
+                    <div className="flex shrink-0 items-center gap-2 sm:gap-3 ml-auto">
                         <MovieListSortMenu
                             sort={filters.sort}
                             onChange={(sort) => changeFilters({ ...filters, sort })}
