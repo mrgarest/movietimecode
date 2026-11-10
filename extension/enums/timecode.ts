@@ -15,7 +15,9 @@ export enum TimecodeAction {
   skip = 103,
   mute = 104,
   pause = 105,
-  obsSceneChange = 106
+  // 106 was "OBS scene switching" (removed in 5.0.0), replaced by obsSourceToggle.
+  // Do not reuse 106 while the migration in utils/settings.ts exists (TODO(remove-obs-scene-migration)).
+  obsSourceToggle = 107
 }
 
 export enum BlurPower {

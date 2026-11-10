@@ -5,10 +5,10 @@ import { Button } from '../components/ui/button';
 import { HardDriveDownload, HardDriveUpload } from 'lucide-react';
 import toast from "react-hot-toast";
 import { SpinnerFullScreen } from '../components/ui/spinner';
-import { settings } from '@/utils/settings';
+import { replaceRemovedActions, settings } from '@/utils/settings';
 
 // ПFields we do not export/import
-type ExcludedKeys = "installedAt" | "user" | "deviceToken" | "obsClient" | "obsCensorScene";
+type ExcludedKeys = "installedAt" | "user" | "deviceToken" | "obsClient" | "obsSourceRules";
 type ExportableSettings = Omit<Settings, ExcludedKeys>;
 
 export default function BackupPage() {
@@ -20,7 +20,7 @@ export default function BackupPage() {
     const handleExport = async () => {
         setSpinner(true);
         try {
-            const { user, deviceToken, obsClient, obsCensorScene, ...settingsForExport } = await settings.getAll();
+            const { user, deviceToken, obsClient, obsSourceRules, ...settingsForExport } = await settings.getAll();
 
             const blob = new Blob([JSON.stringify(settingsForExport, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
@@ -57,7 +57,8 @@ export default function BackupPage() {
                         throw new Error("Invalid format");
                     }
 
-                    await settings.set(imported);
+                    // TODO(remove-obs-scene-migration): old backups may contain the removed OBS scene switching action
+                    await settings.set(replaceRemovedActions(imported));
                     toast.success(i18n.t("settingsImportedSuccessfully"));
                 } catch {
                     toast.error(i18n.t("settingsImportedError"));

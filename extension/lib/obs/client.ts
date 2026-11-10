@@ -1,7 +1,7 @@
 import sha256 from "crypto-js/sha256";
 import Base64 from "crypto-js/enc-base64";
 import config from "config";
-import { OBSType, Scene } from "@/types/obs";
+import { OBSType, Scene, SceneItem } from "@/types/obs";
 
 interface Options {
   type: string;
@@ -10,7 +10,19 @@ interface Options {
   auth?: string | null;
 }
 
-type RequestKind = "getScene" | "getActiveScene" | "setActiveScene" | "ping";
+type RequestKind =
+  | "getScene"
+  | "getActiveScene"
+  | "getSceneItems"
+  | "getSources"
+  | "setSceneItemEnabled"
+  | "ping";
+
+interface RequestPayload {
+  scene?: Scene;
+  item?: SceneItem;
+  enabled?: boolean;
+}
 
 interface PendingRequest {
   kind: RequestKind;
@@ -166,9 +178,9 @@ export class OBSClient {
    * Sends a request and waits for its response, matched by request id.
    * Rejects if OBS does not answer within `requestTimeout`.
    * @param kind Request kind.
-   * @param scene Scene for `setActiveScene`.
+   * @param payload Scene / scene item data for the request.
    */
-  private request<T>(kind: RequestKind, scene?: Scene): Promise<T> {
+  private request<T>(kind: RequestKind, payload: RequestPayload = {}): Promise<T> {
     if (!this.ws || !this.isConnected) {
       return Promise.reject(new Error("WebSocket is not connected"));
     }
@@ -182,35 +194,55 @@ export class OBSClient {
       this.pending.set(requestId, { kind, resolve, reject, timer });
     });
 
+    const { scene, item, enabled } = payload;
+
     if (this.options.type === OBSType.streamlabs) {
-      const methods: Record<RequestKind, { method: string; args?: any[] }> = {
-        getScene: { method: "getScenes" },
-        getActiveScene: { method: "activeScene" },
-        setActiveScene: { method: "makeSceneActive", args: [scene?.id] },
-        ping: { method: "activeScene" },
+      const calls: Record<RequestKind, { resource: string; method: string; args?: any[] }> = {
+        getScene: { resource: "ScenesService", method: "getScenes" },
+        getActiveScene: { resource: "ScenesService", method: "activeScene" },
+        getSceneItems: { resource: `Scene${JSON.stringify([scene?.id])}`, method: "getItems" },
+        getSources: { resource: "SourcesService", method: "getSources" },
+        setSceneItemEnabled: {
+          resource: item?.resourceId ?? "",
+          method: "setVisibility",
+          args: [enabled],
+        },
+        ping: { resource: "ScenesService", method: "activeScene" },
       };
-      const { method, args } = methods[kind];
+      const { resource, method, args } = calls[kind];
       this.send({
         id: requestId,
         jsonrpc: "2.0",
         method,
-        params: { resource: "ScenesService", ...(args ? { args } : {}) },
+        params: { resource, ...(args ? { args } : {}) },
       });
     } else {
-      const requestTypes: Record<RequestKind, string> = {
-        getScene: "GetSceneList",
-        getActiveScene: "GetCurrentProgramScene",
-        setActiveScene: "SetCurrentProgramScene",
-        ping: "GetVersion",
+      const requests: Record<RequestKind, { requestType: string; requestData?: any }> = {
+        getScene: { requestType: "GetSceneList" },
+        getActiveScene: { requestType: "GetCurrentProgramScene" },
+        // Only used for Streamlabs; OBS Studio returns the input kind with the scene items
+        getSources: { requestType: "GetInputList" },
+        getSceneItems: {
+          requestType: "GetSceneItemList",
+          requestData: { sceneName: scene?.name },
+        },
+        setSceneItemEnabled: {
+          requestType: "SetSceneItemEnabled",
+          requestData: {
+            sceneName: scene?.name,
+            sceneItemId: Number(item?.id),
+            sceneItemEnabled: enabled,
+          },
+        },
+        ping: { requestType: "GetVersion" },
       };
+      const { requestType, requestData } = requests[kind];
       this.send({
         op: 6,
         d: {
           requestId: String(requestId),
-          requestType: requestTypes[kind],
-          ...(kind === "setActiveScene"
-            ? { requestData: { sceneName: scene?.name } }
-            : {}),
+          requestType,
+          ...(requestData ? { requestData } : {}),
         },
       });
     }
@@ -290,8 +322,28 @@ export class OBSClient {
             : [];
         case "getActiveScene":
           return result ? { id: result.id, name: result.name } : null;
-        case "setActiveScene":
-          return result == true;
+        case "getSceneItems":
+          return Array.isArray(result)
+            ? result
+                .filter((e: any) => e.sceneNodeType !== "folder")
+                .map((e: any): SceneItem => ({
+                  id: e.sceneItemId,
+                  name: e.name,
+                  enabled: e.visible !== false,
+                  kind: e.type ?? null,
+                  sourceId: e.sourceId,
+                  resourceId:
+                    e.resourceId ??
+                    `SceneItem${JSON.stringify([e.sceneId, e.sceneItemId, e.sourceId])}`,
+                }))
+                .reverse()
+            : [];
+        case "getSources":
+          return Array.isArray(result)
+            ? result.map((e: any) => ({ id: e.sourceId ?? e.id, type: e.type ?? null }))
+            : [];
+        case "setSceneItemEnabled":
+          return true;
         default:
           return result;
       }
@@ -343,7 +395,9 @@ export class OBSClient {
         this.settle(Number(data.d.requestId), (kind) => {
           const status = data.d.requestStatus;
           const response = data.d.responseData;
-          if (kind === "setActiveScene") return status?.result == true;
+          if (kind === "setSceneItemEnabled") {
+            return status?.result == true;
+          }
           if (!status?.result) {
             throw new Error(status?.comment ?? "OBS request failed");
           }
@@ -360,6 +414,16 @@ export class OBSClient {
                     name: response.currentProgramSceneName,
                   }
                 : null;
+            case "getSceneItems":
+              // OBS lists items bottom-to-top; reverse to match the Sources dock
+              return (response?.sceneItems ?? [])
+                .map((e: any): SceneItem => ({
+                  id: e.sceneItemId,
+                  name: e.sourceName,
+                  enabled: e.sceneItemEnabled !== false,
+                  kind: e.isGroup ? "group" : (e.inputKind ?? "scene"),
+                }))
+                .reverse();
             default:
               return response;
           }
@@ -377,20 +441,6 @@ export class OBSClient {
   }
 
   /**
-   * Finds the scene by its name.
-   * @param name The name of the scene.
-   * @param scenes Array of scenes (optionally, if not passed, `getScene' is called).
-   * @returns Returns the found scene or null if the scene is not found.
-   */
-  public async findScene(
-    name: string,
-    scenes: Scene[] = []
-  ): Promise<Scene | null> {
-    if (scenes.length === 0) scenes = await this.getScene();
-    return scenes.find((f: any) => f.name == name) || null;
-  }
-
-  /**
    * Receives an active scene from OBS.
    * @returns Returns the currently active scene (Scene) or null.
    */
@@ -399,12 +449,39 @@ export class OBSClient {
   }
 
   /**
-   * Sets the active scene in OBS.
-   * @param scene The scene you want to make active.
-   * @returns Returns true if the scene is successfully installed, or false if it fails.
+   * Gets the sources (scene items) of a scene, ordered top-to-bottom as in the OBS Sources dock.
+   * @param scene The scene whose sources to list.
    */
-  public setActiveScene(scene: Scene): Promise<boolean> {
-    return this.request<boolean>("setActiveScene", scene);
+  public async getSceneItems(scene: Scene): Promise<SceneItem[]> {
+    const items = await this.request<SceneItem[]>("getSceneItems", { scene });
+    if (this.options.type !== OBSType.streamlabs || items.every((item) => item.kind)) {
+      return items;
+    }
+
+    // Streamlabs scene items do not carry the source type, it is on the source itself
+    try {
+      const sources = await this.request<{ id: string; type: string | null }[]>("getSources");
+      const types = new Map(sources.map((source) => [source.id, source.type]));
+      return items.map((item) => ({
+        ...item,
+        kind: item.kind ?? (item.sourceId ? types.get(item.sourceId) ?? null : null),
+      }));
+    } catch (error) {
+      // The type only picks the icon, so the list is still usable without it
+      if (config.debug) console.warn("[OBSClient] failed to get source types", error);
+      return items;
+    }
+  }
+
+  /**
+   * Shows or hides a source in a scene.
+   * @param scene The scene that contains the source.
+   * @param item The source (scene item) to change.
+   * @param enabled true to show the source, false to hide it.
+   * @returns true if OBS applied the change.
+   */
+  public setSceneItemEnabled(scene: Scene, item: SceneItem, enabled: boolean): Promise<boolean> {
+    return this.request<boolean>("setSceneItemEnabled", { scene, item, enabled });
   }
 
   /**

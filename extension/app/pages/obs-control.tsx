@@ -8,20 +8,15 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { OBSClient } from "@/lib/obs/client"
 import { Button } from "@/app/components/ui/button"
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-} from "@/app/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/app/components/ui/form"
 import toast from 'react-hot-toast';
 import SettingsCard from '@/app/components/settings-card';
 import { cn } from '@/lib/utils';
 import i18n from '@/lib/i18n';
-import { ScrollArea } from '../components/ui/scroll-area';
 import { settings } from '@/utils/settings';
-import { OBSType, Scene } from '@/types/obs';
+import { OBSSourceAction, OBSSourceRule, OBSType, Scene, SceneItem } from '@/types/obs';
+import OBSSourcesDialog from '@/app/components/obs-sources-dialog';
+import { ChevronRight, Eye, EyeOff } from 'lucide-react';
 
 const formSchemaConnection = z.object({
     host: z.string().ip(),
@@ -33,15 +28,10 @@ const formSchemaConnection = z.object({
 export default function OBSControlPage() {
     const [obsClient, setObsClient] = useState<SettingsOBSClientNull>(null);
     const [isConnectionEnabled, setConnectionEnabled] = useState<boolean>(true);
-    const [isSceneEnabled, setSceneEnabled] = useState<boolean>(false);
-    const [isTestEnabled, setTestEnabled] = useState<boolean>(false);
-    const [obsCensorSceneName, setObsCensorSceneName] = useState<string | null>(null);
-    const [isChangeSceneDialog, setChangeSceneDialog] = useState<boolean>(false);
-    const [obsScene, setObsScene] = useState<Scene[]>([]);
-    const [getTestLogs, setTestLog] = useState<{
-        ok: boolean,
-        msg: string
-    }[]>([]);
+    const [obsSourceRules, setObsSourceRules] = useState<OBSSourceRule[]>([]);
+    const [isSourcesDialog, setSourcesDialog] = useState<boolean>(false);
+    const [isSourcesTestRunning, setSourcesTestRunning] = useState<boolean>(false);
+    const [isAuthVisible, setAuthVisible] = useState<boolean>(false);
 
     const formConnection = useForm<z.infer<typeof formSchemaConnection>>({
         resolver: zodResolver(formSchemaConnection),
@@ -61,19 +51,11 @@ export default function OBSControlPage() {
             formConnection.setValue('port', obs.port);
             formConnection.setValue('auth', obs.auth);
             formConnection.setValue('type', obs.type);
-            setTestEnabled(true);
-            setSceneEnabled(true);
             setObsClient(obs);
         } else setObsClient(null);
 
-        setObsCensorSceneName(settings.get("obsCensorScene"));
+        setObsSourceRules(settings.get("obsSourceRules") ?? []);
     }, []);
-
-    const setEnabledButtons = (enabled: boolean) => {
-        setSceneEnabled(enabled);
-        setTestEnabled(enabled);
-        setConnectionEnabled(enabled);
-    };
 
     /**
      * Handles the connection form to OBS and checks the connection.
@@ -83,7 +65,7 @@ export default function OBSControlPage() {
     const handleConnection = async (values: z.infer<typeof formSchemaConnection>) => {
         if (!isConnectionEnabled) return;
         try {
-            setEnabledButtons(false);
+            setConnectionEnabled(false);
             const obsClientSettings: SettingsOBSClientNull = {
                 type: values.type,
                 host: values.host,
@@ -99,10 +81,18 @@ export default function OBSControlPage() {
             const isConnected = await obsClient.connect();
             obsClient.disconnect();
             if (isConnected) {
+                // Scenes and sources belong to the old program, they do not exist in the new one
+                const previousType = settings.get("obsClient")?.type;
+                const isTypeChanged = !!previousType && previousType !== obsClientSettings.type;
+                if (isTypeChanged) setObsSourceRules([]);
+
                 setObsClient(obsClientSettings);
-                settings.set({ obsClient: obsClientSettings });
+                settings.set({
+                    obsClient: obsClientSettings,
+                    ...(isTypeChanged ? { obsSourceRules: [] } : {}),
+                });
                 toast.success(i18n.t("obsSuccessfullyConnected"))
-                setEnabledButtons(true);
+                setConnectionEnabled(true);
                 return;
             }
         } catch (e) {
@@ -115,143 +105,55 @@ export default function OBSControlPage() {
     }
 
     /**
-     * Gets a list of scenes if possible and opens a dialog for scene selection.
+     * Saves the source rules chosen in the OBS window.
      */
-    async function heandleChangeScene() {
-        if (!obsClient) {
-            toast.error(i18n.t("connectionFailed"));
-            return;
-        }
-
-        try {
-            const client = new OBSClient(obsClient);
-            const isConnected = await client.connect();
-            if (!isConnected) {
-                toast.error(i18n.t("connectionFailed"));
-                client.disconnect();
-                return;
-            }
-            const scenes = await client.getScene();
-            if (!scenes || scenes.length == 0) {
-                toast.error(i18n.t("failedGetScenes"));
-                client.disconnect();
-                return;
-            }
-            client.disconnect();
-            setObsScene(scenes);
-            setChangeSceneDialog(true);
-        } catch (e) {
-            if (config.debug) { console.error(e); }
-            toast.error(i18n.t("unknownError"));
-            setEnabledButtons(true);
-        }
-    };
-
-    /**
-     * Choosing a scene for censorship.
-     * @param name 
-     */
-    function heandleSelectScene(name: string) {
-        settings.set({ obsCensorScene: name });
-        setObsCensorSceneName(name);
-        setChangeSceneDialog(false);
-        setObsScene([]);
-        toast.success(i18n.t("newSceneSuccessfullyConnected"));
-    };
-
-    const delay = (m: number) => new Promise((resolve) => setTimeout(resolve, m));
-
-    const handleTest = async () => {
-        if (!isTestEnabled) return;
-        if (!obsClient) {
-            toast.error(i18n.t("connectionFailed"));
-            return;
-        }
-        setEnabledButtons(false);
-        setTestLog([]);
-
-        try {
-            const client = new OBSClient(obsClient);
-            client.onError((_msg) => {
-                setEnabledButtons(true);
-            })
-
-            const isConnected = await client.connect();
-            if (isConnected) {
-                setTestLog((prevLogs) => [...prevLogs, { ok: true, msg: i18n.t("obsSuccessfullyConnected") }]);
-                const scenes = await client.getScene();
-                if (!scenes) {
-                    setTestLog((prevLogs) => [...prevLogs, { ok: false, msg: i18n.t("failedGetScenes") }]);
-                    client.disconnect();
-                    setEnabledButtons(true);
-                    return;
-                }
-
-                const obsCensorScene = obsCensorSceneName;
-                const censorScene = await client.findScene(obsCensorScene!, scenes);
-                if (!censorScene) {
-                    setTestLog((prevLogs) => [...prevLogs, { ok: false, msg: i18n.t("unableFindScene", { scene: obsCensorScene }) }]);
-                    client.disconnect();
-                    setEnabledButtons(true);
-                    return;
-                }
-                setTestLog((prevLogs) => [...prevLogs, { ok: true, msg: i18n.t("sceneFound", { scene: obsCensorScene }) }]);
-
-                const activeScene = await client.getActiveScene();
-                if (!activeScene) {
-                    setTestLog((prevLogs) => [...prevLogs, { ok: false, msg: i18n.t("unableFindActiveScene") }]);
-                    client.disconnect();
-                    setEnabledButtons(true);
-                    return;
-                }
-                if (activeScene.id == censorScene.id) {
-                    setTestLog((prevLogs) => [...prevLogs, { ok: false, msg: i18n.t("selectOtherSceneAndRepeatTest") }]);
-                    client.disconnect();
-                    setEnabledButtons(true);
-                    return;
-                }
-                setTestLog((prevLogs) => [...prevLogs, { ok: true, msg: i18n.t("sceneFound", { scene: activeScene.name }) }]);
-
-                const s = 10000;
-
-                setTestLog((prevLogs) => [...prevLogs, { ok: true, msg: i18n.t("pause") + " ..." }]);
-                await delay(s);
-                let isSetScene = await client.setActiveScene(censorScene);
-
-                if (!isSetScene) {
-                    setTestLog((prevLogs) => [...prevLogs, { ok: false, msg: i18n.t("unableDisplayScene", { scene: obsCensorScene }) }]);
-                    client.disconnect();
-                    setEnabledButtons(true);
-                    return;
-                }
-                setTestLog((prevLogs) => [...prevLogs, { ok: true, msg: i18n.t("sceneActivated", { scene: obsCensorScene }) }]);
-
-                setTestLog((prevLogs) => [...prevLogs, { ok: true, msg: i18n.t("pause") + " ..." }]);
-                await delay(s);
-                isSetScene = await client.setActiveScene(activeScene);
-
-                if (!isSetScene) {
-                    setTestLog((prevLogs) => [...prevLogs, { ok: false, msg: i18n.t("unableDisplayScene", { scene: activeScene.name }) }]);
-                    client.disconnect();
-                    setEnabledButtons(true);
-                    return;
-                }
-                setTestLog((prevLogs) => [...prevLogs, { ok: true, msg: i18n.t("sceneActivated", { scene: activeScene.name }) }]);
-
-                client.disconnect();
-
-                setTestLog((prevLogs) => [...prevLogs, { ok: true, msg: i18n.t("testSuccessfullyPassed") }]);
-            } else {
-                client.disconnect();
-                setTestLog((prevLogs) => [...prevLogs, { ok: false, msg: i18n.t("connectionFailed") }]);
-            }
-        } catch (e) {
-            if (config.debug) console.error(e);
-            setTestLog((prevLogs) => [...prevLogs, { ok: false, msg: i18n.t("unknownError") }]);
-        }
-        setEnabledButtons(true);
+    function handleSaveSourceRules(rules: OBSSourceRule[], removed: number) {
+        settings.sync("obsSourceRules", setObsSourceRules)(rules);
+        setSourcesDialog(false);
+        toast.success(removed > 0 ? i18n.t("sourcesSavedRemoved", { removed }) : i18n.t("sourcesSaved"));
     }
 
+    /**
+     * Applies the source rules as during censorship, waits and restores them.
+     */
+    async function handleTestSources() {
+        if (!obsClient || obsSourceRules.length === 0 || isSourcesTestRunning) return;
+        setSourcesTestRunning(true);
+        const client = new OBSClient(obsClient);
+        try {
+            if (!(await client.connect())) throw new Error("Failed to connect to OBS");
+            const scenes = await client.getScene();
+            const itemsByScene = new Map<string, SceneItem[]>();
+            const targets: { scene: Scene; item: SceneItem; action: OBSSourceAction }[] = [];
+            for (const rule of obsSourceRules) {
+                const scene = scenes.find((s) => s.name === rule.sceneName);
+                if (!scene) continue;
+                if (!itemsByScene.has(scene.id)) itemsByScene.set(scene.id, await client.getSceneItems(scene));
+                const item = itemsByScene.get(scene.id)!.find((i) => i.name === rule.sourceName);
+                if (item) targets.push({ scene, item, action: rule.action });
+            }
+            if (targets.length === 0) throw new Error("No sources found");
+
+            const apply = (isCensored: boolean) => Promise.all(targets.map(({ scene, item, action }) =>
+                client.setSceneItemEnabled(scene, item, action === OBSSourceAction.show ? isCensored : !isCensored)));
+
+            if ((await apply(true)).includes(false)) throw new Error("Failed to toggle sources");
+            toast(i18n.t("sourcesTestStarted"), { duration: 5000 });
+            await delay(5000);
+            if ((await apply(false)).includes(false)) throw new Error("Failed to restore sources");
+
+            toast.success(targets.length < obsSourceRules.length
+                ? i18n.t("sourcesTestPartiallyPassed", { found: targets.length, total: obsSourceRules.length })
+                : i18n.t("sourcesTestPassed"));
+        } catch (e) {
+            if (config.debug) console.error(e);
+            toast.error(i18n.t("sourcesTestFailed"));
+        }
+        client.disconnect();
+        setSourcesTestRunning(false);
+    }
+
+    const delay = (m: number) => new Promise((resolve) => setTimeout(resolve, m));
 
     const guideLink = (text: string, image: string) => <a href={`/images/guide/${image}`} target="_blank" className="text-link">{text}</a>;
 
@@ -323,9 +225,17 @@ export default function OBSControlPage() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>{i18n.t("passwordToken")}</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} />
-                                    </FormControl>
+                                    <div className="relative">
+                                        <FormControl>
+                                            <Input {...field} type={isAuthVisible ? "text" : "password"} autoComplete="off" className="pr-10" />
+                                        </FormControl>
+                                        <Button type="button" size="icon" variant="ghost"
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 size-7 text-muted-foreground"
+                                            title={isAuthVisible ? i18n.t("hidePassword") : i18n.t("showPassword")}
+                                            onClick={() => setAuthVisible((visible) => !visible)}>
+                                            {isAuthVisible ? <EyeOff /> : <Eye />}
+                                        </Button>
+                                    </div>
                                 </FormItem>
                             )}
                         />
@@ -335,53 +245,43 @@ export default function OBSControlPage() {
                 </Form>
 
                 <div className="space-y-4">
-                    <h4 className="text-xl font-bold">{i18n.t("scene")}</h4>
+                    <h4 className="text-xl font-bold">{i18n.t("sources")}</h4>
                     <SettingsCard
-                        title={i18n.t("censorshipScene")}
-                        description={i18n.t("selectSceneName")}>
-                        {obsCensorSceneName ? <div className="space-y-2">
-                            <div className="text-xs text-muted-foreground font-medium">{i18n.t("selectedScene")}</div>
-                            <Input readOnly value={obsCensorSceneName || "N/A"} />
-                        </div> : <></>}
+                        title={i18n.t("sourceControl")}
+                        description={i18n.t("sourceControlDescription")}>
+                        <></>
                     </SettingsCard>
-                    <Button onClick={heandleChangeScene} disabled={!isSceneEnabled}>{i18n.t("changeScene")}</Button>
-                    <hr />
-                </div>
-                <div className="space-y-4">
-                    <h4 className="text-xl font-bold">{i18n.t("testing")}</h4>
-                    <div className="space-y-2 font-medium">
-                        <div className="text-base">{i18n.t("instructionsTestingSceneSwitching")}</div>
-                        <ol className="list-decimal text-sm pl-4 space-y-1">
-                            <li>{i18n.t("instructionsTestingSceneSwitchingDescription.0")}</li>
-                            <li>{i18n.t("instructionsTestingSceneSwitchingDescription.1")}</li>
-                            <li>{i18n.t("instructionsTestingSceneSwitchingDescription.2")}</li>
-                            <li>{i18n.t("instructionsTestingSceneSwitchingDescription.3")}</li>
-                        </ol>
-                    </div>
-                    <Button onClick={handleTest} disabled={!isTestEnabled || obsCensorSceneName == null}>{i18n.t("runTest")}</Button>
-                    {getTestLogs.length > 0 && (
-                        <div className="bg-secondary text-xs font-semibold flex flex-col gap-0.5 p-2 rounded-md border">
-                            {getTestLogs.map((log, index) => (
-                                <code key={index} className={cn(log.ok ? "text-green-500" : "text-red-500")}>{log.msg}</code>
+                    {obsSourceRules.length > 0 ? (
+                        <div className="rounded-lg border border-border divide-y divide-border">
+                            {obsSourceRules.map((rule) => (
+                                <div key={`${rule.sceneName}/${rule.sourceName}`} className="flex items-center gap-2 px-3 py-2 text-sm">
+                                    <span className="text-muted-foreground truncate max-w-48 min-w-0" title={rule.sceneName}>{rule.sceneName}</span>
+                                    <ChevronRight size={14} className="text-muted-foreground shrink-0" />
+                                    <span className="font-medium truncate flex-1 min-w-0" title={rule.sourceName}>{rule.sourceName}</span>
+                                    <span className={cn("flex items-center gap-1 text-xs font-medium rounded px-2 py-0.5 shrink-0",
+                                        rule.action === OBSSourceAction.hide ? "bg-red-500/15 text-red-400" : "bg-green-500/15 text-green-400")}>
+                                        {rule.action === OBSSourceAction.hide ? <EyeOff size={12} /> : <Eye size={12} />}
+                                        {rule.action === OBSSourceAction.hide ? i18n.t("hide") : i18n.t("sourceActionShow")}
+                                    </span>
+                                </div>
                             ))}
                         </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">{i18n.t("noSourceRules")}</p>
                     )}
-                </div>
-            </div>
-            {isChangeSceneDialog && <div className="bg-background/40 backdrop-blur-xs fixed top-0 left-0 right-0 bottom-0 z-50 flex items-center justify-center">
-                <div className="w-xs  bg-background border border-border/50 rounded-xl py-4 space-y-4">
-                    <h1 className="text-lg font-bold px-5">{i18n.t("selectScene")}</h1>
-                    <ScrollArea className="w-full h-28">
-                        <div className="flex flex-col gap-2 px-5 max-w-xs">{obsScene.map((item, index) => <div
-                            key={index}
-                            onClick={() => heandleSelectScene(item.name)}
-                            className="text-sm font-medium border border-input/60 bg-secondary text-foreground rounded-lg px-2.5 py-1 duration-300 cursor-pointer hover:bg-foreground/25 truncate ">{item.name}</div>)}</div>
-                    </ScrollArea>
-                    <div className="text-right px-5 ">
-                        <Button size="sm" onClick={() => setChangeSceneDialog(false)}>{i18n.t("close")}</Button>
+                    <div className="flex gap-2">
+                        <Button onClick={() => setSourcesDialog(true)} disabled={!obsClient}>{i18n.t("configureSources")}</Button>
+                        <Button variant="outline" onClick={handleTestSources}
+                            disabled={!obsClient || obsSourceRules.length === 0 || isSourcesTestRunning}>{i18n.t("testSources")}</Button>
                     </div>
                 </div>
-            </div>}
+            </div>
+            {isSourcesDialog && obsClient && <OBSSourcesDialog
+                obsClient={obsClient}
+                rules={obsSourceRules}
+                onSave={handleSaveSourceRules}
+                onClose={() => setSourcesDialog(false)}
+            />}
         </>
     );
 }

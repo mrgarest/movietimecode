@@ -10,13 +10,13 @@ const altKey: string = /Macintosh|MacIntel|MacPPC|Mac68K/i.test(navigator.userAg
 
 
 export default function HotkeysPage() {
-    const [obsDisabled, setObsDisabled] = useState<boolean>(true);
+    const [obsSourcesDisabled, setObsSourcesDisabled] = useState<boolean>(true);
     const [playerContentCensorshipCommand, setPlayerContentCensorshipCommand] = useState<TimecodeAction>(DEFAULT_SETTINGS.playerContentCensorshipCommand);
     const [playerContentCensorshipHotkey, setPlayerContentCensorshipHotkey] = useState<string>(`${altKey}+X`);
 
     useEffect(() => {
         setPlayerContentCensorshipCommand(settings.get("playerContentCensorshipCommand"));
-        setObsDisabled(settings.get("obsClient") === null || settings.get("obsCensorScene") === null);
+        setObsSourcesDisabled(settings.get("obsClient") === null || (settings.get("obsSourceRules") ?? []).length === 0);
         if (chrome.commands) {
             chrome.commands.getAll((commands) => commands.forEach((command) => {
                 switch (command.name) {
@@ -36,12 +36,12 @@ export default function HotkeysPage() {
             { disabled: false, value: TimecodeAction.blur, text: i18n.t("blur") },
             { disabled: false, value: TimecodeAction.hide, text: i18n.t("hide") },
             {
-                disabled: obsDisabled,
-                value: TimecodeAction.obsSceneChange,
-                text: i18n.t("obsSceneSwitching"),
+                disabled: obsSourcesDisabled,
+                value: TimecodeAction.obsSourceToggle,
+                text: i18n.t("obsSourceToggle"),
             },
         ];
-    }, [obsDisabled]);
+    }, [obsSourcesDisabled]);
 
     return (
         <div className="space-y-8">

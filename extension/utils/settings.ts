@@ -20,7 +20,7 @@ export const DEFAULT_SETTINGS: Settings = {
   useDrugsAlcoholTobacco: TimecodeAction.blur,
   prohibitedSymbols: TimecodeAction.blur,
   obsClient: null,
-  obsCensorScene: null,
+  obsSourceRules: [],
   editTwitchContentClassification: false,
   chatbotEnabled: false,
   checkStreamLive: true,
@@ -202,6 +202,65 @@ class SettingsManager {
 }
 
 export const settings = new SettingsManager();
+
+/**
+ * Settings that hold a TimecodeAction.
+ *
+ * @deprecated Used only by the removed-action migration below.
+ * TODO(remove-obs-scene-migration): temporary migration added in 5.0.0, when "OBS scene switching" was removed.
+ * Delete it (together with every place marked with this TODO) once users have updated past 5.0.0.
+ */
+const ACTION_KEYS = [
+  "nudity",
+  "sexualContentWithoutNudity",
+  "eroticSounds",
+  "violence",
+  "sensitiveExpressions",
+  "useDrugsAlcoholTobacco",
+  "prohibitedSymbols",
+  "playerContentCensorshipCommand",
+] as const satisfies readonly (keyof Settings)[];
+
+/**
+ * Value of the removed "OBS scene switching" action (TimecodeAction 106).
+ *
+ * @deprecated TODO(remove-obs-scene-migration): temporary migration added in 5.0.0, when "OBS scene switching" was removed.
+ * Delete it (together with every place marked with this TODO) once users have updated past 5.0.0.
+ */
+const REMOVED_OBS_SCENE_CHANGE = 106;
+
+/**
+ * Replaces actions that no longer exist (OBS scene switching) with blur, so the category stays censored.
+ * Used for stored settings and for imported backups.
+ *
+ * @deprecated TODO(remove-obs-scene-migration): temporary migration added in 5.0.0, when "OBS scene switching" was removed.
+ * Delete it (together with every place marked with this TODO) once users have updated past 5.0.0.
+ */
+export const replaceRemovedActions = <T extends Partial<Settings>>(values: T): T => {
+  const result = { ...values };
+  for (const key of ACTION_KEYS) {
+    if ((result[key] as number | undefined) === REMOVED_OBS_SCENE_CHANGE) {
+      result[key] = TimecodeAction.blur;
+    }
+  }
+  return result;
+};
+
+/**
+ * Migrates stored settings away from the removed OBS scene switching and deletes the old `obsCensorScene` key.
+ *
+ * @deprecated TODO(remove-obs-scene-migration): temporary migration added in 5.0.0, when "OBS scene switching" was removed.
+ * Delete it (together with every place marked with this TODO) once users have updated past 5.0.0.
+ */
+export const migrateRemovedActions = async (): Promise<void> => {
+  const stored = await chrome.storage.local.get([...ACTION_KEYS]);
+  const updated = replaceRemovedActions(stored as Partial<Settings>);
+  const changed = ACTION_KEYS.filter((key) => stored[key] !== updated[key]);
+  if (changed.length > 0) {
+    await chrome.storage.local.set(Object.fromEntries(changed.map((key) => [key, updated[key]])));
+  }
+  await chrome.storage.local.remove("obsCensorScene");
+};
 
 /**
  * Migration from the old chrome.storage.sync format to chrome.storage.local.

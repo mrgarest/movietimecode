@@ -129,21 +129,25 @@ export const handleOBSMessage = async (
       };
     }
 
-    case "obs:setActiveScene": {
+    case "obs:getSceneItems": {
       const client = getConnection(message.connectionId);
-      const result = await client.setActiveScene(message.scene);
+      const result = await client.getSceneItems(message.scene);
       return {
-        type: "obs:setActiveScene",
+        type: "obs:getSceneItems",
         connectionId: message.connectionId,
         result,
       };
     }
 
-    case "obs:findScene": {
+    case "obs:setSceneItemEnabled": {
       const client = getConnection(message.connectionId);
-      const result = await client.findScene(message.name, message.scenes);
+      const result = await client.setSceneItemEnabled(
+        message.scene,
+        message.item,
+        message.enabled,
+      );
       return {
-        type: "obs:findScene",
+        type: "obs:setSceneItemEnabled",
         connectionId: message.connectionId,
         result,
       };

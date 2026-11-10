@@ -19,7 +19,7 @@ import { isStreamLive, isTwitchTokenExpires, refreshTwitchToken } from "@/utils/
 import { getSiteDriver } from "./sites/driver";
 import { settings } from "@/utils/settings";
 import { OBSBackground } from "@/lib/obs/background";
-import { OBSType, Scene } from "@/types/obs";
+import { OBSSourceAction, OBSSourceRule, OBSType, Scene, SceneItem } from "@/types/obs";
 import { createPlayerController } from "@/utils/player-controller";
 
 let isHotkeyPressed: boolean = false;
@@ -35,8 +35,8 @@ let movie: {
 
 let obsClient: OBSBackground | null = null;
 let obsConnecting: Promise<boolean> | null = null;
-let mainSceneOBS: Scene | null;
-let obsCensorScene: Scene | null;
+// Sources resolved from the user's rules at connection time
+let obsSourceTargets: { scene: Scene; item: SceneItem; action: OBSSourceAction }[] = [];
 
 type Thtml = HTMLIFrameElement | undefined;
 let player: Thtml = undefined;
@@ -54,24 +54,26 @@ let hasStreamLive: boolean | undefined = undefined;
 let isTryRefreshTwitchToken: boolean = false;
 let isChatbotCommandStoped: boolean = false;
 
-const playerContentCensorshipEnabled: { blur: boolean; hide: boolean; obsSceneChange: boolean } = {
+const playerContentCensorshipEnabled: { blur: boolean; hide: boolean; obsSourceToggle: boolean } = {
     blur: false,
     hide: false,
-    obsSceneChange: false,
+    obsSourceToggle: false,
 };
 
-const neededOBSClient = (): boolean => {
-    // OBS client
-    return [
-        settings.get("nudity"),
-        settings.get("sexualContentWithoutNudity"),
-        settings.get("eroticSounds"),
-        settings.get("violence"),
-        settings.get("sensitiveExpressions"),
-        settings.get("useDrugsAlcoholTobacco"),
-        settings.get("prohibitedSymbols"),
-    ].includes(TimecodeAction.obsSceneChange);
-};
+/**
+ * Actions assigned to the timecode categories.
+ */
+const segmentActions = (): TimecodeAction[] => [
+    settings.get("nudity"),
+    settings.get("sexualContentWithoutNudity"),
+    settings.get("eroticSounds"),
+    settings.get("violence"),
+    settings.get("sensitiveExpressions"),
+    settings.get("useDrugsAlcoholTobacco"),
+    settings.get("prohibitedSymbols"),
+];
+
+const neededOBSClient = (): boolean => segmentActions().includes(TimecodeAction.obsSourceToggle);
 
 // Tracking changes to settings
 settings.onChange([
@@ -83,7 +85,13 @@ settings.onChange([
     "useDrugsAlcoholTobacco",
     "prohibitedSymbols",
     "chatbotEnabled",
-], (key, newValue) => {
+    "obsSourceRules",
+], (key) => {
+    // The OBS sources are resolved on connect, so reconnect to pick up the new ones
+    if (key === "obsSourceRules" && obsClient) {
+        disconnectOBS();
+    }
+
     if (!neededOBSClient() && obsClient) {
         disconnectOBS();
     } else if (isCensorshipEnabled && neededOBSClient() && !obsClient) {
@@ -436,7 +444,7 @@ const getActionForTag = (tag: TimecodeTag): TimecodeAction | null => {
  * Concurrent calls share one connection attempt.
  *
  * @param showError Show the connection error dialog on failure.
- * @returns true if connected and the censor scene was found.
+ * @returns true if connected and at least one configured source was found.
  */
 function connectOBS(showError: boolean = true): Promise<boolean> {
     if (!obsConnecting) {
@@ -452,16 +460,12 @@ function connectOBS(showError: boolean = true): Promise<boolean> {
 
 async function establishOBSConnection(): Promise<boolean> {
     const obsClientSettings: SettingsOBSClientNull = settings.get("obsClient");
-    const obsCensorSceneName: string | null = settings.get("obsCensorScene");
+    const obsSourceRules: OBSSourceRule[] = settings.get("obsSourceRules") ?? [];
 
     disconnectOBS();
     const client = new OBSBackground();
 
     try {
-        if (!obsCensorSceneName) {
-            throw new Error("Scene not specified");
-        }
-
         if (!obsClientSettings?.type
             || !obsClientSettings?.host
             || !obsClientSettings?.port
@@ -473,9 +477,11 @@ async function establishOBSConnection(): Promise<boolean> {
         if (!isConnectedObsClient) {
             throw new Error("Failed to connect to OBS Client");
         }
-        const scene = await client.findScene(obsCensorSceneName);
-        if (!scene) {
-            throw new Error("Could not find the scene");
+
+        const scenes = await client.getScene();
+        const sourceTargets = await resolveOBSSourceTargets(client, scenes, obsSourceRules);
+        if (sourceTargets.length === 0) {
+            throw new Error("Could not find any of the OBS sources");
         }
 
         // Connection lost (OBS closed, network error): forget the client so the next censorship action reconnects instead of failing.
@@ -488,7 +494,7 @@ async function establishOBSConnection(): Promise<boolean> {
         client.onError(dropClient);
 
         obsClient = client;
-        obsCensorScene = scene;
+        obsSourceTargets = sourceTargets;
         return true;
     } catch (e) {
         client.disconnect();
@@ -500,45 +506,82 @@ async function establishOBSConnection(): Promise<boolean> {
 };
 
 /**
+ * Finds the scene items for the user's source rules. Rules whose scene or source no longer exists are skipped.
+ */
+async function resolveOBSSourceTargets(client: OBSBackground, scenes: Scene[], rules: OBSSourceRule[]) {
+    const targets: typeof obsSourceTargets = [];
+    const itemsByScene = new Map<string, SceneItem[]>();
+
+    for (const rule of rules) {
+        const scene = scenes.find((s) => s.name === rule.sceneName);
+        if (!scene) {
+            if (config.debug) console.warn(`[OBS] scene "${rule.sceneName}" not found`);
+            continue;
+        }
+        if (!itemsByScene.has(scene.id)) {
+            itemsByScene.set(scene.id, await client.getSceneItems(scene));
+        }
+        const item = itemsByScene.get(scene.id)!.find((i) => i.name === rule.sourceName);
+        if (!item) {
+            if (config.debug) console.warn(`[OBS] source "${rule.sourceName}" not found in "${rule.sceneName}"`);
+            continue;
+        }
+        targets.push({ scene, item, action: rule.action });
+    }
+
+    return targets;
+}
+
+/**
  * Closes the OBS connection and forgets the client.
  */
 function disconnectOBS() {
     obsClient?.disconnect();
     obsClient = null;
-    obsCensorScene = null;
+    obsSourceTargets = [];
 }
 
 /**
  * Runs OBS requests, connecting first if needed. If the connection turns out to be lost, reconnects once and retries.
  *
- * @param fn Requests to run with a connected client and the censor scene.
+ * @param fn Requests to run with a connected client.
  */
-async function withOBS<T>(fn: (client: OBSBackground, censorScene: Scene) => Promise<T>): Promise<T> {
-    if (!obsClient || !obsCensorScene) await connectOBS(false);
-    if (!obsClient || !obsCensorScene) throw new Error("OBS is not connected");
+async function withOBS<T>(fn: (client: OBSBackground) => Promise<T>): Promise<T> {
+    if (!obsClient) await connectOBS(false);
+    if (!obsClient) throw new Error("OBS is not connected");
 
     try {
-        return await fn(obsClient, obsCensorScene);
+        return await fn(obsClient);
     } catch (error) {
-        // A timeout means OBS got the request but answered too slowly; repeating a scene switch could toggle it twice, so only retry lost connections.
+        // A timeout means OBS got the request but answered too slowly; only retry lost connections.
         if (error instanceof Error && /timed out/.test(error.message)) throw error;
         if (config.debug) console.warn("[OBS] request failed, reconnecting", error);
 
         disconnectOBS();
         await connectOBS(false);
-        if (!obsClient || !obsCensorScene) throw error;
-        return await fn(obsClient, obsCensorScene);
+        if (!obsClient) throw error;
+        return await fn(obsClient);
     }
+}
+
+/**
+ * Applies the user's source rules: while censored, "hide" sources are turned off and "show" sources are turned on; afterwards it is reversed.
+ */
+async function setOBSSources(client: OBSBackground, isCensored: boolean): Promise<void> {
+    if (obsSourceTargets.length === 0) throw new Error("No OBS sources to toggle");
+
+    const results = await Promise.all(obsSourceTargets.map(({ scene, item, action }) =>
+        client.setSceneItemEnabled(scene, item, action === OBSSourceAction.show ? isCensored : !isCensored)
+    ));
+    if (results.includes(false)) throw new Error("Failed to toggle some OBS sources");
 }
 
 /**
  * Handles OBS client connection errors by displaying a dialog.
  */
 function handleObsClientError() {
-    const obsCensorSceneName: string | null = settings.get("obsCensorScene");
-
     let obsName: string;
-    switch (obsCensorSceneName) {
+    switch (settings.get("obsClient")?.type) {
         case OBSType.obsstudio:
             obsName = "OBS Studio";
             break;
@@ -603,46 +646,12 @@ async function setPlayerCensorshipAction({
         case TimecodeAction.skip:
             if (isCensored && segment.end_time) playerController.seek(segment.end_time + 1);
             break;
-        case TimecodeAction.obsSceneChange:
-            if (playerContentCensorshipEnabled.obsSceneChange) return;
+        case TimecodeAction.obsSourceToggle:
+            if (playerContentCensorshipEnabled.obsSourceToggle) return;
             try {
-                const isSetScene = await withOBS(async (client, censorScene) => {
-                    if (isCensored) {
-                        const activeScene = await client.getActiveScene();
-                        // Keep the remembered main scene if the censor scene is already active
-                        if (activeScene && activeScene.id !== censorScene.id) {
-                            mainSceneOBS = activeScene;
-                        }
-                        return client.setActiveScene(censorScene);
-                    }
-                    if (!mainSceneOBS?.id) throw new Error("Main scene is unknown");
-                    return client.setActiveScene(mainSceneOBS);
-                });
-
-                if (isCensored && !isSetScene) {
-                    throw new Error("Failed to switch to the censor scene");
-                }
+                await withOBS((client) => setOBSSources(client, isCensored));
             } catch (error) {
-                if (config.debug) {
-                    console.error(`catch ${action}: `, error);
-                }
-                censorshipActionLog({
-                    error: true,
-                    isCensored,
-                    time,
-                    segment,
-                    action,
-                });
-                if (isCensored) {
-                    // Fallback: the scene could not be switched, so stop the movie
-                    setPlayerCensorshipAction({
-                        isCensored: isCensored,
-                        time: time,
-                        action: TimecodeAction.pause,
-                        segment: segment,
-                    });
-                }
-                handleObsClientError();
+                handleOBSActionFailure(error, { isCensored, time, action, segment });
                 return;
             }
             break;
@@ -657,6 +666,37 @@ async function setPlayerCensorshipAction({
         action,
     });
 };
+
+/**
+ * Logs a failed OBS action, pauses the movie if the content could not be hidden and shows the connection error dialog.
+ */
+function handleOBSActionFailure(error: unknown, { isCensored, time, action, segment }: {
+    isCensored: boolean;
+    time: number;
+    action: TimecodeAction;
+    segment: TimecodeSegment;
+}) {
+    if (config.debug) {
+        console.error(`catch ${action}: `, error);
+    }
+    censorshipActionLog({
+        error: true,
+        isCensored,
+        time,
+        segment,
+        action,
+    });
+    if (isCensored) {
+        // Fallback: OBS could not hide the content, so stop the movie
+        setPlayerCensorshipAction({
+            isCensored: isCensored,
+            time: time,
+            action: TimecodeAction.pause,
+            segment: segment,
+        });
+    }
+    handleObsClientError();
+}
 
 /**
  * Gets a message from the background.
@@ -687,36 +727,21 @@ async function heandleHotkey(command: string) {
             playerContentCensorshipEnabled.hide = !playerController.isVisible() ? false : !playerContentCensorshipEnabled.hide;
             playerController.setVisible(!playerContentCensorshipEnabled.hide);
             break;
-        case TimecodeAction.obsSceneChange:
+        case TimecodeAction.obsSourceToggle: {
+            const enable = !playerContentCensorshipEnabled.obsSourceToggle;
             try {
-                await withOBS(async (client, censorScene) => {
-                    const scene = await client.getActiveScene();
-                    if (!scene) {
-                        playerContentCensorshipEnabled.obsSceneChange = false;
-                        return;
-                    }
-
-                    if (scene.id !== censorScene.id) {
-                        mainSceneOBS = scene;
-                        playerContentCensorshipEnabled.obsSceneChange = true;
-                        await client.setActiveScene(censorScene);
-                        return;
-                    }
-
-                    if (mainSceneOBS && mainSceneOBS.id !== censorScene.id) {
-                        await client.setActiveScene(mainSceneOBS);
-                        playerContentCensorshipEnabled.obsSceneChange = false;
-                    }
-                });
+                await withOBS((client) => setOBSSources(client, enable));
+                playerContentCensorshipEnabled.obsSourceToggle = enable;
             } catch (error) {
                 if (config.debug) {
                     console.error("Hotkey obs error:", error);
                 }
                 playerController.pause();
-                playerContentCensorshipEnabled.obsSceneChange = false;
+                playerContentCensorshipEnabled.obsSourceToggle = false;
                 handleObsClientError();
             }
             break;
+        }
         default:
             break;
     }

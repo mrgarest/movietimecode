@@ -1,6 +1,7 @@
 import { BlurPower, TimecodeAction } from "@/enums/timecode";
 import { ChatbotCommand } from "./chatbot";
 import { User } from "./user";
+import { OBSSourceRule } from "./obs";
 
 export type SettingsOBSClientNull = SettingsOBSClient | null;
 
@@ -18,7 +19,7 @@ export interface Settings {
   useDrugsAlcoholTobacco: TimecodeAction;
   prohibitedSymbols: TimecodeAction;
   obsClient: SettingsOBSClientNull;
-  obsCensorScene: string | null;
+  obsSourceRules: OBSSourceRule[];
   playerContentCensorshipCommand: TimecodeAction;
   chatbotEnabled: boolean;
   checkStreamLive: boolean;

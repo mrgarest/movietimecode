@@ -16,7 +16,7 @@ export default function SettingsPage() {
     const [sensitiveExpressions, setSensitiveExpressions] = useState<TimecodeAction>(DEFAULT_SETTINGS.sensitiveExpressions);
     const [useDrugsAlcoholTobacco, setUseDrugsAlcoholTobacco] = useState<TimecodeAction>(DEFAULT_SETTINGS.useDrugsAlcoholTobacco);
     const [prohibitedSymbols, setProhibitedSymbols] = useState<TimecodeAction>(DEFAULT_SETTINGS.prohibitedSymbols);
-    const [obsDisabled, setObsDisabled] = useState<boolean>(true);
+    const [obsSourcesDisabled, setObsSourcesDisabled] = useState<boolean>(true);
 
     useEffect(() => {
         setTimeBuffer(settings.get("timeBuffer"));
@@ -28,7 +28,7 @@ export default function SettingsPage() {
         setSexualContentWithoutNudity(settings.get("sexualContentWithoutNudity"));
         setUseDrugsAlcoholTobacco(settings.get("useDrugsAlcoholTobacco"));
         setProhibitedSymbols(settings.get("prohibitedSymbols"));
-        setObsDisabled(settings.get("obsClient") === null || settings.get("obsCensorScene") === null);
+        setObsSourcesDisabled(settings.get("obsClient") === null || (settings.get("obsSourceRules") ?? []).length === 0);
     }, []);
 
     const selectItemBehavior = useMemo(() => {
@@ -40,12 +40,12 @@ export default function SettingsPage() {
             { disabled: false, value: TimecodeAction.pause, text: i18n.t("pause") },
             { disabled: false, value: TimecodeAction.mute, text: i18n.t("mute") },
             {
-                disabled: obsDisabled,
-                value: TimecodeAction.obsSceneChange,
-                text: i18n.t("obsSceneSwitching"),
+                disabled: obsSourcesDisabled,
+                value: TimecodeAction.obsSourceToggle,
+                text: i18n.t("obsSourceToggle"),
             },
         ];
-    }, [obsDisabled]);
+    }, [obsSourcesDisabled]);
 
     const handleTimeBuffer = (event: React.ChangeEvent<HTMLInputElement>) => {
         let value = parseInt(event.target.value);

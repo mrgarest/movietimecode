@@ -1,4 +1,4 @@
-import { OBSResponse, Scene } from "@/types/obs";
+import { OBSResponse, Scene, SceneItem } from "@/types/obs";
 
 type ErrorListener = (msg: any) => void;
 type CloseListener = (msg: any) => void;
@@ -50,12 +50,12 @@ export class OBSBackground {
     return this.request({ type: "obs:getActiveScene" });
   }
 
-  async setActiveScene(scene: Scene): Promise<boolean> {
-    return this.request({ type: "obs:setActiveScene", scene });
+  async getSceneItems(scene: Scene): Promise<SceneItem[]> {
+    return this.request({ type: "obs:getSceneItems", scene });
   }
 
-  async findScene(name: string, scenes?: Scene[]): Promise<Scene | null> {
-    return this.request({ type: "obs:findScene", name, scenes });
+  async setSceneItemEnabled(scene: Scene, item: SceneItem, enabled: boolean): Promise<boolean> {
+    return this.request({ type: "obs:setSceneItemEnabled", scene, item, enabled });
   }
 
   onError(listener: ErrorListener) {

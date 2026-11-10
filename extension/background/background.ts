@@ -3,7 +3,7 @@ import { User } from "@/types/user";
 import { getDeviceToken, getUser } from "@/utils/user";
 import { event } from "@/utils/event";
 import { EventType } from "@/enums/event";
-import { migrateSettings, settings } from "@/utils/settings";
+import { migrateRemovedActions, migrateSettings, settings } from "@/utils/settings";
 import { handleOBSMessage } from "./obs";
 
 /**
@@ -12,6 +12,8 @@ import { handleOBSMessage } from "./obs";
 chrome.runtime.onInstalled.addListener(async (details) => {
   await settings.waitReady();
   await migrateSettings();
+  // TODO(remove-obs-scene-migration): delete after 5.0.0 is widely installed, see migrateRemovedActions
+  await migrateRemovedActions();
   await getDeviceToken();
   const installedAt = settings.get("installedAt");
   if (!installedAt) {
