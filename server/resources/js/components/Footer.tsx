@@ -26,7 +26,7 @@ export default function Footer() {
                         target={item.target}
                         className="text-xs p-0.5 text-muted-foreground font-medium hover:text-foreground duration-300 select-none"
                         href={item.href}>{item.name}</Linker>)}</nav>
-                    <div className="text-xs text-muted-foreground/60 font-medium text-center">Developed by Garest</div>
+                    <div className="text-xs text-muted-foreground/60 font-medium text-center">Made by Garest</div>
                 </div>
             </div>
         </footer>

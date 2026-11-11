@@ -20,7 +20,7 @@ export const Footer = () => {
             </div>
             <div className="text-[10px] text-muted-foreground/80 font-medium space-y-0.5">
                 <div>{i18n.t("appName")} v{config.version}</div>
-                <div>Developed by Garest</div>
+                <div>Made by Garest</div>
             </div>
         </div>
     );
