@@ -46,3 +46,25 @@ export interface TimecodeEditor extends ServerResponse {
   content_classifications: number[] | null;
   segments: TimecodeSegment[] | null;
 }
+
+/**
+ * A timecode added by the current user, as listed on the user page.
+ */
+export interface UserTimecode {
+  id: number;
+  movie: {
+    id: number;
+    tmdb_id: number;
+    release_year: number | null;
+    title: string | null;
+    poster_url: string | null;
+  };
+  segments_count: number;
+  used_count: number;
+  created_at: number;
+  updated_at: number | null;
+}
+
+export interface UserTimecodesResponse extends ServerResponse {
+  timecodes?: UserTimecode[];
+}

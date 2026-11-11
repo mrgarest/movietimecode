@@ -52,6 +52,13 @@ Route::prefix('v2')->middleware('throttle:api')->group(function () {
             Route::get('/', 'me');
         });
 
+    Route::prefix('user')
+        ->middleware(['auth:api', 'not_deactivated', CheckToken::using('extension')])
+        ->controller(TimecodeController::class)
+        ->group(function () {
+            Route::get('/timecodes', 'userTimecodes');
+        });
+
     Route::prefix('twitch')
         ->middleware(['auth:api', 'not_deactivated', CheckToken::using('extension')])
         ->controller(TwitchController::class)

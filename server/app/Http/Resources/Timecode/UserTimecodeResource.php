@@ -32,6 +32,7 @@ class UserTimecodeResource extends JsonResource
             ],
             'movie' => [
                 'id' => $this->movie->id,
+                'tmdb_id' => $this->movie->tmdb_id,
                 'release_year' => Carbon::parse($this->movie->release_date)->year,
                 'title' => $translation?->title ?? $original?->title,
                 'poster_url' => $posterPath ? TmdbClient::getImageUrl('w200', str_replace('/', '', $posterPath)) : null,

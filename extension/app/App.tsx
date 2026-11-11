@@ -5,6 +5,7 @@ import { SideNavLayout } from "@/app/components/layout";
 import NotFoundPage from "./pages/not-found";
 import TimecodePage from "./pages/timecode";
 import UserPage from "./pages/user";
+import MyTimecodesPage from "./pages/my-timecodes";
 import HotkeysPage from "./pages/hotkeys";
 import ChatbotPage from "./pages/chatbot";
 import BackupPage from "./pages/backup";
@@ -22,6 +23,7 @@ export default function App() {
             </Route>
             <Route path="/" element={<SideNavLayout />}>
                 <Route path="user" element={<UserPage />} />
+                <Route path="my-timecodes" element={<MyTimecodesPage />} />
                 <Route path="backup" element={<BackupPage />} />
             </Route>
             <Route index element={<Navigate to="/settings" replace />} />

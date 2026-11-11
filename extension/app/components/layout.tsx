@@ -1,11 +1,13 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Aperture, BotMessageSquare, Command, HardDriveDownload, LucideIcon, Settings, User } from "lucide-react";
+import { Aperture, BotMessageSquare, ClockFading, Command, HardDriveDownload, LucideIcon, Settings, User } from "lucide-react";
 import { Footer } from "./footer";
 import i18n from "@/lib/i18n";
+import { settings } from "@/utils/settings";
+import { getUser } from "@/utils/user";
 
-const navItems: { ico?: LucideIcon; svg?: ReactNode; to: string; text: string; }[] = [
+const navItems: { ico?: LucideIcon; svg?: ReactNode; to: string; text: string; authOnly?: boolean; }[] = [
     {
         ico: Settings,
         to: '/settings',
@@ -37,6 +39,12 @@ const navItems: { ico?: LucideIcon; svg?: ReactNode; to: string; text: string; }
         text: i18n.t('user')
     },
     {
+        ico: ClockFading,
+        to: '/my-timecodes',
+        text: i18n.t('myTimecodes'),
+        authOnly: true
+    },
+    {
         ico: HardDriveDownload,
         to: '/backup',
         text: i18n.t('backup')
@@ -45,11 +53,20 @@ const navItems: { ico?: LucideIcon; svg?: ReactNode; to: string; text: string; }
 
 export const SideNavLayout = () => {
     const { pathname } = useLocation();
+    const [isLoggedIn, setLoggedIn] = useState<boolean>(false);
+
+    // Sections that need an account are shown only while the user is logged in
+    useEffect(() => {
+        const refresh = () => getUser().then((user) => setLoggedIn(!!user));
+        refresh();
+        return settings.onChange("user", refresh);
+    }, []);
+
     return (
         <div className="container pt-6 grid grid-cols-[auto_1fr] gap-8 min-h-screen">
             <div className="relative">
                 <div className="flex flex-col space-y-0.5 w-48 sticky top-6">
-                    {navItems.map((item, index) => (
+                    {navItems.filter((item) => !item.authOnly || isLoggedIn).map((item, index) => (
                         <Link
                             key={index}
                             to={item.to}

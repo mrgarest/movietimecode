@@ -10,6 +10,8 @@ use App\Http\Resources\SuccessResource;
 use App\Http\Resources\Timecode\TimecodeAuthorResource;
 use App\Http\Resources\Timecode\TimecodeEditorResource;
 use App\Http\Resources\Timecode\TimecodeResource;
+use App\Http\Resources\Timecode\UserTimecodeResource;
+use App\Helpers\Language;
 use App\Services\MovieService;
 use App\Services\TimecodeService;
 use Illuminate\Http\Request;
@@ -27,6 +29,24 @@ class TimecodeController extends Controller
     {
         return new SuccessResource([
             'authors' => TimecodeAuthorResource::collection($this->timecodeService->getAuthors($movieId))
+        ]);
+    }
+
+    /**
+     * Get the timecodes added by the current user, newest first.
+     */
+    public function userTimecodes(Request $request)
+    {
+        $validated = $request->validate([
+            'page' => 'nullable|integer|min:1',
+        ]);
+
+        return new SuccessResource([
+            'timecodes' => UserTimecodeResource::collection($this->timecodeService->getLatestPaginated(
+                page: $validated['page'] ?? 1,
+                langCode: Language::default(),
+                user: $request->user(),
+            )),
         ]);
     }
 
