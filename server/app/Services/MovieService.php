@@ -271,7 +271,6 @@ class MovieService
                 ])
                 ->filter(fn($t) => array_key_exists($t['lang_code'], Language::content()) && !empty($t['title']))
                 ->unique('lang_code')
-                // Skip the original lang here — it is added separately above
                 ->reject(fn($t) => $t['lang_code'] === $originalLangCode)
                 ->map(fn($t) => array_merge($t, [
                     'movie_id' => $movie->id,
