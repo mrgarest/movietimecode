@@ -119,13 +119,16 @@ class RefreshMovieDataService
      */
     private function handleAznude(int $movieId): void
     {
-        $movie = Movie::with('originalTranslation')
+        $movie = Movie::with(['translations' => fn($q) => $q->where('lang_code', 'en')])
             ->select('id', 'lang_code', 'release_date', 'aznude_is_nude', 'aznude_slug', 'updated_at')
             ->find($movieId);
 
         if (!$movie || !$movie->release_date->year) return;
 
-        $aznude = $this->aznudeService->search($movie->originalTranslation?->title ?? '', $movie->release_date->year);
+        $title = $movie->translations->first()?->title;
+        if (!$title) return;
+
+        $aznude = $this->aznudeService->search($title, $movie->release_date->year);
 
         if (!$aznude) return;
 

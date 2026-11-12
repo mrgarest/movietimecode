@@ -216,8 +216,8 @@ class MovieService
         if (!$movieDetails || !$movieTranslations) return null;
         $infoImdb = $imdbParserService->info($movieDetails['imdb_id']);
 
-        $aznude = !empty($movieDetails['release_date']) ? $aznudeService->search(
-            $movieDetails['original_title'],
+        $aznude = !empty($movieDetails['release_date']) && !empty($movieDetails['title']) ? $aznudeService->search(
+            $movieDetails['title'],
             Carbon::parse($movieDetails['release_date'])->year
         ) : null;
 
