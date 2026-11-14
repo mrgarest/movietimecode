@@ -21,7 +21,7 @@ const getPlayer = async (): Promise<HTMLIFrameElement | undefined> => {
   ) {
     return (
       document.querySelector<HTMLIFrameElement>(
-        ".movie-right .players-section iframe#pre",
+        ".movie-right .players-section iframe[id^='pre']:not(#pre-trailer)",
       ) ?? undefined
     );
   }
