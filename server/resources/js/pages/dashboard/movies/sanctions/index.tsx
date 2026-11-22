@@ -40,6 +40,10 @@ interface SanctionResponse extends ServerResponse {
 
 interface Reports {
     id: number;
+    user: {
+        id: number;
+        username: string;
+    } | null;
     type: number;
     reason: number | null;
     comment: string | null;
@@ -48,6 +52,13 @@ interface Reports {
 }
 
 type TFilter = 'all' | 'approved' | 'unapproved';
+
+/**
+ * Returns the unique usernames of the known report authors.
+ * @param reports
+ */
+const getReporters = (reports: Reports[]): string[] =>
+    [...new Set(reports.flatMap(report => report.user ? [report.user.username] : []))];
 type ReportAction = 'delete' | 'approved';
 export default function MovieSanctionPage() {
     const { i18n, t } = useTranslation();
@@ -259,6 +270,11 @@ export default function MovieSanctionPage() {
                                     </>}
                                 </>}
 
+                                {getReporters(item.reports).length > 0 && <>
+                                    <div>{t('reportedBy')}</div>
+                                    <div>{getReporters(item.reports).join(', ')}</div>
+                                </>}
+
                                 <div>{t('approvedBy')}</div>
                                 {item.approved_by ? <div>{item.approved_by.username}</div>
                                     : <div className="text-red-500">{t('notYetApproved')}</div>}
@@ -323,6 +339,11 @@ export default function MovieSanctionPage() {
                                     </>}
                                     <div>{t('created')}</div>
                                     <div>{formatDate(item.created_at)}</div>
+
+                                    {item.user && <>
+                                        <div>{t('reportedBy')}</div>
+                                        <div>{item.user.username}</div>
+                                    </>}
                                 </div>
                                 {item.comment &&
                                     <div className="text-sm">

@@ -28,6 +28,10 @@ class MovieSanctionResource extends JsonResource
             'username' => $this->username,
             'reports' => $this->reports->map(fn($report) => [
                 'id' => $report->id,
+                'user' => $report->user ? [
+                    'id' => $report->user->id,
+                    'username' => $report->user->username,
+                ] : null,
                 'type' => $report->type,
                 'reason' => $report->reason,
                 'comment' => $report->comment,

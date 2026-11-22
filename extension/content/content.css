@@ -783,6 +783,127 @@
   cursor: pointer;
 }
 
+/*********************** form ***********************/
+
+.mt-form-item {
+  display: grid;
+  gap: 0.5rem;
+}
+
+[data-mt-dialog] .mt-form-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: var(--mt-foreground);
+  font-family: var(--mt-inter);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  user-select: none;
+}
+
+[data-mt-dialog] .mt-form-label[data-error="true"] {
+  color: var(--mt-destructive);
+}
+
+[data-mt-dialog] .mt-form-message,
+[data-mt-dialog] .mt-form-description {
+  margin: 0;
+  font-family: var(--mt-inter);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+[data-mt-dialog] .mt-form-message {
+  color: var(--mt-destructive);
+}
+
+[data-mt-dialog] .mt-form-description {
+  color: var(--mt-muted);
+  font-size: 0.75rem;
+}
+
+/* Reset host styles for native buttons that use .mt-button */
+[data-mt-dialog] button.mt-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+  border: none;
+  outline: none;
+  font-family: var(--mt-inter);
+  line-height: normal;
+}
+
+/*********************** movie select ***********************/
+
+/* Selected movie shown as a custom input, like on the site */
+.mt-movie-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--mt-border);
+  border-radius: 0.375rem;
+  background-color: oklch(1 0 0 / 0.045);
+  font-family: var(--mt-inter);
+}
+
+.mt-movie-select-poster {
+  display: block;
+  width: 3rem;
+  flex-shrink: 0;
+  user-select: none;
+  pointer-events: none;
+}
+
+.mt-movie-select-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+  padding-right: 2.5rem;
+}
+
+.mt-movie-select-title {
+  color: var(--mt-foreground);
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.75rem;
+}
+
+.mt-movie-select-year {
+  padding-left: 0.5rem;
+  color: var(--mt-muted);
+  font-size: 0.75rem;
+}
+
+.mt-movie-select-original {
+  color: var(--mt-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.mt-movie-select-clear {
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  z-index: 2;
+  box-sizing: border-box;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0.25rem;
+  transform: translateY(-50%);
+  color: var(--mt-muted);
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.mt-movie-select-clear:hover {
+  color: hsl(0 84% 60%);
+}
+
 /*********************** select ***********************/
 
 .mt-select-none {
@@ -927,6 +1048,173 @@
   border-radius: 0.5rem;
   cursor: pointer;
   transition: 0.3s;
+}
+
+/*********************** input ***********************/
+
+.mt-flex-wrap {
+  flex-wrap: wrap;
+}
+
+.mt-grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Host sites often style input/textarea elements, so these rules are scoped and use !important. */
+[data-mt-dialog] .mt-input,
+.mt-select-trigger {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  box-sizing: border-box !important;
+  display: block;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0.25rem 0.75rem !important;
+  border: 1px solid var(--mt-border) !important;
+  border-radius: 0.375rem !important;
+  background: oklch(1 0 0 / 0.045) !important;
+  color: var(--mt-foreground) !important;
+  font-family: var(--mt-inter) !important;
+  font-size: 0.875rem !important;
+  font-weight: 400 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  text-indent: 0 !important;
+  line-height: 1.25rem !important;
+  outline: none !important;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
+  color-scheme: dark;
+  transition: color 0.15s, box-shadow 0.15s, border-color 0.15s, background-color 0.15s !important;
+}
+
+[data-mt-dialog] .mt-input::placeholder {
+  color: var(--mt-muted) !important;
+  opacity: 1 !important;
+}
+
+[data-mt-dialog] .mt-input:focus,
+[data-mt-dialog] .mt-input:focus-visible,
+.mt-select-trigger.mt-open {
+  border-color: oklch(0.556 0 0) !important;
+  box-shadow: 0 0 0 3px oklch(0.556 0 0 / 0.5) !important;
+}
+
+[data-mt-dialog] .mt-input[aria-invalid="true"],
+.mt-select-trigger[aria-invalid="true"] {
+  border-color: var(--mt-destructive) !important;
+  box-shadow: 0 0 0 3px hsl(347 100% 50% / 0.4) !important;
+}
+
+[data-mt-dialog] .mt-input:not(.mt-textarea),
+.mt-select-trigger {
+  height: 2.25rem !important;
+}
+
+/* Height is not !important so the inline height set while resizing can apply. */
+[data-mt-dialog] .mt-input.mt-textarea {
+  height: 5rem;
+  min-height: 4rem !important;
+  max-height: 50vh !important;
+  padding: 0.5rem 0.75rem !important;
+  overflow-y: auto !important;
+  resize: vertical !important;
+}
+
+[data-mt-dialog] .mt-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+/*********************** select ***********************/
+
+.mt-select-trigger {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem !important;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.mt-select-trigger:hover {
+  background: oklch(1 0 0 / 0.075) !important;
+}
+
+.mt-select-trigger[data-placeholder] {
+  color: var(--mt-muted) !important;
+}
+
+.mt-select-trigger svg {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  color: var(--mt-muted);
+  opacity: 0.5;
+}
+
+.mt-select-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mt-select-content {
+  position: fixed;
+  z-index: 1000;
+  box-sizing: border-box;
+  min-width: 8rem;
+  max-height: 15rem;
+  padding: 0.25rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid var(--mt-border);
+  border-radius: 0.375rem;
+  background-color: var(--mt-background);
+  color: hsl(0, 0%, 98%);
+  font-family: var(--mt-inter);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  animation: mt-select-in 0.15s ease-out;
+}
+
+.mt-select-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.375rem 2rem 0.375rem 0.5rem;
+  border-radius: 0.125rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  cursor: default;
+  user-select: none;
+}
+
+.mt-select-item:hover {
+  background-color: oklch(0.269 0 0);
+  color: oklch(0.985 0 0);
+}
+
+.mt-select-item svg {
+  position: absolute;
+  right: 0.5rem;
+  width: 1rem;
+  height: 1rem;
+  color: var(--mt-muted);
+}
+
+@keyframes mt-select-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /*********************** loading ***********************/

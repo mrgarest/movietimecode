@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { LucideProps, Search, Settings, BadgePlus, ShieldBan, CopyCheck } from "lucide-react";
+import { LucideProps, Search, Settings, BadgePlus, ShieldBan, CopyCheck, Flag } from "lucide-react";
 import { ESearchButtonAction, StatusIndicator } from "@/enums/control-bar";
 import { renderMovieDialog, TimecodeSelect } from "./movie-dialog";
 import { renderQuestionDialog } from "./question-dialog";
@@ -9,6 +9,7 @@ import { User } from "@/types/user";
 import { goToTab, login } from "@/utils/navigation";
 import { getUser } from "@/utils/user";
 import { renderMovieCheckDialog } from "./movie-check/dialog";
+import { renderSanctionReportDialog } from "./sanction-report/dialog";
 import i18n from "@/lib/i18n";
 import { MovieSearchTimecodesResponse } from '@/types/movie';
 import { ErrorCode } from '@/enums/error-code';
@@ -210,6 +211,14 @@ export const ControlBar = ({ player, movie, onTurnOffCensorship, onCensorship }:
         year: movie.year
     });
 
+    /**
+    * Opens the sanction report dialog for the current movie.
+    */
+    const handleSanctionReport = () => renderSanctionReportDialog({
+        title: movie.title,
+        year: movie.year
+    });
+
     const iconSize: number = 48;
     return (
         <div data-movietimecode="control-bar" className="mt-flex mt-font-inter mt-items-center mt-justify-center mt-mt-3">
@@ -235,6 +244,12 @@ export const ControlBar = ({ player, movie, onTurnOffCensorship, onCensorship }:
                     className="mt-button mt-icon"
                     onClick={handleTimecodeEditor}>
                     <BadgePlus size={iconSize} />
+                </div>
+                <div
+                    data-mt-tooltip={i18n.t("reportSanction")}
+                    className="mt-button mt-icon"
+                    onClick={handleSanctionReport}>
+                    <Flag size={iconSize} />
                 </div>
                 <div
                     data-mt-tooltip={i18n.t("settings")}

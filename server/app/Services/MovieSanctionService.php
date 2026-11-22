@@ -51,6 +51,7 @@ class MovieSanctionService
      * Creates a movie sanction report for the specified user.
      *
      * @param string $deviceToken
+     * @param User|null $user
      * @param string $username
      * @param SanctionType $type
      * @param SanctionReason|null $reason
@@ -64,6 +65,7 @@ class MovieSanctionService
      */
     public function report(
         string $deviceToken,
+        ?User $user,
         string $username,
         SanctionType $type,
         ?SanctionReason $reason,
@@ -100,6 +102,7 @@ class MovieSanctionService
         return MovieSanction::create([
             'movie_id' => $movieId,
             'device_token' => $deviceToken,
+            'user_id' => $user?->id,
             'username' => $username,
             'type' => $type,
             'reason' => $reason,
@@ -171,6 +174,7 @@ class MovieSanctionService
         if ($groups->isEmpty()) return $paginator;
 
         $reports = MovieSanction::query()
+            ->with('user:id,username')
             ->whereIn('movie_id', $groups->pluck('movie_id')->unique())
             ->whereIn('username', $groups->pluck('username')->unique())
             ->orderByDesc('created_at')

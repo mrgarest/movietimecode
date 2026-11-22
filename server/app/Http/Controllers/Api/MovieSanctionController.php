@@ -38,10 +38,15 @@ class MovieSanctionController extends Controller
             'occurred_at' => 'nullable|date',
         ]);
 
+        // The route is public, but if a valid token is sent, the report is linked to the user
+        $user = auth('api')->user();
+        if ($user?->deactivated_at !== null) $user = null;
+
         $this->sanctionService->report(
             movieId: !empty($validated['movie_id']) ? (int) $validated['movie_id'] : null,
             tmdbId: !empty($validated['tmdb_id']) ? (int) $validated['tmdb_id'] : null,
             deviceToken: $validated['device_token'],
+            user: $user,
             username: $validated['username'],
             type: SanctionType::from((int) $validated['type']),
             reason: !empty($validated['reason']) ? SanctionReason::tryFrom((int) $validated['reason']) : null,

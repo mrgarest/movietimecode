@@ -12,6 +12,7 @@ class MovieSanction extends Model
     protected $fillable = [
         'movie_id',
         'device_token',
+        'user_id',
         'username',
         'type',
         'reason',
@@ -27,6 +28,7 @@ class MovieSanction extends Model
     protected $casts = [
         'movie_id' => 'int',
         'device_token' => 'string',
+        'user_id' => 'int',
         'username' => 'string',
         'type' => SanctionType::class,
         'reason' => SanctionReason::class,
@@ -46,6 +48,11 @@ class MovieSanction extends Model
             if ($report->file_name) {
             }
         });
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function approvedUser()

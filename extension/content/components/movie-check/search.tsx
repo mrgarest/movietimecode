@@ -8,12 +8,14 @@ import { cn } from "@/lib/utils";
 interface RootProps {
     title: string;
     year?: number | null;
+    heading?: string;
+    autoSelect?: boolean;
     onSelected: (item: MovieSearchItem) => void;
     onError: (msg: string) => void;
     onLoading: (b: boolean) => void;
 };
 
-export default function SearchMovie({ title, year = null, onSelected, onError, onLoading }: RootProps) {
+export default function SearchMovie({ title, year = null, heading, autoSelect = true, onSelected, onError, onLoading }: RootProps) {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [movies, setMovies] = useState<MovieSearchItem[]>([]);
 
@@ -30,7 +32,7 @@ export default function SearchMovie({ title, year = null, onSelected, onError, o
 
             if (response.success) {
                 if (response.items !== null && response.items.length > 0) {
-                    if (response.items.length === 1) {
+                    if (autoSelect && response.items.length === 1) {
                         onSelected(response.items[0]);
                         return;
                     }
@@ -62,7 +64,7 @@ export default function SearchMovie({ title, year = null, onSelected, onError, o
 
     return (
         <>
-            <div className="mt-text-xl mt-text-foreground mt-font-bold mt-pt-6 mt-pb-4 mt-px-6">{i18n.t("movieCheck")}</div>
+            <div className="mt-text-xl mt-text-foreground mt-font-bold mt-pt-6 mt-pb-4 mt-px-6">{heading ?? i18n.t("movieCheck")}</div>
             <div className={cn("mt-flex mt-flex-col mt-gap-1 mt-pt-1 mt-pl-4 mt-pb-6 mt-overflow-auto", isLoading && "mt-hidden")}>
                 {movies.map((item, index) => <div
                     key={index}
