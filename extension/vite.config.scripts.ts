@@ -1,6 +1,7 @@
 import { defineConfig, PluginOption } from "vite";
 import react from "@vitejs/plugin-react";
-import { buildDefineConfig, debugWarningPlugin, emitCssPlugin } from "./vite.utils";
+import tailwindcss from "@tailwindcss/vite";
+import { buildDefineConfig, debugWarningPlugin } from "./vite.utils";
 
 /**
  * Build config for the extension scripts.
@@ -18,6 +19,8 @@ interface Target {
     name: string;
     /** iife — content scripts (they can't be ES modules), es — module service worker. */
     format: "iife" | "es";
+    /** Output path of the CSS imported by the script. */
+    cssFileName?: string;
     plugins?: (mode: string) => PluginOption[];
 }
 
@@ -26,11 +29,8 @@ const targets: Record<string, Target> = {
         input: "content/caesura.tsx",
         name: "caesura",
         format: "iife",
-        plugins: (mode) => [
-            react(),
-            emitCssPlugin("content/content.css", "assets/content.css"),
-            debugWarningPlugin(mode),
-        ],
+        cssFileName: "assets/content.css",
+        plugins: (mode) => [react(), tailwindcss(), debugWarningPlugin(mode)],
     },
     auth: {
         input: "content/server/auth.ts",
@@ -62,6 +62,7 @@ export default defineConfig(({ mode }) => {
         input: target.input,
         name: target.name,
         format: target.format,
+        cssFileName: target.cssFileName,
         plugins: target.plugins?.(mode),
     });
 });

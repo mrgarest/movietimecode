@@ -1,4 +1,5 @@
-import { BlurPower, TimecodeAction, TimecodeTag } from "@/enums/timecode";
+import { TimecodeAction, TimecodeTag } from "@/enums/timecode";
+import "./content.css";
 import { createRoot } from "react-dom/client";
 import config from "config";
 import { ControlBar } from "./components/control-bar";

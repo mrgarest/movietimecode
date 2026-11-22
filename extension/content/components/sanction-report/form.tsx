@@ -109,13 +109,13 @@ export default function SanctionReportForm({ movie, onChangeMovie, onSuccess, on
 
     return (
         <>
-            <div className="mt-text-xl mt-text-foreground mt-font-bold mt-pt-6 mt-pb-4 mt-px-6">{i18n.t("reportSanction")}</div>
+            <div className="mt:text-xl mt:text-foreground mt:font-bold mt:pt-6 mt:pb-4 mt:px-6">{i18n.t("reportSanction")}</div>
 
             <Form {...form}>
                 <form
                     noValidate
                     onSubmit={form.handleSubmit(onSubmit)}
-                    className="mt-flex mt-flex-col mt-gap-4 mt-px-6 mt-pb-6 mt-overflow-auto mt-scrollbar">
+                    className="mt:flex mt:flex-col mt:gap-4 mt:px-6 mt:pb-6 mt:overflow-auto mt-scrollbar">
                     <div className="mt-form-item">
                         <label className="mt-form-label">{i18n.t("selectMovie")}</label>
                         <div className="mt-movie-select">
@@ -160,7 +160,7 @@ export default function SanctionReportForm({ movie, onChangeMovie, onSuccess, on
                         )}
                     />
 
-                    <div className="mt-grid mt-grid-cols-2 mt-gap-4">
+                    <div className="mt:grid mt:grid-cols-2 mt:gap-4">
                         <FormField
                             control={form.control}
                             name="type"
@@ -169,7 +169,7 @@ export default function SanctionReportForm({ movie, onChangeMovie, onSuccess, on
                                     <FormLabel>{i18n.t("typeOfSanction")}</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl>
-                                            <SelectTrigger className="mt-w-full">
+                                            <SelectTrigger className="mt:w-full">
                                                 <SelectValue placeholder={i18n.t("selectType")} />
                                             </SelectTrigger>
                                         </FormControl>
@@ -190,7 +190,7 @@ export default function SanctionReportForm({ movie, onChangeMovie, onSuccess, on
                                     <FormLabel>{i18n.t("reason")}</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl>
-                                            <SelectTrigger className="mt-w-full">
+                                            <SelectTrigger className="mt:w-full">
                                                 <SelectValue placeholder={i18n.t("selectReason")} />
                                             </SelectTrigger>
                                         </FormControl>
@@ -220,9 +220,9 @@ export default function SanctionReportForm({ movie, onChangeMovie, onSuccess, on
                         )}
                     />
 
-                    <div className="mt-text-xs mt-text-muted mt-leading-normal">{i18n.t("sanctionReportModerationNote")}</div>
+                    <div className="mt:text-xs mt:text-muted mt:leading-normal">{i18n.t("sanctionReportModerationNote")}</div>
 
-                    <div className="mt-flex mt-justify-right">
+                    <div className="mt:flex mt:justify-end">
                         <Button disabled={isSubmitting} onClick={form.handleSubmit(onSubmit)}>
                             <span>{i18n.t("send")}</span>
                         </Button>

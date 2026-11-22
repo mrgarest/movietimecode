@@ -64,22 +64,22 @@ export default function SearchMovie({ title, year = null, heading, autoSelect = 
 
     return (
         <>
-            <div className="mt-text-xl mt-text-foreground mt-font-bold mt-pt-6 mt-pb-4 mt-px-6">{heading ?? i18n.t("movieCheck")}</div>
-            <div className={cn("mt-flex mt-flex-col mt-gap-1 mt-pt-1 mt-pl-4 mt-pb-6 mt-overflow-auto", isLoading && "mt-hidden")}>
+            <div className="mt:text-xl mt:text-foreground mt:font-bold mt:pt-6 mt:pb-4 mt:px-6">{heading ?? i18n.t("movieCheck")}</div>
+            <div className={cn("mt:flex mt:flex-col mt:gap-1 mt:pt-1 mt:pl-4 mt:pb-6 mt:overflow-auto", isLoading && "mt:invisible")}>
                 {movies.map((item, index) => <div
                     key={index}
                     onClick={() => onSelected(item)}
-                    className="mt-relative mt-flex mt-items-center mt-gap-3 mt-rounded-md mt-p-2 mt-cursor-pointer mt-select-none mt-hover:bg-secondary mt-duration-300 mt-gap-4">
+                    className="mt:relative mt:flex mt:items-center mt:gap-3 mt:rounded-md mt:p-2 mt:cursor-pointer mt:select-none mt:hover:bg-secondary mt:duration-300 mt:gap-4">
                     <img
-                        className="mt-w-12 mt-h-16 mt-pointer-events-none mt-rounded-md"
+                        className="mt:w-12 mt:h-16 mt:pointer-events-none mt:rounded-md"
                         src={item.poster_url || chrome.runtime.getURL("images/not_found_poster.webp")} />
-                    <div className="mt-flex mt-flex-col mt-gap-1">
+                    <div className="mt:flex mt:flex-col mt:gap-1">
                         <div>
-                            <span className="mt-text-sm mt-text-foreground mt-font-semibold">{item.title ? item.title : item.original_title}</span>
+                            <span className="mt:text-sm mt:text-foreground mt:font-semibold">{item.title ? item.title : item.original_title}</span>
                             &#32;
-                            <span className="mt-text-xs mt-text-muted">({item.release_year})</span>
+                            <span className="mt:text-xs mt:text-muted">({item.release_year})</span>
                         </div>
-                        {item.title != null && <h2 className="mt-text-sm mt-text-muted mt-font-medium">{item.original_title}</h2>}
+                        {item.title != null && <h2 className="mt:text-sm mt:text-muted mt:font-medium">{item.original_title}</h2>}
                     </div>
                 </div>)}
             </div>

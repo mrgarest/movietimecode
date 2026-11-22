@@ -11,7 +11,7 @@ export const renderDialog = (
   callback: (container: HTMLDivElement) => void,
 ) => {
   const container = document.createElement("div");
-  container.className = "mt-flex mt-items-center mt-justify-center mt-fixed mt-top-left-right-bottom-0 mt-z-999 mt-bg-dialog mt-text-foreground font-inter mt-box-border mt-font-inter mt-scrollbar";
+  container.className = "mt:flex mt:items-center mt:justify-center mt:fixed mt:inset-0 mt:z-999 mt:bg-[#0000008a] mt:backdrop-blur-[10px] mt:text-foreground mt:**:box-border mt:font-inter mt-scrollbar";
   container.setAttribute("data-mt-dialog", name);
   document.body.appendChild(container);
   setDisabledScroll(true);

@@ -1,5 +1,8 @@
 import { BlurPower } from "@/enums/timecode";
 
+// Tailwind utility (content.css), the full class name must stay in the source so Tailwind can find it.
+const HIDDEN_CLASS = "mt:opacity-0";
+
 interface PlayerMessage {
   api: string;
   set?: string | number;
@@ -65,13 +68,13 @@ export const createPlayerController = (initial?: HTMLIFrameElement) => {
      * @param visible - Whether the player should be visible.
      */
     setVisible: (visible: boolean) =>
-      player?.classList.toggle("mt-opacity-0", !visible),
+      player?.classList.toggle(HIDDEN_CLASS, !visible),
 
     /**
      * Returns whether the player is currently visible.
      */
     isVisible: () =>
-      player ? !player.classList.contains("mt-opacity-0") : true,
+      player ? !player.classList.contains(HIDDEN_CLASS) : true,
 
     /**
      * Enables or disables blur on the player based on the current blur power setting.

@@ -1,7 +1,6 @@
 import config from "./config.json";
-import fs from "fs";
 import path from "path";
-import { AliasOptions, Plugin, PluginOption, transformWithEsbuild, UserConfig } from "vite";
+import { AliasOptions, Plugin, PluginOption, UserConfig } from "vite";
 
 export const banner: string = `/**
  * Movie Timecode Browser Extension
@@ -35,6 +34,8 @@ interface BuildDefineConfig {
    * es — module service worker (background, "type": "module" in the manifest).
    */
   format: "iife" | "es";
+  /** Output path of the CSS imported by the script, e.g. "assets/content.css". */
+  cssFileName?: string;
 }
 
 /**
@@ -57,37 +58,15 @@ export const buildDefineConfig = (options: BuildDefineConfig): UserConfig => {
           format: options.format,
           inlineDynamicImports: true,
           entryFileNames: "assets/[name].js",
-          assetFileNames: "assets/[name].[ext]",
+          assetFileNames: (asset) =>
+            options.cssFileName && asset.names.some((name) => name.endsWith(".css"))
+              ? options.cssFileName
+              : "assets/[name].[ext]",
           banner: banner,
         },
       },
+      cssCodeSplit: !options.cssFileName,
       sourcemap: isDevelopment(options.mode),
-    },
-  };
-};
-
-/**
- * Emits a plain CSS file as a minified asset.
- * Used for content.css, which is injected by the manifest and not imported from JS.
- * @param input - CSS file, relative to the project root
- * @param fileName - output file name inside dist
- */
-export const emitCssPlugin = (input: string, fileName: string): Plugin => {
-  const file = path.resolve(__dirname, input);
-
-  return {
-    name: "vite:emit-css",
-    apply: "build",
-    buildStart() {
-      this.addWatchFile(file);
-    },
-    async generateBundle() {
-      const { code } = await transformWithEsbuild(fs.readFileSync(file, "utf-8"), file, {
-        loader: "css",
-        minify: true,
-        target: "chrome120",
-      });
-      this.emitFile({ type: "asset", fileName, source: code });
     },
   };
 };

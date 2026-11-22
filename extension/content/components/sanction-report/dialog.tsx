@@ -32,8 +32,8 @@ const SanctionReportDialog = ({ title, year = null }: RootProps) => {
     };
 
     return (
-        <div className="mt-m-4 mt-w-full mt-h-calc_100vh_2rem mt-min-h-60 mt-max-w-xl mt-rounded-2xl mt-bg-background mt-border mt-border-border mt-overflow-hidden mt-relative mt-flex mt-flex-col">
-            <X onClick={dismissSanctionReportDialog} size={24} className="mt-absolute mt-top-6 mt-right-6 mt-z-1 mt-text-primary mt-cursor-pointer mt-duration-300 mt-hover:opacity-60" />
+        <div className="mt:m-4 mt:w-full mt:max-h-[calc(100vh-2rem)] mt:min-h-60 mt:max-w-xl mt:rounded-2xl mt:bg-background mt:border mt:border-border mt:overflow-hidden mt:relative mt:flex mt:flex-col">
+            <X onClick={dismissSanctionReportDialog} size={24} className="mt:absolute mt:top-6 mt:right-6 mt:z-1 mt:text-primary mt:cursor-pointer mt:duration-300 mt:hover:opacity-60" />
             {!movie && <SearchMovie
                 title={title}
                 year={year}

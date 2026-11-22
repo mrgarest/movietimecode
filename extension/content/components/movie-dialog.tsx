@@ -129,38 +129,38 @@ const MovieDialog = ({ data, onSelected }: RootProps) => {
 
 
     return (
-        <div className="mt-items-start mt-w-xl mt-h-96 mt-grid mt-grid-cols-auto-1fr mt-relative mt-m-4 mt-h-calc_100vh_2rem mt-rounded-2xl mt-bg-background mt-border mt-border-border mt-overflow-hidden">
+        <div className="mt:items-start mt:w-xl mt:h-96 mt:grid mt:grid-cols-[auto_1fr] mt:relative mt:m-4 mt:max-h-[calc(100vh-2rem)] mt:rounded-2xl mt:bg-background mt:border mt:border-border mt:overflow-hidden">
             <img className={cn(
-                'mt-size-full mt-object-cover mt-object-center mt-border-border mt-pointer-events-none mt-select-none mt-duration-300',
-                step == 1 ? 'mt-max-w-0' : 'mt-max-w-56 mt-border-r'
+                'mt:size-full mt:object-cover mt:object-center mt:border-border mt:pointer-events-none mt:select-none mt:duration-300',
+                step == 1 ? 'mt:max-w-0' : 'mt:max-w-56 mt:border-r'
             )} src={data.poster_url || chrome.runtime.getURL("images/not_found_poster.webp")} />
-            <div className="mt-overflow-hidden mt-grid mt-grid-rows-auto-1fr-auto mt-pt-6 mt-pl-6 mt-pb-4 mt-size-full mt-gap-4">
-                <div className="mt-pr-6">
-                    <div className="mt-text-xl mt-text-foreground mt-font-bold">{data.title || data.original_title}</div>
-                    <div className="mt-text-xs mt-text-muted mt-font-medium mt-mt-1">{data.title != null ? data.original_title + " " : ""}({data.release_year})</div>
+            <div className="mt:overflow-hidden mt:grid mt:grid-rows-[auto_1fr_auto] mt:pt-6 mt:pl-6 mt:pb-4 mt:size-full mt:gap-4">
+                <div className="mt:pr-6">
+                    <div className="mt:text-xl mt:text-foreground mt:font-bold">{data.title || data.original_title}</div>
+                    <div className="mt:text-xs mt:text-muted mt:font-medium mt:mt-1">{data.title != null ? data.original_title + " " : ""}({data.release_year})</div>
                 </div>
                 <div className={cn(
-                    'mt-flex mt-flex-col mt-gap-2',
-                    step == 0 ? "mt-overflow-hidden" : " mt-overflow-auto mt-pr-6"
+                    'mt:flex mt:flex-col mt:gap-2',
+                    step == 0 ? "mt:overflow-hidden" : " mt:overflow-auto mt:pr-6"
                 )}>
                     {step == 0 && <>
-                        <div className="mt-text-xs mt-text-foreground mt-font-semibold mt-pr-6">{i18n.t('selectTimecodes')}</div>
-                        <div className="mt-flex mt-flex-col mt-flex-nowrap mt-gap-2 mt-overflow-auto mt-pr-6">
+                        <div className="mt:text-xs mt:text-foreground mt:font-semibold mt:pr-6">{i18n.t('selectTimecodes')}</div>
+                        <div className="mt:flex mt:flex-col mt:flex-nowrap mt:gap-2 mt:overflow-auto mt:pr-6">
                             {authors?.map((item, index) =>
                                 <div
                                     key={index}
-                                    className="mt-select-itmes mt-flex mt-items-center mt-duration-300 mt-bg-secondary mt-text-foreground mt-border mt-border-border mt-rounded-lg mt-h-8 mt-gap-4 mt-px-2 mt-text-xs mt-font-medium mt-justify-between mt-select-none mt-cursor-pointer mt-hover:opacity-60"
+                                    className="mt-select-itmes mt:flex mt:items-center mt:duration-300 mt:bg-secondary mt:text-foreground mt:border mt:border-border mt:rounded-lg mt:h-8 mt:gap-4 mt:px-2 mt:text-xs mt:font-medium mt:justify-between mt:select-none mt:cursor-pointer mt:hover:opacity-60"
                                     onClick={() => handleItemSelected(index, item)}>
-                                    <div className="mt-flex mt-items-center mt-justify-start mt-gap-2">
+                                    <div className="mt:flex mt:items-center mt:justify-start mt:gap-2">
                                         {selectedIndex == index
-                                            ? <CircleCheck size={13} strokeWidth={3} className="mt-text-green" />
-                                            : <Circle size={13} strokeWidth={3} className="mt-text-foreground" />
+                                            ? <CircleCheck size={13} strokeWidth={3} className="mt:text-green" />
+                                            : <Circle size={13} strokeWidth={3} className="mt:text-foreground" />
                                         }
                                         <div className="mt-select-itme-name">{item.user?.username || 'N/A'}</div>
                                     </div>
-                                    <div className="mt-flex mt-items-center mt-justify-right mt-gap-1 mt-text-10 mt-font-bold">
+                                    <div className="mt:flex mt:items-center mt:justify-end mt:gap-1 mt:text-[0.625rem] mt:font-bold">
                                         <div>{item.timecode.segment_count}</div>
-                                        <div className="mt-w-0.2 mt-h-2.5 mt-rounded-full mt-bg-muted" />
+                                        <div className="mt:w-px mt:h-2.5 mt:rounded-full mt:bg-muted" />
                                         <div>{secondsToTime(item.timecode.duration)}</div>
                                     </div>
                                 </div>
@@ -168,7 +168,7 @@ const MovieDialog = ({ data, onSelected }: RootProps) => {
                         </div>
                     </>}
                     {step == 1 && author && timecode && <>
-                        <div className="mt-info-grid mt-grid mt-grid mt-grid-cols-auto-1fr mt-gap-x-3 mt-gap-y-2 mt-text-sm mt-text-foreground">
+                        <div className="mt-info-grid mt:grid mt:grid mt:grid-cols-[auto_1fr] mt:gap-x-3 mt:gap-y-2 mt:text-sm mt:text-foreground">
                             <div>{i18n.t('author')}</div>
                             <div>{author.user.username}</div>
                             <div>{i18n.t(author.timecode.segment_count > 0 ? 'timecodes_many' : 'timecodes')}</div>
@@ -178,13 +178,13 @@ const MovieDialog = ({ data, onSelected }: RootProps) => {
                         </div>
 
                         {timecode?.segments && timecode?.segments.length > 0 && <>
-                            <div className="mt-text-base mt-font-bold mt-text-foreground mt-border-t mt-border-border mt-mt-2 mt-mb-1 mt-pt-2">{i18n.t('timecodes')}</div>
-                            <div className="mt-grid mt-grid-cols-4auto-1fr mt-gap-y-2 mt-text-sm">{timecode.segments.map((segment, index) => <SegmentItem key={index} segment={segment} />)}</div>
+                            <div className="mt:text-base mt:font-bold mt:text-foreground mt:border-t mt:border-border mt:mt-2 mt:mb-1 mt:pt-2">{i18n.t('timecodes')}</div>
+                            <div className="mt:grid mt:grid-cols-[repeat(4,auto)_1fr] mt:gap-y-2 mt:text-sm">{timecode.segments.map((segment, index) => <SegmentItem key={index} segment={segment} />)}</div>
                         </>}
 
                         {timecode.content_classifications && timecode.content_classifications.length > 0 && <>
-                            <div className="mt-text-base mt-font-bold mt-text-foreground mt-border-t mt-border-border mt-mt-2 mt-mb-1 mt-pt-2">{i18n.t('twitchContentClassification')}</div>
-                            <div className="mt-info-grid mt-grid mt-grid mt-grid-cols-auto-1fr mt-gap-2 mt-text-sm mt-text-foreground">
+                            <div className="mt:text-base mt:font-bold mt:text-foreground mt:border-t mt:border-border mt:mt-2 mt:mb-1 mt:pt-2">{i18n.t('twitchContentClassification')}</div>
+                            <div className="mt-info-grid mt:grid mt:grid mt:grid-cols-[auto_1fr] mt:gap-2 mt:text-sm mt:text-foreground">
                                 <ContentClassificationItem
                                     contentClassifications={timecode.content_classifications}
                                     type={TwitchContentClassification.POLITICS_AND_SENSITIVE_SOCIAL_ISSUES}
@@ -219,7 +219,7 @@ const MovieDialog = ({ data, onSelected }: RootProps) => {
                         </>}
                     </>}
                 </div>
-                <div className="mt-flex mt-justify-right mt-gap-2 mt-pr-6">
+                <div className="mt:flex mt:justify-end mt:gap-2 mt:pr-6">
                     <Button variant="outline" onClick={handleBack}>
                         <span>{i18n.t(step == 1 ? 'back' : 'cancel')}</span>
                     </Button>
@@ -249,7 +249,7 @@ const ContentClassificationItem = ({
 
     return (
         <>
-            <Check size={13} strokeWidth={8} className="mt-bg-foreground mt-text-background mt-leading-normal mt-rounded-sm mt-p-0.5" />
+            <Check size={13} strokeWidth={8} className="mt:bg-foreground mt:text-background mt:leading-normal mt:rounded-sm mt:p-0.5" />
             <div>{i18n.t('twitchContentClassificationOptions.' + localeKey)}</div>
         </>
     );
@@ -277,15 +277,15 @@ const SegmentItem = ({ segment }: { segment: TimecodeSegment }) => {
 
     return (
         <>
-            <div className="mt-font-roboto">{secondsToTime(segment.start_time)}</div>
-            <div className="mt-px-1">-</div>
-            <div className="mt-font-roboto">{secondsToTime(segment.end_time)}</div>
-            <div className="mt-px-1">—</div>
+            <div className="mt:font-roboto">{secondsToTime(segment.start_time)}</div>
+            <div className="mt:px-1">-</div>
+            <div className="mt:font-roboto">{secondsToTime(segment.end_time)}</div>
+            <div className="mt:px-1">—</div>
             <div
                 onClick={handleReveal}
                 className={cn(
-                    "mt-text-foreground mt-leading-normal",
-                    showSpoiler && 'mt-bg-foreground mt-animate-spoiler mt-rounded-sm mt-cursor-pointer')}>{segment.description ?? 'N/A'}</div>
+                    "mt:text-foreground mt:leading-normal",
+                    showSpoiler && 'mt:bg-foreground mt-animate-spoiler mt:rounded-sm mt:cursor-pointer')}>{segment.description ?? 'N/A'}</div>
         </>
     )
 }
