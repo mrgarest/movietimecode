@@ -94,8 +94,37 @@ export const waitForShadowRoot = (
  * Enables or disables page scrolling.
  * @param disabled If true, scrolling will be disabled.
  */
-export const setDisabledScroll = (disabled: boolean) =>
-  document.body.classList.toggle("mt-no-scroll", disabled);
+// Number of open dialogs that need the page scroll to be locked.
+let scrollLockCount = 0;
+// Inline styles of the page before the lock, restored on unlock.
+let savedScrollStyles: { html: string; body: string; paddingRight: string } | null = null;
+
+export const setDisabledScroll = (disabled: boolean) => {
+  scrollLockCount = Math.max(0, scrollLockCount + (disabled ? 1 : -1));
+  const html = document.documentElement;
+  const body = document.body;
+
+  if (scrollLockCount > 0 && !savedScrollStyles) {
+    // Compensate the hidden scrollbar so the page does not jump.
+    const scrollbarWidth = window.innerWidth - html.clientWidth;
+    savedScrollStyles = {
+      html: html.style.getPropertyValue("overflow"),
+      body: body.style.getPropertyValue("overflow"),
+      paddingRight: body.style.getPropertyValue("padding-right"),
+    };
+    html.style.setProperty("overflow", "hidden", "important");
+    body.style.setProperty("overflow", "hidden", "important");
+    if (scrollbarWidth > 0) {
+      const padding = parseFloat(getComputedStyle(body).paddingRight) || 0;
+      body.style.setProperty("padding-right", `${padding + scrollbarWidth}px`, "important");
+    }
+  } else if (scrollLockCount === 0 && savedScrollStyles) {
+    html.style.setProperty("overflow", savedScrollStyles.html);
+    body.style.setProperty("overflow", savedScrollStyles.body);
+    body.style.setProperty("padding-right", savedScrollStyles.paddingRight);
+    savedScrollStyles = null;
+  }
+};
 
 /**
  * Adds font support in head

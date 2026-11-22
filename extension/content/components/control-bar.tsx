@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useState } from "react";
 import { LucideProps, Search, Settings, BadgePlus, ShieldBan, CopyCheck, Flag } from "lucide-react";
 import { ESearchButtonAction, StatusIndicator } from "@/enums/control-bar";
 import { renderMovieDialog, TimecodeSelect } from "./movie-dialog";
@@ -16,6 +16,7 @@ import { ErrorCode } from '@/enums/error-code';
 import { TimecodeSegment } from '@/types/timecode';
 import { updateTwitchContentClassification } from '@/utils/twitch';
 import { cn } from '@/lib/utils';
+import { Button } from './ui/button';
 
 interface RootProps {
     player: HTMLIFrameElement;
@@ -224,39 +225,38 @@ export const ControlBar = ({ player, movie, onTurnOffCensorship, onCensorship }:
         <div data-movietimecode="control-bar" className="mt-flex mt-font-inter mt-items-center mt-justify-center mt-mt-3">
             <div className="mt-p-2 mt-rounded-full mt-bg-background mt-border mt-border-border mt-flex mt-items-center mt-gap-2 mt-transition-width mt-duration-300">
                 <div className={cn('mt-status', `mt-${statusIndicator}`)}></div>
-                <div
-                    className={cn(
-                        "mt-button mt-primary",
-                        isSearchButtonDisabled && "mt-disabled"
-                    )}
-                    onClick={handleClickSearch}>
+                <Button disabled={isSearchButtonDisabled} onClick={handleClickSearch}>
                     <searchButton.icon strokeWidth={3} size={iconSize} />
                     <span>{searchButton.title}</span>
-                </div>
-                <div
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
                     data-mt-tooltip={i18n.t("movieCheck")}
-                    className="mt-button mt-icon"
                     onClick={handleMovieCheck}>
                     <CopyCheck size={iconSize} />
-                </div>
-                <div
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
                     data-mt-tooltip={i18n.t("addTimecodes")}
-                    className="mt-button mt-icon"
                     onClick={handleTimecodeEditor}>
                     <BadgePlus size={iconSize} />
-                </div>
-                <div
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
                     data-mt-tooltip={i18n.t("reportSanction")}
-                    className="mt-button mt-icon"
                     onClick={handleSanctionReport}>
                     <Flag size={iconSize} />
-                </div>
-                <div
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
                     data-mt-tooltip={i18n.t("settings")}
-                    className="mt-button mt-icon"
                     onClick={() => goToTab({ to: "/settings" })}>
                     <Settings size={iconSize} />
-                </div>
+                </Button>
             </div>
         </div>
     );

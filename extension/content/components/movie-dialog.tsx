@@ -1,6 +1,6 @@
 import { TimecodeAuthor, TimecodeAuthorsResponse, TimecodeResponse, TimecodeSegment } from "@/types/timecode";
 import { Button } from "./ui/button";
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useState } from "react";
 import { Check, Circle, CircleCheck } from "lucide-react";
 import { removeDialog, renderDialog } from "@/utils/dialog";
 import { secondsToTime } from "@/utils/format";
@@ -220,15 +220,12 @@ const MovieDialog = ({ data, onSelected }: RootProps) => {
                     </>}
                 </div>
                 <div className="mt-flex mt-justify-right mt-gap-2 mt-pr-6">
-                    <Button
-                        style="outline"
-                        text={i18n.t(step == 1 ? 'back' : 'cancel')}
-                        onClick={handleBack}
-                    />
-                    <Button
-                        text={i18n.t(step == 1 ? 'apply' : 'next')}
-                        onClick={handleNext}
-                    />
+                    <Button variant="outline" onClick={handleBack}>
+                        <span>{i18n.t(step == 1 ? 'back' : 'cancel')}</span>
+                    </Button>
+                    <Button onClick={handleNext}>
+                        <span>{i18n.t(step == 1 ? 'apply' : 'next')}</span>
+                    </Button>
                 </div>
             </div>
             <LoadingSpinner isLoading={isLoading} dark={true} />

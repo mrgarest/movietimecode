@@ -1,5 +1,5 @@
 import { BlurPower, TimecodeAction, TimecodeTag } from "@/enums/timecode";
-import { render } from "preact";
+import { createRoot } from "react-dom/client";
 import config from "config";
 import { ControlBar } from "./components/control-bar";
 import { SettingsOBSClientNull } from "@/types/settings";
@@ -139,7 +139,7 @@ settings.onChange([
 
     playerController.set(player);
 
-    render(<ControlBar
+    createRoot(rootControlBar).render(<ControlBar
         player={player}
         movie={{
             title: movie.originalTitle,
@@ -147,7 +147,7 @@ settings.onChange([
         }}
         onCensorship={handleCensorship}
         onTurnOffCensorship={handleTurnOffCensorship}
-    />, rootControlBar);
+    />);
 
     window.addEventListener("message", handleMessage);
 })();

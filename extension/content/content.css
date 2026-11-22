@@ -824,17 +824,6 @@
   font-size: 0.75rem;
 }
 
-/* Reset host styles for native buttons that use .mt-button */
-[data-mt-dialog] button.mt-button {
-  -webkit-appearance: none;
-  appearance: none;
-  margin: 0;
-  border: none;
-  outline: none;
-  font-family: var(--mt-inter);
-  line-height: normal;
-}
-
 /*********************** movie select ***********************/
 
 /* Selected movie shown as a custom input, like on the site */
@@ -988,6 +977,11 @@
   font-weight: 600;
 }
 
+.mt-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px oklch(0.556 0 0 / 0.5);
+}
+
 .mt-button:not(.mt-icon) svg {
   width: 0.8rem;
   height: 0.8rem;
@@ -1096,7 +1090,7 @@
 
 [data-mt-dialog] .mt-input:focus,
 [data-mt-dialog] .mt-input:focus-visible,
-.mt-select-trigger.mt-open {
+.mt-select-trigger[data-state="open"] {
   border-color: oklch(0.556 0 0) !important;
   box-shadow: 0 0 0 3px oklch(0.556 0 0 / 0.5) !important;
 }
@@ -1129,12 +1123,14 @@
 
 /*********************** select ***********************/
 
+/* Radix Select (shadcn/ui), the trigger is a native <button> */
 .mt-select-trigger {
   display: flex !important;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem !important;
+  text-align: left !important;
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
@@ -1142,6 +1138,12 @@
 
 .mt-select-trigger:hover {
   background: oklch(1 0 0 / 0.075) !important;
+}
+
+.mt-select-trigger[data-state="open"],
+.mt-select-trigger:focus-visible {
+  border-color: oklch(0.556 0 0) !important;
+  box-shadow: 0 0 0 3px oklch(0.556 0 0 / 0.5) !important;
 }
 
 .mt-select-trigger[data-placeholder] {
@@ -1154,20 +1156,23 @@
   height: 1rem;
   color: var(--mt-muted);
   opacity: 0.5;
+  pointer-events: none;
 }
 
 .mt-select-value {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .mt-select-content {
-  position: fixed;
+  position: relative;
   z-index: 1000;
   box-sizing: border-box;
   min-width: 8rem;
-  max-height: 15rem;
-  padding: 0.25rem;
+  max-height: var(--radix-select-content-available-height);
   overflow-x: hidden;
   overflow-y: auto;
   border: 1px solid var(--mt-border);
@@ -1179,41 +1184,86 @@
   animation: mt-select-in 0.15s ease-out;
 }
 
+.mt-select-viewport {
+  padding: 0.25rem;
+}
+
+.mt-select-label {
+  padding: 0.375rem 0.5rem;
+  color: var(--mt-muted);
+  font-size: 0.75rem;
+}
+
 .mt-select-item {
   position: relative;
   display: flex;
   align-items: center;
+  gap: 0.5rem;
   width: 100%;
   box-sizing: border-box;
   padding: 0.375rem 2rem 0.375rem 0.5rem;
   border-radius: 0.125rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
+  outline: none;
   cursor: default;
   user-select: none;
 }
 
-.mt-select-item:hover {
+.mt-select-item[data-highlighted] {
   background-color: oklch(0.269 0 0);
   color: oklch(0.985 0 0);
 }
 
-.mt-select-item svg {
+.mt-select-item[data-disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.mt-select-item-indicator {
   position: absolute;
   right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.mt-select-item svg {
   width: 1rem;
   height: 1rem;
   color: var(--mt-muted);
 }
 
+.mt-select-separator {
+  height: 1px;
+  margin: 0.25rem -0.25rem;
+  background-color: var(--mt-border);
+  pointer-events: none;
+}
+
+.mt-select-scroll-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0;
+  cursor: default;
+}
+
+.mt-select-scroll-button svg {
+  width: 1rem;
+  height: 1rem;
+}
+
 @keyframes mt-select-in {
   from {
     opacity: 0;
-    transform: translateY(-0.5rem) scale(0.95);
+    transform: scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: scale(1);
   }
 }
 

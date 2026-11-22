@@ -1,5 +1,5 @@
 import i18n from "@/lib/i18n";
-import { ComponentChildren } from 'preact';
+import { ReactNode } from 'react';
 import { renderQuestionDialog } from "./question-dialog";
 
 let isLegaAge: boolean = false;
@@ -7,7 +7,7 @@ let isLegaAge: boolean = false;
 interface RootProps {
     href: string
     className?: string | undefined;
-    children: ComponentChildren;
+    children: ReactNode;
 }
 
 export function LegalAgeLink({ href, className, children }: RootProps) {
@@ -45,6 +45,6 @@ export function LegalAgeLink({ href, className, children }: RootProps) {
         <span
             onClick={handleClick}
             className={className}
-        ><>{children}</></span>
+        >{children}</span>
     );
 }

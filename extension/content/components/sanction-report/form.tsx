@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -12,8 +12,8 @@ import { ErrorCode } from "@/enums/error-code";
 import { fetchBackground } from "@/utils/fetch";
 import { getDeviceToken } from "@/utils/user";
 import i18n from "@/lib/i18n";
-import { cn } from "@/lib/utils";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
+import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
@@ -114,10 +114,7 @@ export default function SanctionReportForm({ movie, onChangeMovie, onSuccess, on
             <Form {...form}>
                 <form
                     noValidate
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        form.handleSubmit(onSubmit)();
-                    }}
+                    onSubmit={form.handleSubmit(onSubmit)}
                     className="mt-flex mt-flex-col mt-gap-4 mt-px-6 mt-pb-6 mt-overflow-auto mt-scrollbar">
                     <div className="mt-form-item">
                         <label className="mt-form-label">{i18n.t("selectMovie")}</label>
@@ -143,7 +140,7 @@ export default function SanctionReportForm({ movie, onChangeMovie, onSuccess, on
                             <FormItem>
                                 <FormLabel>{i18n.t("usernameOnWhichTheSanctionIsImposed")}</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="username" maxLength={60} {...field} onInput={field.onChange} />
+                                    <Input placeholder="username" maxLength={60} {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -156,7 +153,7 @@ export default function SanctionReportForm({ movie, onChangeMovie, onSuccess, on
                             <FormItem>
                                 <FormLabel>{i18n.t("dateOfImpositionOfTheSanction")}</FormLabel>
                                 <FormControl>
-                                    <Input type="date" max={today} {...field} onInput={field.onChange} />
+                                    <Input type="date" max={today} {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -216,7 +213,7 @@ export default function SanctionReportForm({ movie, onChangeMovie, onSuccess, on
                             <FormItem>
                                 <FormLabel>{i18n.t("comment")}</FormLabel>
                                 <FormControl>
-                                    <Textarea maxLength={256} {...field} onInput={field.onChange} />
+                                    <Textarea maxLength={256} {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -226,11 +223,9 @@ export default function SanctionReportForm({ movie, onChangeMovie, onSuccess, on
                     <div className="mt-text-xs mt-text-muted mt-leading-normal">{i18n.t("sanctionReportModerationNote")}</div>
 
                     <div className="mt-flex mt-justify-right">
-                        <button
-                            type="submit"
-                            className={cn("mt-button mt-primary", isSubmitting && "mt-disabled")}>
+                        <Button disabled={isSubmitting} onClick={form.handleSubmit(onSubmit)}>
                             <span>{i18n.t("send")}</span>
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </Form>

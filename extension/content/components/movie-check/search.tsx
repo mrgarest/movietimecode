@@ -1,5 +1,5 @@
 import { MovieSearchItem } from "@/types/movie";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "react";
 import config from "config";
 import { fetchSearchMovie } from "@/utils/fetch";
 import i18n from "@/lib/i18n";

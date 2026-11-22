@@ -1,7 +1,7 @@
 import { playAlertSound } from "@/utils/alert";
-import { Button, TButtonStyle } from "./ui/button";
+import { Button } from "./ui/button";
 import { removeDialog, renderDialog } from "@/utils/dialog";
-import { useEffect } from "preact/hooks";
+import { useEffect } from "react";
 
 interface RootProps {
     id?: string;
@@ -14,7 +14,7 @@ interface RootProps {
 
 interface QuestionDialogButton {
     text: string;
-    style?: TButtonStyle;
+    style?: "primary" | "outline";
     dismiss?: boolean;
     onClick?: () => void
 };
@@ -40,13 +40,13 @@ const QuestionDialog = ({ title, description = undefined, buttons, sound = false
                 index
             ) => <Button
                     key={index}
-                    style={style}
-                    text={text}
+                    variant={style === "outline" ? "outline" : "default"}
                     onClick={onClick || dismiss ? () => {
                         if (onClick) onClick();
                         if (dismiss) dismissQuestionDialog();
-                    } : undefined}
-                />)}
+                    } : undefined}>
+                    <span>{text}</span>
+                </Button>)}
             </div>
         </div>
     )

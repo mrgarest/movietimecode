@@ -4,11 +4,10 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import getManifest from "./manifest.config";
 import { viteStaticCopy } from "vite-plugin-static-copy";
-import config from "./config.json";
 import fs from "fs";
-import { alias, banner } from "./vite.utils";
+import { alias, banner, isDevelopment } from "./vite.utils";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     tailwindcss(),
@@ -43,14 +42,15 @@ export default defineConfig({
     alias: alias,
   },
   build: {
+    emptyOutDir: !isDevelopment(mode),
     rollupOptions: {
       output: {
         banner: banner,
       },
     },
-    sourcemap: config.debug,
+    sourcemap: isDevelopment(mode),
   },
-});
+}));
 
 function CustomLocalesPlugin(): Plugin {
   let viteOutDir: string;

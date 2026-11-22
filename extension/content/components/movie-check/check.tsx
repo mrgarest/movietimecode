@@ -1,5 +1,5 @@
 import { ImdbContentRating, MovieCheckResponse, MovieCheckCompany, MovieSearchItem } from "@/types/movie";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "react";
 import config from "config";
 import { fetchBackground } from "@/utils/fetch";
 import { ImdbContentRatingId } from "@/enums/imdb";

@@ -1,9 +1,13 @@
-import { ComponentChild, render } from "preact";
+import { ReactNode } from "react";
+import { createRoot, Root } from "react-dom/client";
 import { setDisabledScroll } from "./page";
+
+// React roots of the open dialogs, keyed by their container.
+const roots = new WeakMap<HTMLDivElement, Root>();
 
 export const renderDialog = (
   name: string,
-  vnode: ComponentChild,
+  node: ReactNode,
   callback: (container: HTMLDivElement) => void,
 ) => {
   const container = document.createElement("div");
@@ -12,7 +16,9 @@ export const renderDialog = (
   document.body.appendChild(container);
   setDisabledScroll(true);
   try {
-    render(vnode, container);
+    const root = createRoot(container);
+    roots.set(container, root);
+    root.render(node);
     callback(container);
   } catch {
     removeDialog(container);
@@ -20,7 +26,9 @@ export const renderDialog = (
 };
 
 export const removeDialog = (container: HTMLDivElement) => {
-  render(null, container);
+  if (!container.isConnected) return;
+  roots.get(container)?.unmount();
+  roots.delete(container);
   container.remove();
   setDisabledScroll(false);
 };
