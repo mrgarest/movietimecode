@@ -5,7 +5,7 @@ export default function ChromeWebStoreBadge() {
 
     return (
         <a
-            href="https://chromewebstore.google.com/detail/oicfghfgplgplodmidellkbfoachacjb?utm_source=movietimecod"
+            href="https://chromewebstore.google.com/detail/oicfghfgplgplodmidellkbfoachacjb?utm_source=movietimecode"
             target="_blank"
             rel="noopener noreferrer"
             className="flex gap-3 items-center bg-white shadow-xl/20 shadow-foreground/50 px-3 py-1.5 rounded-lg hover:opacity-80 duration-300 select-none cursor-pointer">

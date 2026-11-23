@@ -5,9 +5,12 @@
     "baseUrl": "http://localhost",
     "privacyPolicyUrl": "https://movietimecode.garest.net/privacy",
     "telegramChannelUrl": "https://t.me/+B-6MNbF-t6cyZDVi",
+    "gitHubUrl": "https://github.com/mrgarest/movietimecode",
+    "chromeWebStoreUrl": "https://chromewebstore.google.com/detail/oicfghfgplgplodmidellkbfoachacjb",
     "hostPermissions": {
         "caesura": [
-            "*://*.uakino.best/*"
+            "*://*.uakino.best/*",
+            "*://*.uaserials.com/*"
         ]
     }
 }

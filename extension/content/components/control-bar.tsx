@@ -3,6 +3,7 @@ import { LucideProps, Search, Settings, BadgePlus, ShieldBan, CopyCheck, Flag } 
 import { ESearchButtonAction, StatusIndicator } from "@/enums/control-bar";
 import { renderMovieDialog, TimecodeSelect } from "./movie-dialog";
 import { renderQuestionDialog } from "./question-dialog";
+import { runAfterRateDialog } from "./rate-dialog";
 import { fetchBackground } from "@/utils/fetch";
 import config from "@/config.json";
 import { User } from "@/types/user";
@@ -53,7 +54,7 @@ export const ControlBar = ({ player, movie, onTurnOffCensorship, onCensorship }:
         if (isSearchButtonDisabled) return;
         switch (searchButton.action) {
             case ESearchButtonAction.searchTimecode:
-                handleSearchTimecode(movie.title);
+                runAfterRateDialog(() => handleSearchTimecode(movie.title));
                 break;
             case ESearchButtonAction.turnOffCensorship:
                 setStatusIndicator(StatusIndicator.inactive);
@@ -207,10 +208,10 @@ export const ControlBar = ({ player, movie, onTurnOffCensorship, onCensorship }:
     /**
     * Opens the movie check dialog for the current movie.
     */
-    const handleMovieCheck = () => renderMovieCheckDialog({
+    const handleMovieCheck = () => runAfterRateDialog(() => renderMovieCheckDialog({
         title: movie.title,
         year: movie.year
-    });
+    }));
 
     /**
     * Opens the sanction report dialog for the current movie.

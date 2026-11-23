@@ -25,6 +25,9 @@ export interface Settings {
   checkStreamLive: boolean;
   editTwitchContentClassification: boolean;
   chatbotCommands: ChatbotCommand[];
+  timecodesUsedCount: number;
+  movieChecksCount: number;
+  rateDialogShown: boolean;
 }
 
 export interface SettingsOBSClient {

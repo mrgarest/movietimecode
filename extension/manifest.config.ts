@@ -38,7 +38,6 @@ export default function getManifest() {
       {
         matches: [
           ...config.hostPermissions.caesura,
-          ...(config.debug === true ? ["*://localhost/*"] : []),
         ],
         js: ["assets/caesura.js"],
         css: ["assets/content.css"],

@@ -9,7 +9,7 @@ export const Footer = () => {
             { name: i18n.t("site"), href: config.baseUrl },
             { name: i18n.t("privacyPolicyShort"), href: config.privacyPolicyUrl },
             { name: "Telegram", href: config.telegramChannelUrl },
-            { name: "GitHub", href: "https://github.com/mrgarest/movietimecode" }
+            { name: "GitHub", href: config.gitHubUrl }
         ];
 
     return (

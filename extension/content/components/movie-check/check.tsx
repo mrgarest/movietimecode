@@ -6,6 +6,7 @@ import { ImdbContentRatingId } from "@/enums/imdb";
 import i18n from "@/lib/i18n";
 import { event } from "@/utils/event";
 import { EventType } from "@/enums/event";
+import { incrementUsage } from "@/utils/settings";
 import { cn } from "@/lib/utils";
 import { DateTime } from "luxon"
 import { Copy } from "lucide-react";
@@ -35,6 +36,7 @@ export default function Check({ movie, onLoading, onError }: RootProps) {
             if (response.success) {
                 setMovieCheck(response);
                 event(EventType.CHECK_MOVIE, response.id);
+                incrementUsage("movieChecksCount");
             } else onError(i18n.t("checkFailed"));
         } catch (e) {
             if (config.debug) {

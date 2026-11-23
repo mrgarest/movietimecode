@@ -17,7 +17,7 @@ import { X } from "lucide-react";
 import { ServerResponse } from "@/types/response";
 import { ErrorCode } from "@/enums/error-code";
 import { useUserStore } from "@/store/useUserStore";
-import { getDeviceToken } from "@/utils/cookies";
+import { getDeviceToken } from "@/utils/device";
 import { DateTime } from "luxon";
 import toast from "react-hot-toast";
 

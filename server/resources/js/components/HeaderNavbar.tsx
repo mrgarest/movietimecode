@@ -22,7 +22,7 @@ export default function HeaderNavbar() {
             { name: t("home"), href: "/" },
             {
                 name: t("download"),
-                href: "https://chromewebstore.google.com/detail/oicfghfgplgplodmidellkbfoachacjb?utm_source=movietimecod",
+                href: "https://chromewebstore.google.com/detail/oicfghfgplgplodmidellkbfoachacjb?utm_source=movietimecode",
                 target: "_blank"
             },
             { name: t("timecodes"), href: "/movies/timecodes" },

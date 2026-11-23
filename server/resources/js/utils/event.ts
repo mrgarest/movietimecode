@@ -1,7 +1,7 @@
 import { ServerResponse } from "@/types/response";
 import { fetchApi } from "./fetch";
 import { EventType } from "@/enums/event";
-import { getDeviceToken } from "./cookies";
+import { getDeviceToken } from "./device";
 
 /**
  * Sends an event to the server.

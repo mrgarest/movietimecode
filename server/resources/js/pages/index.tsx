@@ -15,10 +15,15 @@ import { useState } from "react";
 import { SpinnerFullScreen } from "@/components/ui/spinner";
 import { event } from "@/utils/event";
 import { EventType } from "@/enums/event";
+import RateDialog from "@/components/RateDialog";
+import { useRateStore } from "@/store/useRateStore";
 
 export default function HomePage() {
     const { t } = useTranslation();
     const [isSpinner, setSpinner] = useState<boolean>(false);
+    // The movie that will be opened after the rate dialog is closed
+    const [pendingMovie, setPendingMovie] = useState<MovieSearchItem | null>(null);
+    const { incrementMovieSearchCount, setDialogShown, shouldShowDialog } = useRateStore();
 
     // Request for the latest movies
     const { data, isLoading, isError, error } = useQuery<MovieLatestResponse, ApiError>({
@@ -28,13 +33,35 @@ export default function HomePage() {
     });
 
     /**
+     * Handles the selected movie. If it is time to ask for a rating, shows the rate dialog first.
+     * @param movie 
+     */
+    const handleMovieSelected = (movie: MovieSearchItem) => {
+        if (shouldShowDialog()) {
+            setPendingMovie(movie);
+            return;
+        }
+        openMovie(movie);
+    };
+
+    /**
+     * Closes the rate dialog and opens the selected movie.
+     */
+    const handleRateDialogClose = () => {
+        setDialogShown();
+        setPendingMovie(null);
+        if (pendingMovie) openMovie(pendingMovie);
+    };
+
+    /**
      * Opening the movie page.
      * @param movie 
      */
-    const handleMovieSelected = async (movie: MovieSearchItem) => {
+    const openMovie = async (movie: MovieSearchItem) => {
         // if the movie already exists, just open it
         if (movie.id) {
             event(EventType.CHECK_MOVIE, movie.id);
+            incrementMovieSearchCount();
             router.visit(`/movies/${movie.tmdb_id}`);
             return;
         }
@@ -46,6 +73,7 @@ export default function HomePage() {
             const data = await fetchApi<MovieImportResponse>(`/api/v2/movies/${movie.tmdb_id}/import`, { method: "POST" });
             if (data.success) {
                 event(EventType.CHECK_MOVIE, data.id);
+                incrementMovieSearchCount();
             }
         } finally {
             setSpinner(false);
@@ -115,6 +143,7 @@ export default function HomePage() {
             title={t('seoTitle')}
             description={t('seoDescription')} />
         {isSpinner && <SpinnerFullScreen />}
+        <RateDialog open={pendingMovie !== null} onClose={handleRateDialogClose} />
         <div className="pt-6 sm:pt-15 pb-20 px-4 mx-auto">
             <div className="size-24 relative mx-auto select-none pointer-events-none">
                 <img src="/images/icon.gif" className="size-full rounded-full absolute z-1" />

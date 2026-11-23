@@ -11,6 +11,7 @@ import { MovieSearchTimecodesResponse } from "@/types/movie";
 import { LoadingSpinner } from "./ui/loading";
 import { event } from "@/utils/event";
 import { EventType } from "@/enums/event";
+import { incrementUsage } from "@/utils/settings";
 import { cn } from "@/lib/utils";
 import { TimecodeTag } from "@/enums/timecode";
 import { TwitchContentClassification } from "@/enums/twitch";
@@ -120,6 +121,7 @@ const MovieDialog = ({ data, onSelected }: RootProps) => {
                 segments: timecode.segments ?? []
             });
             event(EventType.TIMECODE_USED, author.timecode.id);
+            incrementUsage("timecodesUsedCount");
             setLoading(false);
             remove();
             return;

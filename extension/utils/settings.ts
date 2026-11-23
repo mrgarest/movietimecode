@@ -74,6 +74,9 @@ export const DEFAULT_SETTINGS: Settings = {
       access: ChatbotAccess.users,
     },
   ] as ChatbotCommand[],
+  timecodesUsedCount: 0,
+  movieChecksCount: 0,
+  rateDialogShown: false,
 };
 
 /**
@@ -202,6 +205,30 @@ class SettingsManager {
 }
 
 export const settings = new SettingsManager();
+
+/**
+ * Increases the usage counter by one.
+ * @param key - counter to increase
+ */
+export const incrementUsage = async (
+  key: "timecodesUsedCount" | "movieChecksCount",
+): Promise<void> => {
+  try {
+    const count = await settings.getAsync(key);
+    await settings.set({ [key]: count + 1 });
+  } catch (e) {
+    if (config.debug) {
+      console.error(e);
+    }
+  }
+};
+
+/**
+ * Checks whether it is time to ask the user to rate the extension.
+ */
+export const shouldShowRateDialog = (): boolean =>
+  !settings.get("rateDialogShown") &&
+  settings.get("timecodesUsedCount") + settings.get("movieChecksCount") > 5;
 
 /**
  * Settings that hold a TimecodeAction.
