@@ -7,8 +7,8 @@ import toast from "react-hot-toast";
 import { SpinnerFullScreen } from '../components/ui/spinner';
 import { replaceRemovedActions, settings } from '@/utils/settings';
 
-// ПFields we do not export/import
-type ExcludedKeys = "installedAt" | "user" | "deviceToken" | "obsClient" | "obsSourceRules";
+// Fields we do not export/import
+type ExcludedKeys = "installedAt" | "user" | "deviceToken" | "obsClient";
 type ExportableSettings = Omit<Settings, ExcludedKeys>;
 
 export default function BackupPage() {
@@ -20,7 +20,7 @@ export default function BackupPage() {
     const handleExport = async () => {
         setSpinner(true);
         try {
-            const { user, deviceToken, obsClient, obsSourceRules, ...settingsForExport } = await settings.getAll();
+            const { user, deviceToken, obsClient, ...settingsForExport } = await settings.getAll();
 
             const blob = new Blob([JSON.stringify(settingsForExport, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);

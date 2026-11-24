@@ -17,9 +17,7 @@ export interface SceneItem {
   enabled: boolean;
   /** Input kind (OBS Studio) or source type (Streamlabs), used for the icon. */
   kind?: string | null;
-  /** Streamlabs source id, used to look up the source type. */
   sourceId?: string;
-  /** Streamlabs resource id used to call methods on the item. */
   resourceId?: string;
 }
 
